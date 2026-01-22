@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔥 Advanced Chat - Задания</title>
+    <title>🔥 Advanced Chat - GitHub Pages</title>
     
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -14,277 +14,518 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     
     <style>
-        /* Основные стили (те же что и раньше) */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         :root {
             --primary: #4361ee;
             --secondary: #3a0ca3;
+            --accent: #f72585;
             --success: #4cc9f0;
             --warning: #f8961e;
             --danger: #e63946;
             --dark: #1a1a2e;
             --light: #f8f9fa;
+            --gray: #6c757d;
+            --online: #4CAF50;
+            --offline: #757575;
+            --away: #FF9800;
         }
 
         body {
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: white;
+            color: var(--light);
             min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+            overflow-x: hidden;
         }
 
         /* Навигация */
-        .nav-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            background: rgba(255,255,255,0.1);
-            padding: 10px;
-            border-radius: 10px;
-        }
-
-        .nav-tab {
-            padding: 10px 20px;
-            background: transparent;
-            border: none;
-            color: rgba(255,255,255,0.7);
-            cursor: pointer;
-            border-radius: 5px;
-            transition: all 0.3s;
-        }
-
-        .nav-tab.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        /* Вкладки контента */
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.3s;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        /* Карточки заданий */
-        .tasks-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .task-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s;
-            position: relative;
-        }
-
-        .task-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        }
-
-        .task-card.completed {
-            border-left: 4px solid var(--success);
-        }
-
-        .task-card.active {
-            border-left: 4px solid var(--primary);
-        }
-
-        .task-card.expired {
-            border-left: 4px solid var(--danger);
-            opacity: 0.8;
-        }
-
-        .task-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 15px;
-        }
-
-        .task-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin: 0;
-        }
-
-        .task-reward {
-            background: linear-gradient(135deg, var(--warning), #f8961e);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-        .task-description {
-            color: rgba(255, 255, 255, 0.8);
-            line-height: 1.5;
-            margin-bottom: 15px;
-        }
-
-        .task-meta {
+        .navbar {
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 15px;
-            padding-top: 10px;
-            border-top: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .task-attachments {
-            margin-top: 15px;
-        }
-
-        .attachment-item {
+        .logo {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 8px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 8px;
-            margin-bottom: 5px;
+            gap: 12px;
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #4361ee, #f72585);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            list-style: none;
+        }
+
+        .nav-link {
+            color: var(--light);
             text-decoration: none;
-            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
         }
 
-        .attachment-item img {
-            width: 40px;
-            height: 40px;
-            border-radius: 5px;
+        .nav-link:hover,
+        .nav-link.active {
+            background: rgba(67, 97, 238, 0.2);
+            color: #fff;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: 3px solid var(--primary);
+            cursor: pointer;
             object-fit: cover;
         }
 
-        .task-actions {
+        .user-info {
             display: flex;
-            gap: 10px;
-            margin-top: 15px;
+            flex-direction: column;
+            align-items: flex-end;
         }
 
-        .btn {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-
-        /* Форма создания задания */
-        .create-task-form {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
-            border: 2px solid rgba(67, 97, 238, 0.3);
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            color: white;
+        .user-name {
+            font-weight: 600;
             font-size: 16px;
         }
 
-        .form-control:focus {
-            outline: none;
+        .user-status {
+            font-size: 12px;
+            margin-top: 2px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-online { background: var(--online); }
+        .status-offline { background: var(--offline); }
+        .status-away { background: var(--away); }
+
+        /* Основной контейнер */
+        .container {
+            margin-top: 80px;
+            padding: 20px;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* Чат контейнер */
+        .chat-container {
+            display: flex;
+            gap: 20px;
+            height: 75vh;
+        }
+
+        /* Боковая панель с пользователями */
+        .users-sidebar {
+            width: 300px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .users-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .users-title {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .users-count {
+            background: var(--primary);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+
+        .users-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 8px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: rgba(67, 97, 238, 0.3);
+            color: white;
             border-color: var(--primary);
         }
 
-        textarea.form-control {
-            min-height: 100px;
-            resize: vertical;
+        .users-list {
+            flex: 1;
+            overflow-y: auto;
         }
 
-        .file-preview {
+        .user-card {
             display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid transparent;
         }
 
-        .preview-item {
-            position: relative;
-            width: 80px;
-            height: 80px;
-            border-radius: 8px;
-            overflow: hidden;
+        .user-card:hover {
+            background: rgba(67, 97, 238, 0.1);
+            transform: translateX(5px);
         }
 
-        .preview-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        .user-card.active {
+            background: rgba(67, 97, 238, 0.2);
+            border-color: var(--primary);
         }
 
-        .remove-preview {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            border: none;
+        .user-avatar-sm {
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            width: 20px;
-            height: 20px;
+            object-fit: cover;
+            position: relative;
+        }
+
+        .status-badge {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid var(--dark);
+        }
+
+        .user-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .user-details-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .user-details-name {
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-details-time {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .user-details-role {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .action-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.7);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.3s;
         }
 
-        /* Модальное окно просмотра */
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        /* Основная область чата */
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4361ee, #3a0ca3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .chat-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .chat-subtitle {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .chat-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            max-width: 70%;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.sent {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .message-content {
+            background: rgba(67, 97, 238, 0.2);
+            padding: 12px 16px;
+            border-radius: 18px;
+            border-top-left-radius: 4px;
+            max-width: 100%;
+        }
+
+        .message.sent .message-content {
+            background: rgba(76, 201, 240, 0.3);
+            border-top-left-radius: 18px;
+            border-top-right-radius: 4px;
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .message-sender {
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .message-role {
+            font-size: 11px;
+            color: var(--success);
+            background: rgba(76, 201, 240, 0.2);
+            padding: 2px 6px;
+            border-radius: 8px;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .message-text {
+            font-size: 14px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .message-attachment {
+            margin-top: 8px;
+            max-width: 300px;
+        }
+
+        .attachment-image {
+            max-width: 100%;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .attachment-image:hover {
+            transform: scale(1.02);
+        }
+
+        .chat-input {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 10px;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: var(--light);
+            font-size: 15px;
+            resize: none;
+            min-height: 50px;
+            max-height: 120px;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .chat-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.3s;
+        }
+
+        .chat-btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .chat-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Модальные окна */
         .modal {
             display: none;
             position: fixed;
@@ -292,226 +533,355 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.8);
-            z-index: 1000;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
             align-items: center;
             justify-content: center;
+            animation: fadeIn 0.3s ease;
         }
 
         .modal.active {
             display: flex;
         }
 
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
         .modal-content {
             background: var(--dark);
-            border-radius: 15px;
+            border-radius: 20px;
             padding: 30px;
-            max-width: 500px;
             width: 90%;
+            max-width: 500px;
             max-height: 90vh;
             overflow-y: auto;
-        }
-
-        /* Заголовок */
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .header h1 {
-            font-size: 32px;
-            margin-bottom: 10px;
-            background: linear-gradient(135deg, #4361ee, #f72585);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         /* Админ панель */
-        .admin-badge {
-            background: linear-gradient(135deg, var(--danger), #e63946);
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 14px;
-            display: inline-block;
-            margin-left: 10px;
-        }
-
-        /* Статистика */
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
+        .admin-panel {
+            background: rgba(229, 57, 70, 0.1);
+            border: 1px solid var(--danger);
+            border-radius: 15px;
             padding: 20px;
-            text-align: center;
+            margin-top: 20px;
         }
 
-        .stat-value {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 5px;
-            background: linear-gradient(135deg, var(--primary), var(--success));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 10px 15px;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .chat-container {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .users-sidebar {
+                width: 100%;
+                height: 250px;
+            }
+            
+            .message {
+                max-width: 85%;
+            }
+            
+            .user-info {
+                display: none;
+            }
         }
 
-        .stat-label {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.7);
+        /* Полосы прокрутки */
+        .users-list::-webkit-scrollbar,
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
         }
+        
+        .users-list::-webkit-scrollbar-track,
+        .chat-messages::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+        
+        .users-list::-webkit-scrollbar-thumb,
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 3px;
+        }
+        
+        .users-list::-webkit-scrollbar-thumb:hover,
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary);
+        }
+
+        /* Утилиты */
+        .mb-10 { margin-bottom: 10px; }
+        .mb-15 { margin-bottom: 15px; }
+        .mb-20 { margin-bottom: 20px; }
+        .mt-10 { margin-top: 10px; }
+        .mt-15 { margin-top: 15px; }
+        .mt-20 { margin-top: 20px; }
+        .text-muted { color: rgba(255, 255, 255, 0.5); }
+        .d-flex { display: flex; }
+        .align-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-10 { gap: 10px; }
+        .w-100 { width: 100%; }
     </style>
 </head>
 <body>
+    <!-- Навигационная панель -->
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-fire"></i>
+            <span>Advanced Chat</span>
+        </div>
+        
+        <ul class="nav-links">
+            <li><a href="#" class="nav-link active"><i class="fas fa-comments"></i> Чат</a></li>
+            <li><a href="#" class="nav-link"><i class="fas fa-calendar-alt"></i> Мероприятия</a></li>
+            <li><a href="#" class="nav-link"><i class="fas fa-tasks"></i> Задания</a></li>
+        </ul>
+        
+        <div class="user-menu">
+            <div class="user-info">
+                <div class="user-name" id="current-username">Гость</div>
+                <div class="user-status">
+                    <span class="status-indicator status-online" id="current-status"></span>
+                    <span id="status-text">Онлайн</span>
+                </div>
+            </div>
+            <img src="https://ui-avatars.com/api/?name=Гость&background=4361ee&color=fff" 
+                 alt="Аватар" 
+                 class="user-avatar"
+                 id="current-avatar"
+                 onclick="openProfileModal()">
+        </div>
+    </nav>
+
+    <!-- Основной контейнер -->
     <div class="container">
-        <!-- Заголовок -->
-        <div class="header">
-            <h1>📋 Система заданий</h1>
-            <p>Создавайте и выполняйте задания для получения наград</p>
-            <div id="admin-badge" style="display: none;" class="admin-badge">
-                <i class="fas fa-crown"></i> Режим администратора
-            </div>
-        </div>
-
-        <!-- Навигация -->
-        <div class="nav-tabs">
-            <button class="nav-tab active" onclick="showTab('tasks')">
-                <i class="fas fa-tasks"></i> Все задания
-            </button>
-            <button class="nav-tab" onclick="showTab('create')" id="create-tab-btn">
-                <i class="fas fa-plus-circle"></i> Создать задание
-            </button>
-            <button class="nav-tab" onclick="showTab('completed')">
-                <i class="fas fa-check-circle"></i> Выполненные
-            </button>
-        </div>
-
-        <!-- Статистика -->
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-value" id="total-tasks">0</div>
-                <div class="stat-label">Всего заданий</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="completed-tasks">0</div>
-                <div class="stat-label">Выполнено</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="pending-tasks">0</div>
-                <div class="stat-label">В ожидании</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="my-points">0</div>
-                <div class="stat-label">Ваши очки</div>
-            </div>
-        </div>
-
-        <!-- Вкладка: Все задания -->
-        <div class="tab-content active" id="tasks-tab">
-            <div class="tasks-container" id="tasks-list">
-                <!-- Задания загружаются динамически -->
-            </div>
-        </div>
-
-        <!-- Вкладка: Создание задания (только для админа) -->
-        <div class="tab-content" id="create-tab">
-            <div class="create-task-form">
-                <h2 style="margin-bottom: 20px;"><i class="fas fa-plus-circle"></i> Создать новое задание</h2>
-                
-                <div class="form-group">
-                    <label class="form-label">Тема задания *</label>
-                    <input type="text" class="form-control" id="task-title" placeholder="Введите тему задания" maxlength="100">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Описание задания *</label>
-                    <textarea class="form-control" id="task-description" placeholder="Подробное описание задания..." rows="4"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Награда *</label>
-                    <input type="text" class="form-control" id="task-reward" placeholder="Например: 100 очков, Бонус, Сертификат">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Срок выполнения (опционально)</label>
-                    <input type="datetime-local" class="form-control" id="task-deadline">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Прикрепить файлы (максимум 3 файла, до 5MB каждый)</label>
-                    <input type="file" class="form-control" id="task-files" multiple accept="image/*,video/*,.gif,.pdf,.doc,.docx,.txt">
-                    <small style="color: rgba(255,255,255,0.5); display: block; margin-top: 5px;">
-                        Поддерживаются: изображения, GIF, видео, документы
-                    </small>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Предпросмотр файлов:</label>
-                    <div class="file-preview" id="file-preview"></div>
-                </div>
-
-                <div class="task-actions">
-                    <button class="btn btn-primary" onclick="createTask()" id="create-task-btn">
-                        <i class="fas fa-plus"></i> Создать задание
-                    </button>
-                    <button class="btn" onclick="clearForm()" style="background: rgba(255,255,255,0.1); color: white;">
-                        <i class="fas fa-times"></i> Очистить
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Вкладка: Выполненные задания -->
-        <div class="tab-content" id="completed-tab">
-            <div class="tasks-container" id="completed-tasks-list">
-                <!-- Выполненные задания загружаются динамически -->
-            </div>
-        </div>
-
-        <!-- Модальное окно для просмотра задания -->
-        <div class="modal" id="view-task-modal">
-            <div class="modal-content">
-                <h2 id="modal-task-title"></h2>
-                <div style="margin: 20px 0;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <span id="modal-task-reward" style="background: var(--warning); color: white; padding: 5px 10px; border-radius: 5px;"></span>
-                        <span id="modal-task-status" style="color: rgba(255,255,255,0.7);"></span>
+        <div class="chat-container">
+            <!-- Боковая панель с пользователями -->
+            <div class="users-sidebar">
+                <div class="users-header">
+                    <div class="users-title">
+                        <i class="fas fa-users"></i>
+                        Пользователи
+                        <span class="users-count" id="online-count">0</span>
                     </div>
-                    <p id="modal-task-description" style="line-height: 1.6;"></p>
+                    <div class="user-actions">
+                        <button class="action-btn" title="Обновить" onclick="loadUsers()">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
                 </div>
                 
-                <div id="modal-task-attachments" style="margin: 20px 0;"></div>
-                
-                <div id="modal-task-actions" style="display: flex; gap: 10px; margin-top: 20px;">
-                    <!-- Кнопки действий появляются динамически -->
+                <div class="users-tabs">
+                    <button class="tab-btn active" onclick="showUsersTab('online')">
+                        <i class="fas fa-circle status-online"></i>
+                        Онлайн
+                    </button>
+                    <button class="tab-btn" onclick="showUsersTab('all')">
+                        <i class="fas fa-users"></i>
+                        Все
+                    </button>
                 </div>
                 
-                <button class="btn" onclick="closeModal()" style="margin-top: 20px; width: 100%; background: rgba(255,255,255,0.1); color: white;">
-                    <i class="fas fa-times"></i> Закрыть
+                <div class="users-list" id="users-list">
+                    <!-- Список пользователей загружается динамически -->
+                </div>
+            </div>
+            
+            <!-- Основная область чата -->
+            <div class="chat-main">
+                <div class="chat-header">
+                    <div class="chat-info">
+                        <div class="chat-avatar">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div>
+                            <div class="chat-title" id="chat-title">Общий чат</div>
+                            <div class="chat-subtitle" id="chat-subtitle">...</div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-actions">
+                        <button class="action-btn" title="Информация о чате">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
+                        <button class="action-btn" title="Настройки">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="chat-messages" id="chat-messages">
+                    <!-- Сообщения загружаются динамически -->
+                </div>
+                
+                <div class="chat-input">
+                    <textarea class="message-input" 
+                              id="message-input" 
+                              placeholder="Введите сообщение..." 
+                              rows="1"></textarea>
+                    
+                    <div class="chat-buttons">
+                        <button class="chat-btn" onclick="openAttachmentModal()">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                        <button class="chat-btn" onclick="sendMessage()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Админ панель -->
+        <div class="admin-panel" id="admin-panel" style="display: none;">
+            <h3><i class="fas fa-shield-alt"></i> Админ панель</h3>
+            <p class="text-muted mb-15">Только для пользователя с ником "admin"</p>
+            <div class="d-flex gap-10">
+                <button class="action-btn" onclick="deleteAllMessages()" title="Удалить все сообщения">
+                    <i class="fas fa-trash"></i>
+                </button>
+                <button class="action-btn" onclick="clearUserList()" title="Очистить список пользователей">
+                    <i class="fas fa-user-slash"></i>
+                </button>
+                <button class="action-btn" onclick="exportData()" title="Экспорт данных">
+                    <i class="fas fa-download"></i>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- Модальное окно профиля -->
+    <div class="modal" id="profile-modal">
+        <div class="modal-content">
+            <h2 class="mb-20"><i class="fas fa-user-edit"></i> Настройки профиля</h2>
+            
+            <div class="mb-20">
+                <div class="d-flex align-center gap-15">
+                    <img src="https://ui-avatars.com/api/?name=Гость&background=4361ee&color=fff" 
+                         alt="Аватар" 
+                         class="user-avatar"
+                         id="avatar-preview">
+                    <button class="action-btn" onclick="document.getElementById('avatar-input').click()">
+                        <i class="fas fa-upload"></i>
+                    </button>
+                    <input type="file" 
+                           id="avatar-input" 
+                           accept="image/*" 
+                           style="display: none;"
+                           onchange="uploadAvatar(this.files[0])">
+                </div>
+            </div>
+            
+            <div class="mb-15">
+                <label class="text-muted mb-5 d-block">Никнейм</label>
+                <input type="text" 
+                       class="message-input w-100" 
+                       id="profile-username" 
+                       placeholder="Введите ваш никнейм">
+            </div>
+            
+            <div class="mb-20">
+                <label class="text-muted mb-5 d-block">Должность</label>
+                <select class="message-input w-100" id="profile-role">
+                    <option value="Студент">Студент</option>
+                    <option value="Преподаватель">Преподаватель</option>
+                    <option value="Администратор">Администратор</option>
+                    <option value="Модератор">Модератор</option>
+                    <option value="Гость">Гость</option>
+                </select>
+            </div>
+            
+            <div class="d-flex justify-between">
+                <button class="action-btn" onclick="closeProfileModal()">
+                    <i class="fas fa-times"></i> Отмена
+                </button>
+                <button class="action-btn" onclick="saveProfile()" style="background: var(--success);">
+                    <i class="fas fa-save"></i> Сохранить
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно вложений -->
+    <div class="modal" id="attachment-modal">
+        <div class="modal-content">
+            <h2 class="mb-20"><i class="fas fa-paperclip"></i> Прикрепить файл</h2>
+            
+            <div class="mb-15">
+                <div class="d-flex gap-10 mb-15">
+                    <button class="action-btn" onclick="selectAttachmentType('image')">
+                        <i class="fas fa-image"></i>
+                    </button>
+                    <button class="action-btn" onclick="selectAttachmentType('gif')">
+                        <i class="fas fa-photo-video"></i>
+                    </button>
+                    <button class="action-btn" onclick="selectAttachmentType('video')">
+                        <i class="fas fa-video"></i>
+                    </button>
+                    <button class="action-btn" onclick="selectAttachmentType('file')">
+                        <i class="fas fa-file"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="mb-15" id="attachment-preview" style="display: none;">
+                <label class="text-muted mb-5 d-block">Предпросмотр</label>
+                <div id="preview-container"></div>
+            </div>
+            
+            <div class="mb-20">
+                <label class="text-muted mb-5 d-block">Выберите файл</label>
+                <input type="file" 
+                       class="message-input w-100" 
+                       id="file-input"
+                       onchange="previewAttachment(this.files[0])">
+                <div class="text-muted mt-5" id="file-info"></div>
+            </div>
+            
+            <div class="d-flex justify-between">
+                <button class="action-btn" onclick="closeAttachmentModal()">
+                    <i class="fas fa-times"></i> Отмена
+                </button>
+                <button class="action-btn" onclick="attachFile()" style="background: var(--success);">
+                    <i class="fas fa-check"></i> Прикрепить
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно просмотра изображения -->
+    <div class="modal" id="image-modal">
+        <div class="modal-content" style="background: transparent; padding: 0; max-width: 90vw; max-height: 90vh;">
+            <img src="" alt="" id="full-image" style="width: 100%; height: auto; border-radius: 10px;">
+        </div>
+    </div>
+
+    <!-- Скрипты -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <script>
         // ========== КОНФИГУРАЦИЯ FIREBASE ==========
         const firebaseConfig = {
-            apiKey: "ВАШ_API_KEY",
-            authDomain: "ВАШ_PROJECT.firebaseapp.com",
-            databaseURL: "https://ВАШ_PROJECT-default-rtdb.firebaseio.com",
-            projectId: "ВАШ_PROJECT",
-            storageBucket: "ВАШ_PROJECT.appspot.com",
-            messagingSenderId: "ВАШ_SENDER_ID",
-            appId: "ВАШ_APP_ID"
+            apiKey: "AIzaSyB5eIngl-CnWkSuKcNtywID7kdOKKCatXY",
+            authDomain: "ms-adaptive-chat.firebaseapp.com",
+            databaseURL: "https://ms-adaptive-chat-default-rtdb.europe-west1.firebasedatabase.app/",
+            projectId: "ms-adaptive-chat",
+            storageBucket: "ms-adaptive-chat.firebasestorage.app",
+            messagingSenderId: "571640671300",
+            appId: "1:571640671300:web:e1e0f4369b93a3ef8f2011"
         };
 
         // Инициализация Firebase
@@ -520,9 +890,12 @@
 
         // ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==========
         let currentUser = null;
-        let tasks = {};
-        let uploadedFiles = [];
-        let isAdmin = false;
+        let currentAttachment = null;
+        let attachmentType = 'image';
+        let users = {};
+        let onlineUsers = new Set();
+        let currentUsersTab = 'online';
+        let presenceInterval = null;
 
         // ========== ИНИЦИАЛИЗАЦИЯ ==========
         document.addEventListener('DOMContentLoaded', function() {
@@ -532,632 +905,648 @@
                 return;
             }
 
-            // Загрузка профиля пользователя
-            loadUserProfile();
+            // Загрузка профиля
+            loadProfile();
             
-            // Загрузка заданий
-            loadTasks();
+            // Инициализация чата
+            initChat();
             
-            // Настройка обработчиков событий
-            setupEventListeners();
+            // Загрузка пользователей
+            loadUsers();
             
-            // Проверка прав администратора
-            checkAdminStatus();
+            // Настройка отправки сообщений
+            setupMessageInput();
+            
+            // Запуск отслеживания присутствия
+            startPresenceTracking();
+            
+            // Обработка закрытия страницы
+            setupBeforeUnload();
         });
 
         // ========== ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ ==========
-        function loadUserProfile() {
-            const savedProfile = localStorage.getItem('user_profile');
+        function loadProfile() {
+            const savedProfile = localStorage.getItem('chat_profile');
             if (savedProfile) {
                 currentUser = JSON.parse(savedProfile);
-                updateUserUI();
+                updateProfileUI();
             } else {
                 // Создаем гостевой профиль
                 currentUser = {
                     id: generateId(),
                     username: 'Гость_' + Math.floor(Math.random() * 1000),
+                    role: 'Гость',
                     avatar: null,
-                    role: 'Участник',
-                    points: 0,
-                    completedTasks: []
+                    status: 'online',
+                    lastSeen: Date.now(),
+                    isAdmin: false
                 };
-                saveUserProfile();
+                saveProfileToStorage();
             }
         }
 
-        function saveUserProfile() {
-            localStorage.setItem('user_profile', JSON.stringify(currentUser));
-        }
+        function saveProfile() {
+            const username = document.getElementById('profile-username').value.trim();
+            const role = document.getElementById('profile-role').value;
+            const avatar = document.getElementById('avatar-preview').src;
 
-        function updateUserUI() {
-            document.getElementById('my-points').textContent = currentUser.points;
-            checkAdminStatus();
-        }
-
-        // ========== ПРАВА АДМИНИСТРАТОРА ==========
-        function checkAdminStatus() {
-            isAdmin = currentUser.username === 'admin' || currentUser.role === 'Администратор';
-            
-            const adminBadge = document.getElementById('admin-badge');
-            const createTabBtn = document.getElementById('create-tab-btn');
-            const createTaskBtn = document.getElementById('create-task-btn');
-            
-            if (isAdmin) {
-                adminBadge.style.display = 'inline-block';
-                createTabBtn.style.display = 'block';
-                createTaskBtn.style.display = 'block';
-            } else {
-                adminBadge.style.display = 'none';
-                createTabBtn.style.display = 'none';
-                createTaskBtn.style.display = 'none';
+            if (!username) {
+                showAlert('Введите никнейм!', 'warning');
+                return;
             }
+
+            currentUser.username = username;
+            currentUser.role = role;
+            currentUser.avatar = avatar;
+            currentUser.isAdmin = username.toLowerCase() === 'admin';
+
+            // Сохраняем в localStorage
+            saveProfileToStorage();
+            
+            // Сохраняем в Firebase
+            saveUserToFirebase();
+            
+            // Обновляем UI
+            updateProfileUI();
+            
+            // Закрываем модальное окно
+            closeProfileModal();
+            
+            showAlert('Профиль сохранен!', 'success');
         }
 
-        // ========== УПРАВЛЕНИЕ ВКЛАДКАМИ ==========
-        function showTab(tabName) {
-            // Скрываем все вкладки
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Убираем активный класс у всех кнопок
-            document.querySelectorAll('.nav-tab').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // Показываем выбранную вкладку
-            document.getElementById(tabName + '-tab').classList.add('active');
-            
-            // Активируем кнопку
-            event.target.classList.add('active');
-            
-            // Если это вкладка выполненных заданий, обновляем список
-            if (tabName === 'completed') {
-                displayCompletedTasks();
-            }
+        function saveProfileToStorage() {
+            localStorage.setItem('chat_profile', JSON.stringify(currentUser));
         }
 
-        // ========== ЗАГРУЗКА И ОТОБРАЖЕНИЕ ЗАДАНИЙ ==========
-        function loadTasks() {
-            database.ref('tasks').on('value', snapshot => {
-                tasks = snapshot.val() || {};
-                displayAllTasks();
-                updateStats();
-            });
-        }
-
-        function displayAllTasks() {
-            const tasksList = document.getElementById('tasks-list');
-            tasksList.innerHTML = '';
+        function saveUserToFirebase() {
+            const userData = {
+                ...currentUser,
+                lastSeen: Date.now(),
+                status: 'online'
+            };
             
-            // Преобразуем в массив и сортируем по дате создания (новые сверху)
-            const tasksArray = Object.entries(tasks).map(([id, task]) => ({ id, ...task }));
+            database.ref('users/' + currentUser.id).set(userData);
             
-            tasksArray.sort((a, b) => {
-                const dateA = a.createdAt || 0;
-                const dateB = b.createdAt || 0;
-                return dateB - dateA;
-            });
-            
-            tasksArray.forEach(task => {
-                const taskCard = createTaskCard(task);
-                tasksList.appendChild(taskCard);
+            // Настраиваем onDisconnect для установки статуса offline
+            database.ref('users/' + currentUser.id).onDisconnect().update({
+                status: 'offline',
+                lastSeen: Date.now()
             });
         }
 
-        function displayCompletedTasks() {
-            const completedList = document.getElementById('completed-tasks-list');
-            completedList.innerHTML = '';
+        function uploadAvatar(file) {
+            if (!file) return;
             
-            if (!currentUser.completedTasks || currentUser.completedTasks.length === 0) {
-                completedList.innerHTML = `
-                    <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
-                        <i class="fas fa-clipboard-check fa-3x" style="margin-bottom: 20px;"></i>
-                        <h3>Нет выполненных заданий</h3>
-                        <p>Выполните задания, чтобы они появились здесь</p>
-                    </div>
-                `;
+            // Проверка размера файла (макс 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                showAlert('Файл слишком большой! Максимум 2MB', 'error');
                 return;
             }
             
-            currentUser.completedTasks.forEach(taskId => {
-                if (tasks[taskId]) {
-                    const taskCard = createTaskCard({ id: taskId, ...tasks[taskId] }, true);
-                    completedList.appendChild(taskCard);
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Сжимаем изображение
+                compressImage(e.target.result, 150, 150).then(compressed => {
+                    document.getElementById('avatar-preview').src = compressed;
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function compressImage(dataUrl, maxWidth, maxHeight) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    // Вычисляем новые размеры
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height *= maxWidth / width;
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxHeight) {
+                            width *= maxHeight / height;
+                            height = maxHeight;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Качество 0.7 для баланса
+                    resolve(canvas.toDataURL('image/jpeg', 0.7));
+                };
+                img.src = dataUrl;
+            });
+        }
+
+        // ========== СПИСОК ПОЛЬЗОВАТЕЛЕЙ ==========
+        function loadUsers() {
+            database.ref('users').on('value', snapshot => {
+                users = snapshot.val() || {};
+                updateUsersList();
+                updateOnlineCount();
+            });
+        }
+
+        function updateUsersList() {
+            const usersList = document.getElementById('users-list');
+            usersList.innerHTML = '';
+            
+            let filteredUsers = Object.values(users);
+            
+            // Фильтрация по текущей вкладке
+            if (currentUsersTab === 'online') {
+                filteredUsers = filteredUsers.filter(user => user.status === 'online');
+            }
+            
+            // Сортировка: онлайн сверху, потом по времени последней активности
+            filteredUsers.sort((a, b) => {
+                if (a.status === 'online' && b.status !== 'online') return -1;
+                if (a.status !== 'online' && b.status === 'online') return 1;
+                return b.lastSeen - a.lastSeen;
+            });
+            
+            filteredUsers.forEach(user => {
+                const userCard = createUserCard(user);
+                usersList.appendChild(userCard);
+            });
+        }
+
+        function createUserCard(user) {
+            const card = document.createElement('div');
+            card.className = 'user-card';
+            
+            // Определяем статус
+            let statusClass = 'status-offline';
+            let statusText = 'Офлайн';
+            
+            if (user.status === 'online') {
+                statusClass = 'status-online';
+                statusText = 'Онлайн';
+            } else if (user.status === 'away') {
+                statusClass = 'status-away';
+                statusText = 'Отошел';
+            }
+            
+            // Форматируем время последней активности
+            const lastSeen = formatLastSeen(user.lastSeen);
+            
+            card.innerHTML = `
+                <div class="user-avatar-sm">
+                    <img src="${user.avatar || getDefaultAvatar(user.username)}" 
+                         alt="${user.username}" 
+                         class="user-avatar-sm">
+                    <span class="status-badge ${statusClass}"></span>
+                </div>
+                <div class="user-details">
+                    <div class="user-details-header">
+                        <div class="user-details-name">${user.username}</div>
+                        <div class="user-details-time">${user.status === 'online' ? 'сейчас' : lastSeen}</div>
+                    </div>
+                    <div class="user-details-role">${user.role}</div>
+                </div>
+                <div class="user-actions">
+                    ${currentUser.id !== user.id ? `
+                        <button class="action-btn" title="Написать сообщение" onclick="sendPrivateMessage('${user.id}')">
+                            <i class="fas fa-comment"></i>
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+            
+            // Добавляем обработчик клика
+            card.onclick = () => selectUser(user);
+            
+            return card;
+        }
+
+        function formatLastSeen(timestamp) {
+            const diff = Date.now() - timestamp;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+            
+            if (minutes < 1) return 'только что';
+            if (minutes < 60) return `${minutes} мин назад`;
+            if (hours < 24) return `${hours} ч назад`;
+            if (days < 7) return `${days} дн назад`;
+            return new Date(timestamp).toLocaleDateString();
+        }
+
+        function getDefaultAvatar(username) {
+            const colors = ['4361ee', '3a0ca3', 'f72585', '4cc9f0', 'f8961e'];
+            const color = colors[username.length % colors.length];
+            return `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=${color}&color=fff`;
+        }
+
+        function updateOnlineCount() {
+            const onlineUsers = Object.values(users).filter(user => user.status === 'online');
+            document.getElementById('online-count').textContent = onlineUsers.length;
+            
+            // Обновляем подзаголовок чата
+            document.getElementById('chat-subtitle').textContent = 
+                `${onlineUsers.length} участников онлайн • ${Object.keys(users).length} всего`;
+        }
+
+        function showUsersTab(tab) {
+            currentUsersTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            updateUsersList();
+        }
+
+        function selectUser(user) {
+            // Можно реализовать приватные сообщения
+            showAlert(`Выбран пользователь: ${user.username}`, 'info');
+        }
+
+        // ========== ОТСЛЕЖИВАНИЕ ПРИСУТСТВИЯ ==========
+        function startPresenceTracking() {
+            // Обновляем статус каждые 30 секунд
+            presenceInterval = setInterval(() => {
+                if (currentUser) {
+                    database.ref('users/' + currentUser.id).update({
+                        lastSeen: Date.now(),
+                        status: 'online'
+                    });
+                }
+            }, 30000);
+            
+            // Обновляем статус при активности пользователя
+            ['click', 'mousemove', 'keypress'].forEach(event => {
+                document.addEventListener(event, () => {
+                    if (currentUser) {
+                        database.ref('users/' + currentUser.id).update({
+                            lastSeen: Date.now(),
+                            status: 'online'
+                        });
+                    }
+                });
+            });
+            
+            // При потере фокуса окна ставим статус "отошел"
+            window.addEventListener('blur', () => {
+                if (currentUser) {
+                    database.ref('users/' + currentUser.id).update({
+                        status: 'away'
+                    });
+                }
+            });
+            
+            // При получении фокуса возвращаем "онлайн"
+            window.addEventListener('focus', () => {
+                if (currentUser) {
+                    database.ref('users/' + currentUser.id).update({
+                        status: 'online',
+                        lastSeen: Date.now()
+                    });
                 }
             });
         }
 
-        function createTaskCard(task, isCompleted = false) {
-            const card = document.createElement('div');
-            card.className = `task-card ${isCompleted ? 'completed' : 'active'}`;
-            card.id = `task-${task.id}`;
+        function setupBeforeUnload() {
+            window.addEventListener('beforeunload', () => {
+                if (currentUser) {
+                    database.ref('users/' + currentUser.id).update({
+                        status: 'offline',
+                        lastSeen: Date.now()
+                    });
+                }
+                clearInterval(presenceInterval);
+            });
+        }
+
+        // ========== ЧАТ ==========
+        function initChat() {
+            // Загружаем сообщения
+            loadMessages();
             
-            // Проверяем просрочено ли задание
-            if (task.deadline && !isCompleted) {
-                const now = Date.now();
-                if (task.deadline < now) {
-                    card.classList.add('expired');
+            // Настраиваем заголовок чата
+            document.getElementById('chat-title').textContent = 'Общий чат';
+        }
+
+        function loadMessages() {
+            database.ref('messages').limitToLast(50).on('value', snapshot => {
+                const messages = snapshot.val() || {};
+                displayMessages(messages);
+            });
+        }
+
+        function displayMessages(messages) {
+            const messagesContainer = document.getElementById('chat-messages');
+            messagesContainer.innerHTML = '';
+            
+            // Преобразуем в массив и сортируем по времени
+            const messagesArray = Object.values(messages).sort((a, b) => a.timestamp - b.timestamp);
+            
+            messagesArray.forEach(message => {
+                const messageElement = createMessageElement(message);
+                messagesContainer.appendChild(messageElement);
+            });
+            
+            // Прокручиваем вниз
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function createMessageElement(message) {
+            const isCurrentUser = message.userId === currentUser.id;
+            const div = document.createElement('div');
+            div.className = `message ${isCurrentUser ? 'sent' : ''}`;
+            
+            let attachmentHtml = '';
+            if (message.attachment) {
+                if (message.attachment.type === 'image' || message.attachment.type === 'gif') {
+                    attachmentHtml = `
+                        <div class="message-attachment">
+                            <img src="${message.attachment.data}" 
+                                 alt="${message.attachment.name}" 
+                                 class="attachment-image"
+                                 onclick="viewImage('${message.attachment.data}')">
+                            <div class="text-muted mt-2" style="font-size: 12px;">
+                                ${message.attachment.name} (${(message.attachment.size/1024).toFixed(1)}KB)
+                            </div>
+                        </div>
+                    `;
+                } else if (message.attachment.type === 'video') {
+                    attachmentHtml = `
+                        <div class="message-attachment">
+                            <video controls style="max-width: 300px; border-radius: 10px;">
+                                <source src="${message.attachment.data}" type="video/mp4">
+                            </video>
+                            <div class="text-muted mt-2" style="font-size: 12px;">
+                                ${message.attachment.name} (${(message.attachment.size/1024).toFixed(1)}KB)
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    attachmentHtml = `
+                        <div class="message-attachment">
+                            <a href="${message.attachment.data}" 
+                               download="${message.attachment.name}"
+                               class="d-flex align-center gap-10"
+                               style="color: var(--light); text-decoration: none; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                                <i class="fas fa-file-download"></i>
+                                <span>${message.attachment.name} (${(message.attachment.size/1024).toFixed(1)}KB)</span>
+                            </a>
+                        </div>
+                    `;
                 }
             }
-            
-            let attachmentsHtml = '';
-            if (task.attachments && task.attachments.length > 0) {
-                attachmentsHtml = `
-                    <div class="task-attachments">
-                        <div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 5px;">
-                            <i class="fas fa-paperclip"></i> Прикрепленные файлы:
+
+            div.innerHTML = `
+                <img src="${message.userAvatar || getDefaultAvatar(message.username)}" 
+                     alt="${message.username}" 
+                     class="message-avatar">
+                <div class="message-content">
+                    <div class="message-header">
+                        <div class="message-sender">
+                            ${message.username}
+                            <span class="message-role">${message.role}</span>
                         </div>
-                        ${task.attachments.slice(0, 2).map(att => `
-                            <a href="#" onclick="viewAttachment('${att.data}', '${att.type}', '${att.name}')" class="attachment-item">
-                                ${att.type === 'image' || att.type === 'gif' ? 
-                                    `<img src="${att.data}" alt="${att.name}">` : 
-                                    `<i class="fas fa-file fa-2x"></i>`
-                                }
-                                <span>${att.name.substring(0, 15)}${att.name.length > 15 ? '...' : ''}</span>
-                            </a>
-                        `).join('')}
-                        ${task.attachments.length > 2 ? 
-                            `<div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 5px;">
-                                и еще ${task.attachments.length - 2} файлов
-                            </div>` : ''
-                        }
+                        <div class="message-time">${new Date(message.timestamp).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</div>
                     </div>
-                `;
-            }
-            
-            const deadlineHtml = task.deadline ? `
-                <div style="font-size: 11px; color: ${task.deadline < Date.now() ? '#e63946' : '#f8961e'}; margin-top: 5px;">
-                    <i class="far fa-clock"></i> До ${new Date(task.deadline).toLocaleDateString()}
-                </div>
-            ` : '';
-            
-            const isTaskCompleted = currentUser.completedTasks?.includes(task.id);
-            
-            card.innerHTML = `
-                <div class="task-header">
-                    <h3 class="task-title">${task.title}</h3>
-                    <span class="task-reward">${task.reward}</span>
-                </div>
-                
-                <div class="task-description">
-                    ${task.description}
-                </div>
-                
-                ${deadlineHtml}
-                ${attachmentsHtml}
-                
-                <div class="task-meta">
-                    <div>
-                        <i class="fas fa-user"></i> ${task.createdBy || 'Админ'}
-                        <span style="margin-left: 10px;">
-                            <i class="far fa-calendar"></i> ${new Date(task.createdAt).toLocaleDateString()}
-                        </span>
-                    </div>
-                    <div>
-                        ${isTaskCompleted ? 
-                            '<span style="color: #4cc9f0;"><i class="fas fa-check-circle"></i> Выполнено</span>' : 
-                            `<span style="color: rgba(255,255,255,0.5);">ID: ${task.id.substring(0, 8)}</span>`
-                        }
-                    </div>
-                </div>
-                
-                <div class="task-actions">
-                    <button class="btn btn-primary" onclick="viewTaskDetails('${task.id}')">
-                        <i class="fas fa-eye"></i> Подробнее
-                    </button>
-                    
-                    ${!isTaskCompleted ? `
-                        <button class="btn btn-success" onclick="completeTask('${task.id}')">
-                            <i class="fas fa-check"></i> Выполнить
-                        </button>
-                    ` : ''}
-                    
-                    ${isAdmin ? `
-                        <button class="btn btn-danger" onclick="deleteTask('${task.id}')">
+                    <div class="message-text">${message.text}</div>
+                    ${attachmentHtml}
+                    ${currentUser.isAdmin ? `
+                        <button class="action-btn mt-10" onclick="deleteMessage('${message.id}')" style="font-size: 10px;">
                             <i class="fas fa-trash"></i> Удалить
                         </button>
                     ` : ''}
                 </div>
             `;
-            
-            return card;
+
+            return div;
         }
 
-        // ========== СОЗДАНИЕ ЗАДАНИЯ ==========
-        function setupEventListeners() {
-            // Обработка загрузки файлов
-            document.getElementById('task-files').addEventListener('change', handleFileUpload);
+        function sendMessage() {
+            const input = document.getElementById('message-input');
+            const text = input.value.trim();
             
-            // Обработка отправки формы по Enter
-            document.getElementById('task-title').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter' && isAdmin) {
-                    e.preventDefault();
-                    createTask();
-                }
-            });
-        }
-
-        function handleFileUpload(event) {
-            const files = Array.from(event.target.files);
-            const preview = document.getElementById('file-preview');
-            preview.innerHTML = '';
-            
-            uploadedFiles = [];
-            
-            // Ограничиваем количество файлов до 3
-            const limitedFiles = files.slice(0, 3);
-            
-            limitedFiles.forEach((file, index) => {
-                // Проверяем размер файла (макс 5MB)
-                if (file.size > 5 * 1024 * 1024) {
-                    showAlert('Ошибка', 'error', `Файл "${file.name}" слишком большой! Максимум 5MB.`);
-                    return;
-                }
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const fileData = {
-                        name: file.name,
-                        type: getFileType(file),
-                        data: e.target.result,
-                        size: file.size
-                    };
-                    
-                    uploadedFiles.push(fileData);
-                    
-                    // Создаем превью
-                    const previewItem = document.createElement('div');
-                    previewItem.className = 'preview-item';
-                    
-                    if (fileData.type === 'image' || fileData.type === 'gif') {
-                        previewItem.innerHTML = `
-                            <img src="${fileData.data}" alt="${fileData.name}">
-                            <button class="remove-preview" onclick="removeFile(${index})">×</button>
-                        `;
-                    } else {
-                        previewItem.innerHTML = `
-                            <div style="width: 100%; height: 100%; background: rgba(67, 97, 238, 0.3); display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-file fa-2x"></i>
-                            </div>
-                            <button class="remove-preview" onclick="removeFile(${index})">×</button>
-                        `;
-                    }
-                    
-                    preview.appendChild(previewItem);
-                };
-                reader.readAsDataURL(file);
-            });
-            
-            // Очищаем input
-            event.target.value = '';
-        }
-
-        function getFileType(file) {
-            if (file.type.startsWith('image/')) {
-                return file.type === 'image/gif' ? 'gif' : 'image';
-            } else if (file.type.startsWith('video/')) {
-                return 'video';
-            } else {
-                return 'file';
-            }
-        }
-
-        function removeFile(index) {
-            uploadedFiles.splice(index, 1);
-            updateFilePreview();
-        }
-
-        function updateFilePreview() {
-            const preview = document.getElementById('file-preview');
-            preview.innerHTML = '';
-            
-            uploadedFiles.forEach((file, index) => {
-                const previewItem = document.createElement('div');
-                previewItem.className = 'preview-item';
-                
-                if (file.type === 'image' || file.type === 'gif') {
-                    previewItem.innerHTML = `
-                        <img src="${file.data}" alt="${file.name}">
-                        <button class="remove-preview" onclick="removeFile(${index})">×</button>
-                    `;
-                } else {
-                    previewItem.innerHTML = `
-                        <div style="width: 100%; height: 100%; background: rgba(67, 97, 238, 0.3); display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-file fa-2x"></i>
-                        </div>
-                        <button class="remove-preview" onclick="removeFile(${index})">×</button>
-                    `;
-                }
-                
-                preview.appendChild(previewItem);
-            });
-        }
-
-        function createTask() {
-            if (!isAdmin) {
-                showAlert('Ошибка доступа', 'error', 'Только администратор может создавать задания!');
+            if (!text && !currentAttachment) {
+                showAlert('Введите сообщение или прикрепите файл!', 'warning');
                 return;
             }
             
-            const title = document.getElementById('task-title').value.trim();
-            const description = document.getElementById('task-description').value.trim();
-            const reward = document.getElementById('task-reward').value.trim();
-            const deadline = document.getElementById('task-deadline').value;
-            
-            if (!title || !description || !reward) {
-                showAlert('Ошибка', 'warning', 'Заполните все обязательные поля!');
-                return;
-            }
-            
-            const taskId = generateId();
-            const taskData = {
-                id: taskId,
-                title: title,
-                description: description,
-                reward: reward,
-                deadline: deadline ? new Date(deadline).getTime() : null,
-                attachments: uploadedFiles,
-                createdBy: currentUser.username,
-                createdAt: Date.now(),
-                participants: []
+            const message = {
+                id: generateId(),
+                text: text || '',
+                userId: currentUser.id,
+                username: currentUser.username,
+                role: currentUser.role,
+                userAvatar: currentUser.avatar || getDefaultAvatar(currentUser.username),
+                timestamp: Date.now(),
+                attachment: currentAttachment
             };
             
-            // Сохраняем задание в Firebase
-            database.ref('tasks/' + taskId).set(taskData)
-                .then(() => {
-                    showAlert('Успех!', 'success', 'Задание успешно создано!');
-                    clearForm();
-                    showTab('tasks');
-                })
-                .catch(error => {
-                    console.error('Ошибка:', error);
-                    showAlert('Ошибка', 'error', 'Не удалось создать задание!');
-                });
-        }
-
-        function clearForm() {
-            document.getElementById('task-title').value = '';
-            document.getElementById('task-description').value = '';
-            document.getElementById('task-reward').value = '';
-            document.getElementById('task-deadline').value = '';
-            document.getElementById('file-preview').innerHTML = '';
-            uploadedFiles = [];
-        }
-
-        // ========== ВЫПОЛНЕНИЕ ЗАДАНИЙ ==========
-        function completeTask(taskId) {
-            if (!currentUser.completedTasks) {
-                currentUser.completedTasks = [];
-            }
+            // Сохраняем в Firebase
+            database.ref('messages/' + message.id).set(message);
             
-            if (currentUser.completedTasks.includes(taskId)) {
-                showAlert('Информация', 'info', 'Вы уже выполнили это задание!');
+            // Очищаем поле ввода
+            input.value = '';
+            input.style.height = 'auto';
+            currentAttachment = null;
+            
+            // Обновляем статус активности
+            database.ref('users/' + currentUser.id).update({
+                lastSeen: Date.now()
+            });
+            
+            showAlert('Сообщение отправлено!', 'success');
+        }
+
+        // ========== ВЛОЖЕНИЯ ==========
+        function selectAttachmentType(type) {
+            attachmentType = type;
+            const input = document.getElementById('file-input');
+            
+            switch(type) {
+                case 'image':
+                    input.accept = 'image/*';
+                    break;
+                case 'gif':
+                    input.accept = '.gif,image/gif';
+                    break;
+                case 'video':
+                    input.accept = 'video/*';
+                    break;
+                case 'file':
+                    input.accept = '*/*';
+                    break;
+            }
+        }
+
+        function previewAttachment(file) {
+            if (!file) return;
+            
+            // Проверка размера файла
+            let maxSize = 5 * 1024 * 1024; // 5MB по умолчанию
+            if (attachmentType === 'gif') maxSize = 3 * 1024 * 1024;
+            if (attachmentType === 'file') maxSize = 2 * 1024 * 1024;
+            
+            if (file.size > maxSize) {
+                showAlert(`Файл слишком большой! Максимум ${maxSize/1024/1024}MB`, 'error');
                 return;
             }
             
-            // Запрашиваем подтверждение
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const dataUrl = e.target.result;
+                const previewContainer = document.getElementById('preview-container');
+                const fileInfo = document.getElementById('file-info');
+                
+                previewContainer.innerHTML = '';
+                fileInfo.textContent = `${file.name} (${(file.size/1024).toFixed(1)}KB)`;
+                
+                if (attachmentType === 'image' || attachmentType === 'gif') {
+                    previewContainer.innerHTML = `<img src="${dataUrl}" style="max-width: 200px; border-radius: 10px;">`;
+                } else if (attachmentType === 'video') {
+                    previewContainer.innerHTML = `
+                        <video controls style="max-width: 200px; border-radius: 10px;">
+                            <source src="${dataUrl}" type="${file.type}">
+                        </video>
+                    `;
+                }
+                
+                currentAttachment = {
+                    type: attachmentType,
+                    data: dataUrl,
+                    name: file.name,
+                    size: file.size
+                };
+                
+                document.getElementById('attachment-preview').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function attachFile() {
+            if (!currentAttachment) {
+                showAlert('Выберите файл!', 'warning');
+                return;
+            }
+            
+            closeAttachmentModal();
+            showAlert('Файл прикреплен!', 'success');
+        }
+
+        // ========== АДМИН ПАНЕЛЬ ==========
+        function updateProfileUI() {
+            // Обновляем навигацию
+            document.getElementById('current-username').textContent = currentUser.username;
+            document.getElementById('current-avatar').src = 
+                currentUser.avatar || getDefaultAvatar(currentUser.username);
+            
+            // Обновляем статус
+            const statusIndicator = document.getElementById('current-status');
+            const statusText = document.getElementById('status-text');
+            
+            statusIndicator.className = 'status-indicator status-online';
+            statusText.textContent = 'Онлайн';
+            
+            // Показываем/скрываем админ панель
+            const adminPanel = document.getElementById('admin-panel');
+            if (currentUser.isAdmin) {
+                adminPanel.style.display = 'block';
+            } else {
+                adminPanel.style.display = 'none';
+            }
+        }
+
+        function deleteMessage(messageId) {
+            if (!currentUser.isAdmin) return;
+            
             Swal.fire({
-                title: 'Подтверждение',
-                text: 'Вы действительно выполнили это задание?',
-                icon: 'question',
+                title: 'Удалить сообщение?',
+                text: 'Это действие нельзя отменить',
+                icon: 'warning',
                 showCancelButton: true,
-                confirmButtonText: 'Да, выполнил',
+                confirmButtonText: 'Удалить',
                 cancelButtonText: 'Отмена'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Добавляем задание в список выполненных
-                    currentUser.completedTasks.push(taskId);
-                    
-                    // Начисляем очки (извлекаем число из награды)
-                    const task = tasks[taskId];
-                    const pointsMatch = task.reward.match(/\d+/);
-                    if (pointsMatch) {
-                        const points = parseInt(pointsMatch[0]);
-                        currentUser.points += points;
-                    }
-                    
-                    // Сохраняем профиль
-                    saveUserProfile();
-                    
-                    // Обновляем UI
-                    updateUserUI();
-                    
-                    // Обновляем отображение задания
-                    const taskCard = document.getElementById(`task-${taskId}`);
-                    if (taskCard) {
-                        taskCard.className = 'task-card completed';
-                        const actionsDiv = taskCard.querySelector('.task-actions');
-                        actionsDiv.innerHTML = `
-                            <button class="btn btn-primary" onclick="viewTaskDetails('${taskId}')">
-                                <i class="fas fa-eye"></i> Подробнее
-                            </button>
-                            <span style="color: #4cc9f0; padding: 8px 15px;">
-                                <i class="fas fa-check-circle"></i> Выполнено
-                            </span>
-                        `;
-                    }
-                    
-                    showAlert('Поздравляем!', 'success', 'Задание выполнено! Очки начислены.');
+                    database.ref('messages/' + messageId).remove();
+                    showAlert('Сообщение удалено!', 'success');
                 }
             });
         }
 
-        // ========== ПРОСМОТР ДЕТАЛЕЙ ЗАДАНИЯ ==========
-        function viewTaskDetails(taskId) {
-            const task = tasks[taskId];
-            if (!task) return;
+        function deleteAllMessages() {
+            if (!currentUser.isAdmin) return;
             
-            const modal = document.getElementById('view-task-modal');
-            const isCompleted = currentUser.completedTasks?.includes(taskId);
-            
-            // Заполняем модальное окно
-            document.getElementById('modal-task-title').textContent = task.title;
-            document.getElementById('modal-task-reward').textContent = task.reward;
-            document.getElementById('modal-task-description').textContent = task.description;
-            
-            let statusText = 'Активно';
-            let statusColor = '#4cc9f0';
-            
-            if (isCompleted) {
-                statusText = 'Выполнено';
-                statusColor = '#4cc9f0';
-            } else if (task.deadline && task.deadline < Date.now()) {
-                statusText = 'Просрочено';
-                statusColor = '#e63946';
-            }
-            
-            document.getElementById('modal-task-status').innerHTML = `
-                <span style="color: ${statusColor};">${statusText}</span>
-            `;
-            
-            // Отображаем вложения
-            const attachmentsDiv = document.getElementById('modal-task-attachments');
-            attachmentsDiv.innerHTML = '';
-            
-            if (task.attachments && task.attachments.length > 0) {
-                attachmentsDiv.innerHTML = `
-                    <h4><i class="fas fa-paperclip"></i> Прикрепленные файлы:</h4>
-                    <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
-                        ${task.attachments.map(att => `
-                            <div style="width: 100px; text-align: center;">
-                                <a href="#" onclick="viewAttachment('${att.data}', '${att.type}', '${att.name}')" style="text-decoration: none; color: white;">
-                                    ${att.type === 'image' || att.type === 'gif' ? 
-                                        `<img src="${att.data}" alt="${att.name}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 5px; border: 2px solid rgba(255,255,255,0.2);">` : 
-                                        `<div style="width: 100px; height: 100px; background: rgba(67, 97, 238, 0.3); border-radius: 5px; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255,255,255,0.2);">
-                                            <i class="fas fa-file fa-2x"></i>
-                                        </div>`
-                                    }
-                                    <div style="margin-top: 5px; font-size: 12px;">${att.name.substring(0, 15)}${att.name.length > 15 ? '...' : ''}</div>
-                                </a>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            }
-            
-            // Кнопки действий
-            const actionsDiv = document.getElementById('modal-task-actions');
-            actionsDiv.innerHTML = '';
-            
-            if (!isCompleted) {
-                actionsDiv.innerHTML += `
-                    <button class="btn btn-success" onclick="completeTask('${taskId}'); closeModal();" style="flex: 1;">
-                        <i class="fas fa-check"></i> Отметить выполненным
-                    </button>
-                `;
-            }
-            
-            if (isAdmin) {
-                actionsDiv.innerHTML += `
-                    <button class="btn btn-danger" onclick="deleteTask('${taskId}'); closeModal();" style="flex: 1;">
-                        <i class="fas fa-trash"></i> Удалить задание
-                    </button>
-                `;
-            }
-            
-            // Показываем модальное окно
-            modal.classList.add('active');
+            Swal.fire({
+                title: 'Удалить ВСЕ сообщения?',
+                text: 'Это действие нельзя отменить!',
+                icon: 'error',
+                showCancelButton: true,
+                confirmButtonText: 'Удалить всё',
+                cancelButtonText: 'Отмена'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    database.ref('messages').remove();
+                    showAlert('Все сообщения удалены!', 'success');
+                }
+            });
         }
 
-        function viewAttachment(data, type, name) {
-            if (type === 'image' || type === 'gif') {
-                // Открываем изображение в новом окне
-                const newWindow = window.open();
-                newWindow.document.write(`
-                    <html>
-                        <head>
-                            <title>${name}</title>
-                            <style>
-                                body { margin: 0; padding: 20px; background: #1a1a2e; text-align: center; }
-                                img { max-width: 90vw; max-height: 90vh; border-radius: 10px; }
-                                .filename { color: white; margin-top: 10px; }
-                            </style>
-                        </head>
-                        <body>
-                            <img src="${data}" alt="${name}">
-                            <div class="filename">${name}</div>
-                        </body>
-                    </html>
-                `);
-            } else if (type === 'video') {
-                // Открываем видео в новом окне
-                const newWindow = window.open();
-                newWindow.document.write(`
-                    <html>
-                        <head>
-                            <title>${name}</title>
-                            <style>
-                                body { margin: 0; padding: 20px; background: #1a1a2e; text-align: center; }
-                                video { max-width: 90vw; max-height: 90vh; border-radius: 10px; }
-                                .filename { color: white; margin-top: 10px; }
-                            </style>
-                        </head>
-                        <body>
-                            <video controls autoplay>
-                                <source src="${data}" type="video/mp4">
-                            </video>
-                            <div class="filename">${name}</div>
-                        </body>
-                    </html>
-                `);
-            } else {
-                // Скачиваем файл
+        function clearUserList() {
+            if (!currentUser.isAdmin) return;
+            
+            Swal.fire({
+                title: 'Очистить список пользователей?',
+                text: 'Все пользователи (кроме вас) будут удалены',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Очистить',
+                cancelButtonText: 'Отмена'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const updates = {};
+                    Object.keys(users).forEach(userId => {
+                        if (userId !== currentUser.id) {
+                            updates[`users/${userId}`] = null;
+                        }
+                    });
+                    database.ref().update(updates);
+                    showAlert('Список пользователей очищен!', 'success');
+                }
+            });
+        }
+
+        function exportData() {
+            if (!currentUser.isAdmin) return;
+            
+            Promise.all([
+                database.ref('users').once('value'),
+                database.ref('messages').once('value')
+            ]).then(([usersSnapshot, messagesSnapshot]) => {
+                const data = {
+                    users: usersSnapshot.val(),
+                    messages: messagesSnapshot.val(),
+                    exportDate: new Date().toISOString(),
+                    exportedBy: currentUser.username
+                };
+                
+                const dataStr = JSON.stringify(data, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
                 const link = document.createElement('a');
-                link.href = data;
-                link.download = name;
+                link.href = url;
+                link.download = `chat-backup-${new Date().toISOString().split('T')[0]}.json`;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-            }
-        }
-
-        // ========== УДАЛЕНИЕ ЗАДАНИЙ ==========
-        function deleteTask(taskId) {
-            if (!isAdmin) {
-                showAlert('Ошибка доступа', 'error', 'Только администратор может удалять задания!');
-                return;
-            }
-            
-            Swal.fire({
-                title: 'Удалить задание?',
-                text: 'Это действие нельзя отменить!',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Да, удалить',
-                cancelButtonText: 'Отмена'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Удаляем задание из Firebase
-                    database.ref('tasks/' + taskId).remove()
-                        .then(() => {
-                            showAlert('Успех!', 'success', 'Задание удалено!');
-                            
-                            // Удаляем из локального списка
-                            const taskCard = document.getElementById(`task-${taskId}`);
-                            if (taskCard) {
-                                taskCard.remove();
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Ошибка:', error);
-                            showAlert('Ошибка', 'error', 'Не удалось удалить задание!');
-                        });
-                }
+                
+                showAlert('Данные экспортированы!', 'success');
             });
-        }
-
-        // ========== СТАТИСТИКА ==========
-        function updateStats() {
-            const tasksArray = Object.values(tasks);
-            const totalTasks = tasksArray.length;
-            const completedTasks = currentUser.completedTasks ? 
-                currentUser.completedTasks.filter(id => tasks[id]).length : 0;
-            const pendingTasks = totalTasks - completedTasks;
-            
-            document.getElementById('total-tasks').textContent = totalTasks;
-            document.getElementById('completed-tasks').textContent = completedTasks;
-            document.getElementById('pending-tasks').textContent = pendingTasks;
         }
 
         // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
@@ -1178,15 +1567,67 @@
             });
         }
 
-        function closeModal() {
-            document.getElementById('view-task-modal').classList.remove('active');
+        function viewImage(dataUrl) {
+            document.getElementById('full-image').src = dataUrl;
+            document.getElementById('image-modal').classList.add('active');
         }
 
-        // Закрытие модального окна при клике вне его
+        function openProfileModal() {
+            document.getElementById('profile-modal').classList.add('active');
+            document.getElementById('profile-username').value = currentUser.username;
+            document.getElementById('profile-role').value = currentUser.role;
+            document.getElementById('avatar-preview').src = 
+                currentUser.avatar || getDefaultAvatar(currentUser.username);
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profile-modal').classList.remove('active');
+        }
+
+        function openAttachmentModal() {
+            document.getElementById('attachment-modal').classList.add('active');
+            selectAttachmentType('image');
+        }
+
+        function closeAttachmentModal() {
+            document.getElementById('attachment-modal').classList.remove('active');
+            document.getElementById('attachment-preview').style.display = 'none';
+            document.getElementById('preview-container').innerHTML = '';
+            document.getElementById('file-input').value = '';
+            document.getElementById('file-info').textContent = '';
+        }
+
+        function setupMessageInput() {
+            const input = document.getElementById('message-input');
+            
+            // Отправка по Enter
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            // Авторазмер
+            input.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            });
+        }
+
+        // Закрытие модальных окон при клике вне их
         document.addEventListener('click', function(event) {
-            const modal = document.getElementById('view-task-modal');
-            if (event.target === modal) {
-                modal.classList.remove('active');
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        });
+
+        // Закрытие по Escape
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.classList.remove('active');
+                });
             }
         });
     </script>
