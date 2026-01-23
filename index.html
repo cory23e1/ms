@@ -983,7 +983,6 @@
                         <!-- Сообщения -->
                     </div>
                     <div class="chat-input-wrapper">
-
                         <div class="attachment-preview" id="attachment-preview">
                             <div class="attachment-info">
                                 <div class="attachment-icon" id="attachment-icon">
@@ -1813,9 +1812,12 @@
                     iconClass = 'fas fa-photo-video';
                 } else if (currentAttachment.type === 'video') {
                     iconClass = 'fas fa-video';
-                } else if (currentAttachment.type.includes('pdf')) {
+                } else if (currentAttachment.name && currentAttachment.name.toLowerCase().includes('.pdf')) {
                     iconClass = 'fas fa-file-pdf';
-                } else if (currentAttachment.type.includes('word') || currentAttachment.type.includes('document')) {
+                } else if (currentAttachment.name && (
+                    currentAttachment.name.toLowerCase().includes('.doc') || 
+                    currentAttachment.name.toLowerCase().includes('.docx')
+                )) {
                     iconClass = 'fas fa-file-word';
                 }
                 
@@ -2399,6 +2401,9 @@
         // ========== ВЛОЖЕНИЯ ==========
         function openAttachmentModal() {
             document.getElementById('attachment-modal').classList.add('active');
+            // Сбрасываем тип вложения при открытии
+            attachmentType = 'image';
+            document.getElementById('file-input').accept = 'image/*';
         }
 
         function closeAttachmentModal() {
@@ -2406,7 +2411,7 @@
             document.getElementById('attachment-preview').style.display = 'none';
             document.getElementById('preview-container').innerHTML = '';
             document.getElementById('file-input').value = '';
-            currentAttachment = null;
+            // НЕ сбрасываем currentAttachment здесь, только в модалке
         }
 
         function selectAttachmentType(type) {
@@ -2419,25 +2424,47 @@
 
         function previewAttachment(file) {
             if (!file) return;
-            
-            if (file.size > 5 * 1024 * 1024) {
-                showAlert('Файл слишком большой! Максимум 5MB', 'error');
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                currentAttachment = {
-                    type: attachmentType,
-                    data: e.target.result,
-                    name: file.name,
-                    size: file.size
-                };
                 
-                updateAttachmentPreview();
-                closeAttachmentModal();
-            };
-            reader.readAsDataURL(file);
+                if (file.size > 5 * 1024 * 1024) {
+                    showAlert('Файл слишком большой! Максимум 5MB', 'error');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentAttachment = {
+                        type: attachmentType,
+                        data: e.target.result,
+                        name: file.name,
+                        size: file.size
+                    };
+                    
+                    // Обновляем предпросмотр в модальном окне
+                    const previewContainer = document.getElementById('preview-container');
+                    if (previewContainer) {
+                        previewContainer.innerHTML = '';
+                        if (attachmentType === 'image' || attachmentType === 'gif') {
+                            previewContainer.innerHTML = `<img src="${e.target.result}" style="max-width: 200px; border-radius: 10px;">`;
+                        } else if (attachmentType === 'video') {
+                            previewContainer.innerHTML = `
+                                <video controls style="max-width: 200px; border-radius: 10px;">
+                                    <source src="${e.target.result}" type="${file.type}">
+                                </video>
+                            `;
+                        } else {
+                            previewContainer.innerHTML = `
+                                <div style="padding: 20px; text-align: center; background: rgba(67, 97, 238, 0.1); border-radius: 10px;">
+                                    <i class="fas fa-file fa-2x"></i>
+                                    <div style="margin-top: 10px;">${file.name}</div>
+                                </div>
+                            `;
+                        }
+                        
+                        // Показываем блок предпросмотра
+                        document.getElementById('attachment-preview').style.display = 'block';
+                    }
+                };
+                reader.readAsDataURL(file);
         }
 
         function attachFile() {
@@ -2446,8 +2473,14 @@
                 return;
             }
             
+            // Обновляем предпросмотр над полем ввода сообщения
+            updateAttachmentPreview();
+            
             closeAttachmentModal();
             showAlert('Файл прикреплен!', 'success');
+            
+            // Фокусируемся на поле ввода сообщения
+            document.getElementById('message-input').focus();
         }
 
         // ========== ПРОФИЛЬ ==========
@@ -2559,8 +2592,8 @@
 
         function setupEventListeners() {
             // Отправка сообщения по Enter
-            document.getElementById('message-input').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
+    document.getElementById('message-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     sendMessage();
                 }
@@ -2571,7 +2604,14 @@
                 this.style.height = 'auto';
                 this.style.height = (this.scrollHeight) + 'px';
             });
-
+            
+            // Обработка выбора файла в модалке
+            document.getElementById('file-input').addEventListener('change', function(e) {
+                if (e.target.files && e.target.files[0]) {
+                    previewAttachment(e.target.files[0]);
+                }
+            });
+            
             // Закрытие модальных окон при клике вне их
             document.addEventListener('click', function(event) {
                 if (event.target.classList.contains('modal')) {
