@@ -707,58 +707,144 @@
         }
 
         /* ========== СТИЛИ ДЛЯ ВКЛАДКИ МЕРОПРИЯТИЙ ========== */
-        .events-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
         .event-card {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
-            padding: 20px;
+            padding: 0;
             cursor: pointer;
             transition: all 0.3s;
             border: 1px solid transparent;
+            overflow: hidden;
+            position: relative;
         }
-
+        
         .event-card:hover {
             transform: translateY(-5px);
             border-color: var(--primary);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
-
-        .event-icon {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            margin-bottom: 15px;
+        
+        .event-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
         }
-
+        
+        .event-content {
+            padding: 20px;
+        }
+        
         .event-title {
             font-size: 18px;
             font-weight: 600;
             margin-bottom: 10px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
-
+        
         .event-description {
             font-size: 14px;
             color: rgba(255, 255, 255, 0.7);
             margin-bottom: 15px;
             line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
-
+        
         .event-meta {
             display: flex;
             justify-content: space-between;
             font-size: 12px;
             color: var(--gray);
+            margin-top: 15px;
         }
+        
+        .event-date {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--success);
+        }
+        
+        .event-location {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .event-participants {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .participant-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid var(--dark);
+            object-fit: cover;
+        }
+        
+        .participant-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            width: 60px;
+        }
+        
+        .participant-name {
+            font-size: 11px;
+            margin-top: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        
+        .participant-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 5px;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+        
+        .participant-checkbox:hover {
+            background: rgba(67, 97, 238, 0.1);
+        }
+        
+        .participant-checkbox input[type="checkbox"] {
+            cursor: pointer;
+        }
+        
+        .status-badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .status-upcoming { background: var(--primary); color: white; }
+        .status-ongoing { background: var(--success); color: white; }
+        .status-completed { background: var(--gray); color: white; }
+        .status-cancelled { background: var(--danger); color: white; }
 
         /* ========== СТИЛИ ДЛЯ ВКЛАДКИ АДАПТАЦИИ ========== */
         .materials-list {
@@ -1087,18 +1173,72 @@
 
         <!-- ========== ВКЛАДКА МЕРОПРИЯТИЙ ========== -->
         <div class="tab-content" id="events-tab">
-            <h2 class="mb-20"><i class="fas fa-calendar-alt"></i> Мероприятия</h2>
-            
-            <div class="events-grid" id="events-list">
-                <!-- Мероприятия загружаются динамически -->
-                <div class="event-card">
-                    <div class="event-icon">
-                        <i class="fas fa-calendar-plus"></i>
+        <!-- Форма создания мероприятия (только для админа) -->
+            <div class="create-task-form" id="create-event-form" style="display: none;">
+                <h2 class="mb-20"><i class="fas fa-calendar-plus"></i> Создать мероприятие</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">Название мероприятия *</label>
+                    <input type="text" class="form-control" id="event-title" placeholder="Введите название мероприятия">
+                </div>
+        
+                <div class="form-group">
+                    <label class="form-label">Описание *</label>
+                    <textarea class="form-control" id="event-description" placeholder="Подробное описание мероприятия..." rows="4"></textarea>
+                </div>
+        
+                <div class="form-group">
+                    <label class="form-label">Дата и время *</label>
+                    <input type="datetime-local" class="form-control" id="event-datetime">
+                </div>
+        
+                <div class="form-group">
+                    <label class="form-label">Место проведения</label>
+                    <input type="text" class="form-control" id="event-location" placeholder="Например: Онлайн, офис, конференц-зал">
+                </div>
+        
+                <div class="form-group">
+                    <label class="form-label">Обложка мероприятия</label>
+                    <input type="file" class="form-control" id="event-image" accept="image/*">
+                    <small style="color: rgba(255,255,255,0.5);">Рекомендуемый размер: 1200x600px</small>
+                </div>
+        
+                <div class="form-group">
+                    <label class="form-label">Выберите участников</label>
+                    <div class="participants-select" id="event-participants" style="max-height: 200px; overflow-y: auto; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                        <!-- Участники загружаются динамически -->
                     </div>
-                    <div class="event-title">Нет мероприятий</div>
-                    <div class="event-description">Здесь будут отображаться предстоящие мероприятия</div>
+                </div>
+        
+                <div class="form-group">
+                    <label class="form-label">Предпросмотр обложки:</label>
+                    <div id="event-image-preview" style="margin-top: 10px;">
+                        <img id="event-image-preview-img" style="max-width: 300px; border-radius: 10px; display: none;">
+                    </div>
+                </div>
+        
+                <div class="d-flex gap-10">
+                    <button class="btn btn-primary" onclick="createEvent()">
+                        <i class="fas fa-plus"></i> Создать мероприятие
+                    </button>
+                    <button class="btn" onclick="clearEventForm()" style="background: rgba(255,255,255,0.1); color: white;">
+                        <i class="fas fa-times"></i> Очистить
+                    </button>
                 </div>
             </div>
+    
+        <!-- Заголовок и кнопка создания -->
+        <div class="d-flex justify-between align-center mb-20">
+            <h2><i class="fas fa-calendar-alt"></i> Мероприятия</h2>
+            <button class="btn btn-primary" id="show-create-event-btn" onclick="toggleCreateEventForm()">
+                <i class="fas fa-plus"></i> Создать мероприятие
+            </button>
+        </div>
+    
+        <!-- Список мероприятий -->
+        <div class="events-grid" id="events-list">
+            <!-- Мероприятия загружаются динамически -->
+        </div>
         </div>
 
         <!-- ========== ВКЛАДКА АДАПТАЦИИ ========== -->
@@ -1254,6 +1394,51 @@
         </div>
     </div>
 
+    <!-- Модальное окно просмотра мероприятия -->
+    <div class="modal" id="event-modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div style="position: relative;">
+                <img id="event-modal-image" src="" alt="Обложка мероприятия" 
+                     style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
+                <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 5px;"
+                     id="event-modal-status"></div>
+            </div>
+            
+            <h2 id="event-modal-title" class="mb-10"></h2>
+            
+            <div class="mb-15" style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-calendar" style="color: var(--primary);"></i>
+                    <span id="event-modal-date"></span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-map-marker-alt" style="color: var(--warning);"></i>
+                    <span id="event-modal-location"></span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    <i class="fas fa-users" style="color: var(--success);"></i>
+                    <span id="event-modal-participants-count"></span>
+                </div>
+            </div>
+            
+            <div class="mb-20">
+                <h4><i class="fas fa-align-left"></i> Описание</h4>
+                <p id="event-modal-description" style="line-height: 1.6; margin-top: 10px;"></p>
+            </div>
+            
+            <div class="mb-20">
+                <h4><i class="fas fa-user-friends"></i> Участники</h4>
+                <div id="event-modal-participants" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;"></div>
+            </div>
+            
+            <div id="event-modal-actions" class="d-flex gap-10"></div>
+            
+            <button class="btn w-100 mt-20" onclick="closeEventModal()" style="background: rgba(255,255,255,0.1); color: white;">
+                <i class="fas fa-times"></i> Закрыть
+            </button>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
@@ -1284,6 +1469,8 @@
         let currentUsersTab = 'online';
         let statusUpdateInterval = null;
         let userStatusListeners = [];
+        let events = {};
+        let eventImage = null;
 
         // ========== ИНИЦИАЛИЗАЦИЯ ==========
         document.addEventListener('DOMContentLoaded', function() {
@@ -1310,6 +1497,8 @@
             
             // Проверка прав администратора
             checkAdminStatus();
+
+            initEvents(); // Добавить эту строку
         });
 
          // ========== СИСТЕМА СТАТУСОВ (WebSocket-подобная) ==========
@@ -2002,6 +2191,7 @@
         function initTasks() {
             loadTasksData();
             setupTaskFileUpload();
+            loadEvents();
         }
 
         function loadTasksData() {
@@ -2335,34 +2525,420 @@
 
         // ========== МЕРОПРИЯТИЯ ==========
         function loadEvents() {
-            // Заглушка - можно расширить функционал
+            database.ref('events').on('value', snapshot => {
+                events = snapshot.val() || {};
+                displayEvents();
+                loadEventParticipants(); // Загружаем участников для формы
+            });
+        }
+
+        function displayEvents() {
             const eventsList = document.getElementById('events-list');
-            eventsList.innerHTML = `
-                <div class="event-card">
-                    <div class="event-icon">
-                        <i class="fas fa-calendar-plus"></i>
+            if (!eventsList) return;
+            
+            eventsList.innerHTML = '';
+            
+            const eventsArray = Object.entries(events).map(([id, event]) => ({ id, ...event }));
+            
+            // Сортируем по дате (ближайшие сверху)
+            eventsArray.sort((a, b) => (a.datetime || 0) - (b.datetime || 0));
+            
+            if (eventsArray.length === 0) {
+                eventsList.innerHTML = `
+                    <div class="event-card" style="text-align: center; padding: 40px;">
+                        <div class="event-icon">
+                            <i class="fas fa-calendar-plus"></i>
+                        </div>
+                        <div class="event-title">Нет мероприятий</div>
+                        <div class="event-description">Создайте первое мероприятие или подождите, пока администратор добавит новые</div>
                     </div>
-                    <div class="event-title">Вебинар по адаптации</div>
-                    <div class="event-description">Присоединяйтесь к нашему вебинару для новых сотрудников</div>
+                `;
+                return;
+            }
+            
+            eventsArray.forEach(event => {
+                const eventCard = createEventCard(event);
+                eventsList.appendChild(eventCard);
+            });
+        }
+
+        function createEventCard(event) {
+            const now = Date.now();
+            const eventTime = event.datetime || 0;
+            const isPast = eventTime < now;
+            const isUpcoming = eventTime > now + 3600000; // Более чем через час
+            const isOngoing = !isPast && !isUpcoming;
+            
+            let status = 'upcoming';
+            let statusText = 'Предстоящее';
+            
+            if (isPast) {
+                status = 'completed';
+                statusText = 'Завершено';
+            } else if (isOngoing) {
+                status = 'ongoing';
+                statusText = 'Сейчас';
+            }
+            
+            const eventDate = new Date(eventTime);
+            const formattedDate = eventDate.toLocaleDateString('ru-RU', {
+                day: 'numeric',
+                month: 'short',
+                year: eventDate.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
+            }) + ' ' + eventDate.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
+            
+            const card = document.createElement('div');
+            card.className = 'event-card';
+            card.onclick = () => viewEvent(event.id);
+            
+            const participantsCount = event.participants ? Object.keys(event.participants).length : 0;
+            
+            card.innerHTML = `
+                ${event.image ? `<img src="${event.image}" alt="${event.title}" class="event-image">` : 
+                  `<div class="event-image" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-calendar-alt fa-2x"></i>
+                   </div>`}
+                
+                <div class="event-content">
+                    <div class="event-participants">
+                        <i class="fas fa-users"></i> ${participantsCount}
+                    </div>
+                    
+                    <h3 class="event-title">${event.title}</h3>
+                    <div class="event-description">${event.description || 'Нет описания'}</div>
+                    
                     <div class="event-meta">
-                        <span><i class="far fa-clock"></i> Завтра, 15:00</span>
-                        <span><i class="fas fa-users"></i> 24 участника</span>
+                        <div class="event-date">
+                            <i class="far fa-calendar"></i>
+                            ${formattedDate}
+                        </div>
+                        ${event.location ? `<div class="event-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            ${event.location}
+                        </div>` : ''}
                     </div>
-                </div>
-                <div class="event-card">
-                    <div class="event-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="event-title">Team Building</div>
-                    <div class="event-description">Корпоративное мероприятие для сплочения команды</div>
-                    <div class="event-meta">
-                        <span><i class="far fa-clock"></i> 25.12.2024</span>
-                        <span><i class="fas fa-users"></i> 50 участников</span>
+                    
+                    <div class="status-badge status-${status}" style="margin-top: 10px;">
+                        ${statusText}
                     </div>
                 </div>
             `;
+            
+            return card;
         }
 
+        function loadEventParticipants() {
+            const participantsDiv = document.getElementById('event-participants');
+            if (!participantsDiv) return;
+            
+            participantsDiv.innerHTML = '';
+            
+            Object.values(users).forEach(user => {
+                if (user.id === currentUser.id) return; // Не показываем себя
+                
+                const participantDiv = document.createElement('div');
+                participantDiv.className = 'participant-checkbox';
+                
+                participantDiv.innerHTML = `
+                    <input type="checkbox" id="participant-${user.id}" value="${user.id}">
+                    <img src="${user.avatar || getDefaultAvatar(user.username)}" 
+                         alt="${user.username}" 
+                         style="width: 24px; height: 24px; border-radius: 50%;">
+                    <span style="font-size: 14px;">${user.username}</span>
+                    <small style="color: rgba(255,255,255,0.5); margin-left: auto;">${user.position || ''}</small>
+                `;
+                
+                participantsDiv.appendChild(participantDiv);
+            });
+        }
+        
+        function toggleCreateEventForm() {
+            const form = document.getElementById('create-event-form');
+            const btn = document.getElementById('show-create-event-btn');
+            
+            if (form.style.display === 'none') {
+                form.style.display = 'block';
+                btn.innerHTML = '<i class="fas fa-times"></i> Отмена';
+                loadEventParticipants();
+                
+                // Устанавливаем минимальную дату (сегодня)
+                const now = new Date();
+                const minDate = now.toISOString().slice(0, 16);
+                document.getElementById('event-datetime').min = minDate;
+                
+                // Предустанавливаем дату (через 2 часа)
+                const futureDate = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+                document.getElementById('event-datetime').value = futureDate.toISOString().slice(0, 16);
+                
+            } else {
+                form.style.display = 'none';
+                btn.innerHTML = '<i class="fas fa-plus"></i> Создать мероприятие';
+                clearEventForm();
+            }
+        }
+        
+        function clearEventForm() {
+            document.getElementById('event-title').value = '';
+            document.getElementById('event-description').value = '';
+            document.getElementById('event-datetime').value = '';
+            document.getElementById('event-location').value = '';
+            document.getElementById('event-image').value = '';
+            document.getElementById('event-image-preview-img').style.display = 'none';
+            eventImage = null;
+            
+            // Сбрасываем чекбоксы участников
+            document.querySelectorAll('#event-participants input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+        }
+
+        // Обработка загрузки изображения мероприятия
+        document.getElementById('event-image')?.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            if (file.size > 5 * 1024 * 1024) {
+                showAlert('Изображение слишком большое! Максимум 5MB', 'error');
+                this.value = '';
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                eventImage = e.target.result;
+                const preview = document.getElementById('event-image-preview-img');
+                preview.src = eventImage;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        });
+        
+        function createEvent() {
+            if (!isAdmin) {
+                showAlert('Ошибка доступа', 'error', 'Только администратор может создавать мероприятия!');
+                return;
+            }
+            
+            const title = document.getElementById('event-title').value.trim();
+            const description = document.getElementById('event-description').value.trim();
+            const datetimeInput = document.getElementById('event-datetime').value;
+            const location = document.getElementById('event-location').value.trim();
+            
+            if (!title || !description || !datetimeInput) {
+                showAlert('Ошибка', 'warning', 'Заполните все обязательные поля!');
+                return;
+            }
+            
+            const datetime = new Date(datetimeInput).getTime();
+            if (isNaN(datetime)) {
+                showAlert('Ошибка', 'warning', 'Некорректная дата и время!');
+                return;
+            }
+            
+            // Собираем выбранных участников
+            const selectedParticipants = [];
+            document.querySelectorAll('#event-participants input[type="checkbox"]:checked').forEach(cb => {
+                selectedParticipants.push(cb.value);
+            });
+            
+            // Добавляем создателя автоматически
+            if (!selectedParticipants.includes(currentUser.id)) {
+                selectedParticipants.push(currentUser.id);
+            }
+            
+            // Преобразуем в объект для Firebase
+            const participantsObj = {};
+            selectedParticipants.forEach(id => {
+                participantsObj[id] = true;
+            });
+            
+            const eventId = generateId();
+            const eventData = {
+                id: eventId,
+                title: title,
+                description: description,
+                datetime: datetime,
+                location: location || 'Не указано',
+                image: eventImage,
+                createdBy: currentUser.id,
+                createdByName: currentUser.username,
+                createdAt: Date.now(),
+                participants: participantsObj,
+                status: 'upcoming'
+            };
+            
+            database.ref('events/' + eventId).set(eventData)
+                .then(() => {
+                    showAlert('Успех!', 'success', 'Мероприятие создано!');
+                    clearEventForm();
+                    toggleCreateEventForm();
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    showAlert('Ошибка', 'error', 'Не удалось создать мероприятие');
+                });
+        }
+        
+        function viewEvent(eventId) {
+            const event = events[eventId];
+            if (!event) return;
+            
+            const modal = document.getElementById('event-modal');
+            const now = Date.now();
+            const isParticipant = event.participants && event.participants[currentUser.id];
+            
+            // Обложка
+            const image = document.getElementById('event-modal-image');
+            if (event.image) {
+                image.src = event.image;
+            } else {
+                image.style.display = 'none';
+            }
+            
+            // Статус
+            const status = document.getElementById('event-modal-status');
+            let statusText = 'Предстоящее';
+            let statusClass = 'status-upcoming';
+            
+            if (event.datetime < now) {
+                statusText = 'Завершено';
+                statusClass = 'status-completed';
+            } else if (event.datetime <= now + 3600000) {
+                statusText = 'Сейчас';
+                statusClass = 'status-ongoing';
+            }
+            
+            status.textContent = statusText;
+            status.className = statusClass;
+            
+            // Основная информация
+            document.getElementById('event-modal-title').textContent = event.title;
+            
+            const eventDate = new Date(event.datetime);
+            document.getElementById('event-modal-date').textContent = 
+                eventDate.toLocaleString('ru-RU', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            
+            document.getElementById('event-modal-location').textContent = event.location || 'Место не указано';
+            document.getElementById('event-modal-description').textContent = event.description || 'Нет описания';
+            
+            // Участники
+            const participantsDiv = document.getElementById('event-modal-participants');
+            participantsDiv.innerHTML = '';
+            
+            const participantsCount = event.participants ? Object.keys(event.participants).length : 0;
+            document.getElementById('event-modal-participants-count').textContent = `${participantsCount} участников`;
+            
+            // Показываем аватары участников
+            if (event.participants) {
+                Object.keys(event.participants).forEach(userId => {
+                    const user = users[userId];
+                    if (user) {
+                        const participant = document.createElement('div');
+                        participant.className = 'participant-item';
+                        participant.innerHTML = `
+                            <img src="${user.avatar || getDefaultAvatar(user.username)}" 
+                                 alt="${user.username}" 
+                                 class="participant-avatar"
+                                 title="${user.username}">
+                            <div class="participant-name">${user.username}</div>
+                        `;
+                        participantsDiv.appendChild(participant);
+                    }
+                });
+            }
+            
+            // Кнопки действий
+            const actionsDiv = document.getElementById('event-modal-actions');
+            actionsDiv.innerHTML = '';
+            
+            if (isAdmin) {
+                actionsDiv.innerHTML += `
+                    <button class="btn btn-danger" onclick="deleteEvent('${eventId}')">
+                        <i class="fas fa-trash"></i> Удалить
+                    </button>
+                `;
+            }
+            
+            if (!isParticipant && event.datetime > now) {
+                actionsDiv.innerHTML += `
+                    <button class="btn btn-primary" onclick="joinEvent('${eventId}')">
+                        <i class="fas fa-user-plus"></i> Присоединиться
+                    </button>
+                `;
+            } else if (isParticipant && event.datetime > now) {
+                actionsDiv.innerHTML += `
+                    <button class="btn btn-warning" onclick="leaveEvent('${eventId}')">
+                        <i class="fas fa-user-minus"></i> Покинуть
+                    </button>
+                `;
+            }
+            
+            modal.classList.add('active');
+        }
+        
+        function closeEventModal() {
+            document.getElementById('event-modal').classList.remove('active');
+        }
+        
+        function joinEvent(eventId) {
+            if (!currentUser) return;
+            
+            database.ref(`events/${eventId}/participants/${currentUser.id}`).set(true)
+                .then(() => {
+                    showAlert('Успех!', 'success', 'Вы присоединились к мероприятию');
+                    closeEventModal();
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    showAlert('Ошибка', 'error', 'Не удалось присоединиться');
+                });
+        }
+        
+        function leaveEvent(eventId) {
+            if (!currentUser) return;
+            
+            database.ref(`events/${eventId}/participants/${currentUser.id}`).remove()
+                .then(() => {
+                    showAlert('Успех!', 'success', 'Вы покинули мероприятие');
+                    closeEventModal();
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    showAlert('Ошибка', 'error', 'Не удалось покинуть мероприятие');
+                });
+        }
+        
+        function deleteEvent(eventId) {
+            if (!isAdmin) return;
+            
+            Swal.fire({
+                title: 'Удалить мероприятие?',
+                text: 'Все данные о мероприятии будут удалены',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Удалить',
+                cancelButtonText: 'Отмена'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    database.ref('events/' + eventId).remove()
+                        .then(() => {
+                            showAlert('Мероприятие удалено!', 'success');
+                            closeEventModal();
+                        })
+                        .catch(error => {
+                            console.error('Ошибка:', error);
+                            showAlert('Ошибка', 'error', 'Не удалось удалить мероприятие');
+                        });
+                }
+            });
+        }
+        
         // ========== АДАПТАЦИЯ ==========
         function loadMaterials() {
             // Заглушка - можно расширить функционал
