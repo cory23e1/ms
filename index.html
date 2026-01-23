@@ -1501,6 +1501,8 @@
             initEvents(); // Добавить эту строку
         });
 
+        
+
          // ========== СИСТЕМА СТАТУСОВ (WebSocket-подобная) ==========
         function initLightweightStatusSystem() {
             // Устанавливаем статус при загрузке
@@ -2199,6 +2201,10 @@
                 tasks = snapshot.val() || {};
                 displayTasks();
             });
+        }
+
+        function initEvents() {
+            loadEvents();
         }
 
         function displayTasks() {
