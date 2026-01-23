@@ -1283,6 +1283,7 @@
         let attachmentType = 'image';
         let taskFiles = [];
         let currentUsersTab = 'online';
+        let statusUpdateInterval = null;
         let userStatusListeners = [];
 
         // ========== ИНИЦИАЛИЗАЦИЯ ==========
@@ -1313,31 +1314,70 @@
         });
 
          // ========== СИСТЕМА СТАТУСОВ (WebSocket-подобная) ==========
-        function initStatusSystem() {
-            // Слушаем изменения статусов всех пользователей
-            const usersRef = database.ref('users');
+        function initLightweightStatusSystem() {
+            // Устанавливаем статус при загрузке
+            updateUserStatusInFirebase();
             
-            usersRef.on('value', (snapshot) => {
-                users = snapshot.val() || {};
-                updateUsersList();
-                updateOnlineCount();
-                
-                // Обновляем статус текущего пользователя в реальном времени
-                if (currentUser && currentUser.id) {
-                    const userRef = database.ref('users/' + currentUser.id);
-                    
-                    // Обновляем информацию о пользователе
-                    userRef.update({
-                        lastSeen: Date.now(),
-                        status: currentUser.status || 'online'
-                    }).catch(error => {
-                        console.error('Ошибка обновления статуса:', error);
-                    });
+            // Обновляем статус каждые 60 секунд (вместо 15)
+            statusUpdateInterval = setInterval(() => {
+                updateUserStatusInFirebase();
+            }, 60000);
+            
+            // Обновляем статус при изменении видимости страницы
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') {
+                    setUserStatus('away');
+                } else {
+                    setUserStatus('online');
                 }
             });
+            
+            // Устанавливаем статус offline при закрытии страницы
+            window.addEventListener('beforeunload', () => {
+                setUserStatus('offline');
+            });
+        }
 
-            // Отслеживаем статус текущего пользователя
-            trackUserStatus();
+        function setUserStatus(status) {
+            if (!currentUser) return;
+            
+            currentUser.status = status;
+            currentUser.lastSeen = Date.now();
+            
+            updateCurrentUserStatus();
+            
+            // Немедленно обновляем в Firebase только при изменении статуса
+            if (currentUser.id) {
+                database.ref('users/' + currentUser.id).update({
+                    status: status,
+                    lastSeen: Date.now()
+                }).catch(error => {
+                    console.error('Ошибка изменения статуса:', error);
+                });
+            }
+            
+            if (status !== 'offline') {
+                saveUserProfile();
+            }
+        }
+
+        function updateUserStatusInFirebase() {
+            if (!currentUser || !currentUser.id) return;
+            
+            const userData = {
+                username: currentUser.username,
+                position: currentUser.position || '',
+                organization: currentUser.organization || '',
+                role: currentUser.role || 'Пользователь',
+                avatar: currentUser.avatar || getDefaultAvatar(currentUser.username),
+                status: currentUser.status || 'online',
+                lastSeen: Date.now()
+            };
+            
+            database.ref('users/' + currentUser.id).update(userData)
+                .catch(error => {
+                    console.error('Ошибка обновления статуса:', error);
+                });
         }
 
         function trackUserStatus() {
@@ -1393,27 +1433,19 @@
         }
 
         function cleanupStatusListeners() {
-            userStatusListeners.forEach(interval => clearInterval(interval));
-            userStatusListeners = [];
+            if (statusUpdateInterval) {
+                clearInterval(statusUpdateInterval);
+                statusUpdateInterval = null;
+            }
+            
+            // Отписываемся от слушателей Firebase
+            if (database.ref('users').off) {
+                database.ref('users').off();
+            }
         }
 
         function changeStatus(newStatus) {
-            if (!currentUser) return;
-            
-            currentUser.status = newStatus;
-            updateCurrentUserStatus();
-            saveUserProfile();
-            
-            // Обновляем в Firebase
-            if (currentUser.id) {
-                database.ref('users/' + currentUser.id).update({
-                    status: newStatus,
-                    lastSeen: Date.now()
-                }).catch(error => {
-                    console.error('Ошибка изменения статуса:', error);
-                });
-            }
-            
+            setUserStatus(newStatus);
             showAlert(`Статус изменен на: ${getStatusText(newStatus)}`, 'success');
         }
 
@@ -1491,7 +1523,7 @@
                     username: 'Гость_' + Math.floor(Math.random() * 1000),
                     position: '',
                     organization: '',
-                    role: 'Пользователь',    
+                    role: 'Пользователь',
                     avatar: null,
                     points: 0,
                     completedTasks: [],
@@ -1501,7 +1533,7 @@
                 };
                 saveUserProfile();
             }
-            initStatusSystem();
+            initLightweightStatusSystem();
         }
 
         function saveUserProfile() {
@@ -1620,87 +1652,128 @@
         }
 
         function loadUsers() {
-            database.ref('users').on('value', snapshot => {
+            // Загружаем пользователей только один раз при инициализации
+            database.ref('users').once('value').then(snapshot => {
                 users = snapshot.val() || {};
                 updateUsersList();
                 updateOnlineCount();
+                
+                // Затем подписываемся на изменения с ограничением частоты
+                setupUsersListener();
+            }).catch(error => {
+                console.error('Ошибка загрузки пользователей:', error);
+            });
+        }
+
+        function setupUsersListener() {
+            // Используем throttle для уменьшения частоты обновлений
+            let lastUpdate = 0;
+            const UPDATE_DELAY = 2000; // 2 секунды
+            
+            database.ref('users').on('value', (snapshot) => {
+                const now = Date.now();
+                if (now - lastUpdate > UPDATE_DELAY) {
+                    users = snapshot.val() || {};
+                    updateUsersList();
+                    updateOnlineCount();
+                    lastUpdate = now;
+                }
             });
         }
 
         function updateUsersList() {
             const usersList = document.getElementById('users-list');
-            if (!usersList) return;
-            
-            usersList.innerHTML = '';
-            
-            let filteredUsers = Object.values(users);
-            
-            // Фильтрация по выбранной вкладке
-            if (currentUsersTab === 'online') {
-                filteredUsers = filteredUsers.filter(user => user.status === 'online');
-            } else if (currentUsersTab === 'away') {
-                filteredUsers = filteredUsers.filter(user => user.status === 'away');
-            } else if (currentUsersTab === 'busy') {
-                filteredUsers = filteredUsers.filter(user => user.status === 'busy');
-            }
-            // 'all' - все пользователи
-            
-            // Сортировка: онлайн сверху, потом по активности
-            filteredUsers.sort((a, b) => {
-                if (a.status === 'online' && b.status !== 'online') return -1;
-                if (a.status !== 'online' && b.status === 'online') return 1;
-                return (b.lastSeen || 0) - (a.lastSeen || 0);
-            });
-            
-            if (filteredUsers.length === 0) {
-                usersList.innerHTML = `
-                    <div class="loading-status">
-                        <i class="fas fa-user-slash"></i> Нет пользователей
-                    </div>
-                `;
-                return;
-            }
-            
-            filteredUsers.forEach(user => {
-                const userCard = document.createElement('div');
-                userCard.className = 'user-card';
-                userCard.onclick = () => startPrivateChat(user.id);
+                if (!usersList) return;
                 
-                const position = user.position || user.role || 'Пользователь';
-                const organization = user.organization ? ` • ${user.organization}` : '';
-                const lastSeen = user.status !== 'online' ? formatLastSeen(user.lastSeen) : '';
+                usersList.innerHTML = '';
                 
-                userCard.innerHTML = `
-                    <div style="position: relative;">
-                        <img src="${user.avatar || getDefaultAvatar(user.username)}" 
-                             alt="${user.username}" 
-                             class="user-avatar-sm">
-                        <span class="status-badge ${user.status || 'offline'}"></span>
-                    </div>
-                    <div class="user-details">
-                        <div class="user-details-name">
-                            ${user.username}
-                            ${user.id === currentUser?.id ? ' (Вы)' : ''}
+                let filteredUsers = Object.values(users);
+                
+                // Фильтрация
+                if (currentUsersTab === 'online') {
+                    filteredUsers = filteredUsers.filter(user => user.status === 'online');
+                } else if (currentUsersTab === 'away') {
+                    filteredUsers = filteredUsers.filter(user => user.status === 'away');
+                } else if (currentUsersTab === 'busy') {
+                    filteredUsers = filteredUsers.filter(user => user.status === 'busy');
+                }
+                
+                if (filteredUsers.length === 0) {
+                    usersList.innerHTML = `
+                        <div class="loading-status">
+                            <i class="fas fa-user-slash"></i> Нет пользователей
                         </div>
-                        <div class="user-details-role">${position}${organization}</div>
-                        ${lastSeen ? `<div class="last-seen">Был(а) ${lastSeen}</div>` : ''}
-                    </div>
-                `;
+                    `;
+                    return;
+                }
                 
-                usersList.appendChild(userCard);
-            });
+                // Создаем только видимые элементы (virtual DOM упрощенный)
+                const fragment = document.createDocumentFragment();
+                const maxUsers = 50; // Ограничиваем количество отображаемых пользователей
+                
+                filteredUsers.slice(0, maxUsers).forEach(user => {
+                    const userCard = createUserCardElement(user);
+                    fragment.appendChild(userCard);
+                });
+                
+                usersList.appendChild(fragment);
+                
+                // Если пользователей больше максимума, показываем уведомление
+                if (filteredUsers.length > maxUsers) {
+                    const moreCard = document.createElement('div');
+                    moreCard.className = 'user-card';
+                    moreCard.style.textAlign = 'center';
+                    moreCard.style.color = 'rgba(255,255,255,0.5)';
+                    moreCard.innerHTML = `<i class="fas fa-ellipsis-h"></i> Еще ${filteredUsers.length - maxUsers} пользователей`;
+                    usersList.appendChild(moreCard);
+                }
+        }
+
+        function createUserCardElement(user) {
+            const userCard = document.createElement('div');
+            userCard.className = 'user-card';
+            
+            const position = user.position || user.role || 'Пользователь';
+            const organization = user.organization ? ` • ${user.organization}` : '';
+            const lastSeen = user.status !== 'online' ? formatLastSeen(user.lastSeen) : '';
+            
+            userCard.innerHTML = `
+                <div style="position: relative;">
+                    <img src="${user.avatar || getDefaultAvatar(user.username)}" 
+                         alt="${user.username}" 
+                         class="user-avatar-sm">
+                    <span class="status-badge ${user.status || 'offline'}"></span>
+                </div>
+                <div class="user-details">
+                    <div class="user-details-name">
+                        ${user.username}
+                        ${user.id === currentUser?.id ? ' (Вы)' : ''}
+                    </div>
+                    <div class="user-details-role">${position}${organization}</div>
+                    ${lastSeen ? `<div class="last-seen">Был(а) ${lastSeen}</div>` : ''}
+                </div>
+            `;
+            
+            return userCard;
         }
 
         function updateOnlineCount() {
+            if (!users || Object.keys(users).length === 0) return;
+            
             const onlineUsers = Object.values(users).filter(user => user.status === 'online');
-            const allUsers = Object.values(users).length;
+            const allUsers = Object.keys(users).length;
             
-            document.getElementById('online-count').textContent = onlineUsers.length;
-            document.getElementById('online-tab-count').textContent = onlineUsers.length;
-            document.getElementById('all-tab-count').textContent = allUsers;
+            const onlineCountElement = document.getElementById('online-count');
+            const onlineTabCountElement = document.getElementById('online-tab-count');
+            const allTabCountElement = document.getElementById('all-tab-count');
+            const chatSubtitleElement = document.getElementById('chat-subtitle');
             
-            document.getElementById('chat-subtitle').textContent = 
-                `${onlineUsers.length} из ${allUsers} участников онлайн`;
+            if (onlineCountElement) onlineCountElement.textContent = onlineUsers.length;
+            if (onlineTabCountElement) onlineTabCountElement.textContent = onlineUsers.length;
+            if (allTabCountElement) allTabCountElement.textContent = allUsers;
+            if (chatSubtitleElement) {
+                chatSubtitleElement.textContent = `${onlineUsers.length} из ${allUsers} участников онлайн`;
+            }
         }
 
         function showUsersTab(tab) {
