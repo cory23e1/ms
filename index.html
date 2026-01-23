@@ -2581,52 +2581,74 @@
         }
 
         function displayEvents() {
+            console.log('displayEvents вызвана, events:', events);
+    
             const eventsList = document.getElementById('events-list');
             if (!eventsList) {
-                console.error('Элемент events-list не найден');
+                console.error('Элемент events-list не найден! Проверьте HTML структуру.');
                 return;
             }
             
+            console.log('eventsList найден:', eventsList);
+            
             eventsList.innerHTML = '';
             
-            const eventsArray = Object.entries(events).map(([id, event]) => ({ id, ...event }));
+            // Преобразуем объект в массив
+            const eventsArray = [];
+            for (const id in events) {
+                if (events.hasOwnProperty(id)) {
+                    eventsArray.push({
+                        id: id,
+                        ...events[id]
+                    });
+                }
+            }
+            
+            console.log('eventsArray:', eventsArray);
             
             // Сортируем по дате (ближайшие сверху)
             eventsArray.sort((a, b) => (a.datetime || 0) - (b.datetime || 0));
             
             if (eventsArray.length === 0) {
+                console.log('Нет мероприятий для отображения');
                 eventsList.innerHTML = `
-                    <div class="event-card" style="text-align: center; padding: 40px;">
+                    <div class="event-card" style="text-align: center; padding: 40px; grid-column: 1 / -1;">
                         <div style="font-size: 48px; color: rgba(255,255,255,0.2); margin-bottom: 20px;">
                             <i class="fas fa-calendar-plus"></i>
                         </div>
-                        <div class="event-title">Нет мероприятий</div>
-                        <div class="event-description">Создайте первое мероприятие или подождите, пока администратор добавит новые</div>
+                        <div style="font-size: 20px; font-weight: 600; margin-bottom: 10px;">Нет мероприятий</div>
+                        <div style="color: rgba(255,255,255,0.7); margin-bottom: 20px;">
+                            Создайте первое мероприятие
+                        </div>
                     </div>
                 `;
                 return;
             }
             
-            eventsArray.forEach(event => {
+            console.log('Создаю карточки для', eventsArray.length, 'мероприятий');
+            
+            eventsArray.forEach((event, index) => {
+                console.log('Создаю карточку для мероприятия', index + 1, ':', event.title);
                 const eventCard = createEventCard(event);
                 eventsList.appendChild(eventCard);
             });
+            
+            console.log('Отображение мероприятий завершено');
         }
 
         function createEventCard(event) {
+            console.log('createEventCard для:', event.title);
+            
             const now = Date.now();
             const eventTime = event.datetime || 0;
-            const isPast = eventTime < now;
-            const isUpcoming = eventTime > now + 3600000; // Более чем через час
-            const isOngoing = !isPast && !isUpcoming;
             
             let status = 'upcoming';
             let statusText = 'Предстоящее';
             
-            if (isPast) {
+            if (eventTime < now) {
                 status = 'completed';
                 statusText = 'Завершено';
-            } else if (isOngoing) {
+            } else if (eventTime <= now + 3600000) {
                 status = 'ongoing';
                 statusText = 'Сейчас';
             }
@@ -2634,43 +2656,45 @@
             const eventDate = new Date(eventTime);
             const formattedDate = eventDate.toLocaleDateString('ru-RU', {
                 day: 'numeric',
-                month: 'short',
-                year: eventDate.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
+                month: 'short'
             }) + ' ' + eventDate.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
-            
-            const card = document.createElement('div');
-            card.className = 'event-card';
-            card.onclick = () => viewEvent(event.id);
             
             const participantsCount = event.participants ? Object.keys(event.participants).length : 0;
             
+            const card = document.createElement('div');
+            card.className = 'event-card';
+            card.setAttribute('data-event-id', event.id);
+            card.style.cursor = 'pointer';
+            card.onclick = function() {
+                console.log('Клик по мероприятию:', event.id);
+                viewEvent(event.id);
+            };
+            
+            // Простой HTML для тестирования
             card.innerHTML = `
-                ${event.image ? `<img src="${event.image}" alt="${event.title}" class="event-image">` : 
-                  `<div class="event-image" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-calendar-alt fa-2x"></i>
-                   </div>`}
-                
-                <div class="event-content">
-                    <div class="event-participants">
-                        <i class="fas fa-users"></i> ${participantsCount}
-                    </div>
-                    
-                    <h3 class="event-title">${event.title}</h3>
-                    <div class="event-description">${event.description || 'Нет описания'}</div>
-                    
-                    <div class="event-meta">
-                        <div class="event-date">
-                            <i class="far fa-calendar"></i>
-                            ${formattedDate}
+                <div style="position: relative;">
+                    <div style="width: 100%; height: 150px; background: linear-gradient(135deg, #4361ee, #3a0ca3); 
+                                border-radius: 15px 15px 0 0; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-calendar-alt fa-2x" style="color: rgba(255,255,255,0.5);"></i>
+                        <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); 
+                                    color: white; padding: 5px 10px; border-radius: 10px; font-size: 12px;">
+                            <i class="fas fa-users"></i> ${participantsCount}
                         </div>
-                        ${event.location ? `<div class="event-location">
-                            <i class="fas fa-map-marker-alt"></i>
-                            ${event.location}
-                        </div>` : ''}
                     </div>
-                    
-                    <div class="status-badge status-${status}" style="margin-top: 10px;">
-                        ${statusText}
+                    <div style="padding: 15px;">
+                        <h3 style="margin: 0 0 10px 0; font-size: 16px; color: white;">${event.title || 'Без названия'}</h3>
+                        <p style="margin: 0 0 10px 0; color: rgba(255,255,255,0.7); font-size: 14px;">
+                            ${(event.description || 'Нет описания').substring(0, 100)}${(event.description || '').length > 100 ? '...' : ''}
+                        </p>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="color: #4cc9f0; font-size: 12px;">
+                                <i class="far fa-calendar"></i> ${formattedDate}
+                            </div>
+                            <span style="background: ${status === 'upcoming' ? '#4361ee' : status === 'ongoing' ? '#4cc9f0' : '#6c757d'}; 
+                                   color: white; padding: 3px 8px; border-radius: 10px; font-size: 11px;">
+                                ${statusText}
+                            </span>
+                        </div>
                     </div>
                 </div>
             `;
