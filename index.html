@@ -14,6 +14,73 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     
     <style>
+        /* Дополнительные стили для отображения прикрепленного файла */
+        .attachment-preview {
+            background: rgba(67, 97, 238, 0.1);
+            border: 2px solid var(--primary);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: none;
+        }
+        
+        .attachment-preview.visible {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .attachment-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+        
+        .attachment-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(67, 97, 238, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .attachment-details {
+            flex: 1;
+        }
+        
+        .attachment-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+        
+        .attachment-size {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .remove-attachment {
+            background: rgba(230, 57, 70, 0.2);
+            color: var(--danger);
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .chat-input-wrapper {
+            display: flex;
+            flex-direction: column;
+        }
+        
         /* Основные стили */
         * {
             margin: 0;
@@ -136,9 +203,19 @@
             display: inline-block;
         }
 
-        .status-online { background: var(--online); }
-        .status-offline { background: var(--offline); }
-        .status-away { background: var(--away); }
+        /* Обновленные стили для статусов */
+        .user-status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        
+        .status-online { background: #4CAF50; box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3); }
+        .status-offline { background: #757575; box-shadow: 0 0 0 2px rgba(117, 117, 117, 0.3); }
+        .status-away { background: #FF9800; box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.3); }
+        .status-busy { background: #F44336; box-shadow: 0 0 0 2px rgba(244, 67, 54, 0.3); }
 
         /* Основной контейнер */
         .container {
@@ -204,10 +281,12 @@
             font-size: 12px;
         }
 
+        /* Стили для вкладок статусов */
         .users-tabs {
             display: flex;
-            gap: 10px;
+            gap: 5px;
             margin-bottom: 15px;
+            flex-wrap: wrap;
         }
 
         .tab-btn {
@@ -219,8 +298,10 @@
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s;
+            font-size: 12px;
+            min-width: 70px;
         }
-
+        
         .tab-btn.active {
             background: rgba(67, 97, 238, 0.3);
             color: white;
@@ -256,14 +337,45 @@
             position: relative;
         }
 
+        /* Стили для статуса пользователя в карточке */
         .status-badge {
             position: absolute;
-            bottom: 0;
-            right: 0;
+            bottom: 2px;
+            right: 2px;
             width: 12px;
             height: 12px;
             border-radius: 50%;
             border: 2px solid var(--dark);
+        }
+
+        .status-badge.online { background: var(--online); }
+        .status-badge.offline { background: var(--offline); }
+        .status-badge.away { background: var(--away); }
+        .status-badge.busy { background: var(--danger); }
+
+        /* Индикатор загрузки статусов */
+        .loading-status {
+            text-align: center;
+            padding: 20px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Стиль для последнего времени активности */
+        .last-seen {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 2px;
+        }
+        
+        /* Анимация появления статуса */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .status-pulse {
+            animation: pulse 2s infinite;
         }
 
         .user-details {
@@ -537,6 +649,7 @@
             color: rgba(255, 255, 255, 0.9);
         }
 
+        /* Стиль для текстовых полей в профиле */
         .form-control {
             width: 100%;
             padding: 12px 15px;
@@ -545,6 +658,13 @@
             border-radius: 8px;
             color: white;
             font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
         }
 
         textarea.form-control {
@@ -788,8 +908,8 @@
             <div class="user-info">
                 <div class="user-name" id="current-username">Гость</div>
                 <div class="user-status">
-                    <span class="status-indicator status-online" id="current-status"></span>
-                    <span id="status-text">Онлайн</span>
+                    <span class="user-status-dot" id="current-status-indicator"></span>
+                    <span id="status-text">Загрузка...</span>
                 </div>
             </div>
             <img src="https://ui-avatars.com/api/?name=Гость&background=4361ee&color=fff" 
@@ -813,21 +933,42 @@
                             Пользователи
                             <span class="users-count" id="online-count">0</span>
                         </div>
+                        <div>
+                            <button class="btn btn-primary" onclick="changeStatus('online')" title="Онлайн">
+                                <i class="fas fa-circle status-online"></i>
+                            </button>
+                            <button class="btn" onclick="changeStatus('away')" title="Отошел" style="background: rgba(255, 152, 0, 0.2); color: var(--away);">
+                                <i class="fas fa-clock"></i>
+                            </button>
+                            <button class="btn" onclick="changeStatus('busy')" title="Занят" style="background: rgba(244, 67, 54, 0.2); color: var(--danger);">
+                                <i class="fas fa-minus-circle"></i>
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="users-tabs">
                         <button class="tab-btn active" onclick="showUsersTab('online')">
                             <i class="fas fa-circle status-online"></i>
-                            Онлайн
+                            Онлайн (<span id="online-tab-count">0</span>)
                         </button>
                         <button class="tab-btn" onclick="showUsersTab('all')">
                             <i class="fas fa-users"></i>
-                            Все
+                            Все (<span id="all-tab-count">0</span>)
+                        </button>
+                        <button class="tab-btn" onclick="showUsersTab('away')">
+                            <i class="fas fa-clock status-away"></i>
+                            Отошли
+                        </button>
+                        <button class="tab-btn" onclick="showUsersTab('busy')">
+                            <i class="fas fa-minus-circle status-busy"></i>
+                            Заняты
                         </button>
                     </div>
                     
                     <div class="users-list" id="users-list">
-                        <!-- Список пользователей -->
+                       <div class="loading-status">
+                            <i class="fas fa-spinner fa-spin"></i> Загрузка пользователей...
+                        </div>
                     </div>
                 </div>
                 
@@ -841,22 +982,38 @@
                     <div class="chat-messages" id="chat-messages">
                         <!-- Сообщения -->
                     </div>
-                    
-                    <div class="chat-input">
-                        <textarea class="message-input" 
-                                  id="message-input" 
-                                  placeholder="Введите сообщение..." 
-                                  rows="1"></textarea>
-                        
-                        <div class="chat-buttons">
-                            <button class="chat-btn" onclick="openAttachmentModal()">
-                                <i class="fas fa-paperclip"></i>
-                            </button>
-                            <button class="chat-btn" onclick="sendMessage()">
-                                <i class="fas fa-paper-plane"></i>
+                    <div class="chat-input-wrapper">
+
+                        <div class="attachment-preview" id="attachment-preview">
+                            <div class="attachment-info">
+                                <div class="attachment-icon" id="attachment-icon">
+                                    <i class="fas fa-file"></i>
+                                </div>
+                                <div class="attachment-details">
+                                    <div class="attachment-name" id="attachment-filename">Файл не выбран</div>
+                                    <div class="attachment-size" id="attachment-filesize">0 KB</div>
+                                </div>
+                            </div>
+                            <button class="remove-attachment" onclick="removeAttachment()">
+                                <i class="fas fa-times"></i>
                             </button>
                         </div>
-                    </div>
+                        
+                        <div class="chat-input">
+                            <textarea class="message-input" 
+                                      id="message-input" 
+                                      placeholder="Введите сообщение..." 
+                                      rows="1"></textarea>
+                            
+                            <div class="chat-buttons">
+                                <button class="chat-btn" onclick="openAttachmentModal()">
+                                    <i class="fas fa-paperclip"></i>
+                                </button>
+                                <button class="chat-btn" onclick="sendMessage()">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
                 </div>
             </div>
             
@@ -988,21 +1145,37 @@
             </div>
             
             <div class="mb-15">
-                <label class="form-label">Никнейм</label>
+                <label class="form-label">Имя пользователя *</label>
                 <input type="text" 
                        class="form-control" 
                        id="profile-username" 
-                       placeholder="Введите ваш никнейм">
+                       placeholder="Введите ваше имя"
+                       required>
+            </div>
+            
+            <div class="mb-15">
+                <label class="form-label">Должность</label>
+                <input type="text" 
+                       class="form-control" 
+                       id="profile-position" 
+                       placeholder="Например: Frontend Developer">
             </div>
             
             <div class="mb-20">
-                <label class="form-label">Должность</label>
-                <select class="form-control" id="profile-role">
-                    <option value="Студент">Студент</option>
-                    <option value="Преподаватель">Преподаватель</option>
-                    <option value="Администратор">Администратор</option>
-                    <option value="Модератор">Модератор</option>
-                    <option value="Гость">Гость</option>
+                <label class="form-label">Организация / Компания</label>
+                <input type="text" 
+                       class="form-control" 
+                       id="profile-organization" 
+                       placeholder="Например: IT Company Inc.">
+            </div>
+            
+            <div class="mb-20">
+                <label class="form-label">Статус</label>
+                <select class="form-control" id="profile-status" onchange="changeStatus(this.value)">
+                    <option value="online">🟢 Онлайн</option>
+                    <option value="away">🟠 Отошел</option>
+                    <option value="busy">🔴 Занят</option>
+                    <option value="offline">⚫ Не в сети</option>
                 </select>
             </div>
             
@@ -1109,6 +1282,8 @@
         let currentAttachment = null;
         let attachmentType = 'image';
         let taskFiles = [];
+        let currentUsersTab = 'online';
+        let userStatusListeners = [];
 
         // ========== ИНИЦИАЛИЗАЦИЯ ==========
         document.addEventListener('DOMContentLoaded', function() {
@@ -1137,6 +1312,173 @@
             checkAdminStatus();
         });
 
+         // ========== СИСТЕМА СТАТУСОВ (WebSocket-подобная) ==========
+        function initStatusSystem() {
+            // Слушаем изменения статусов всех пользователей
+            const usersRef = database.ref('users');
+            
+            usersRef.on('value', (snapshot) => {
+                users = snapshot.val() || {};
+                updateUsersList();
+                updateOnlineCount();
+                
+                // Обновляем статус текущего пользователя в реальном времени
+                if (currentUser && currentUser.id) {
+                    const userRef = database.ref('users/' + currentUser.id);
+                    
+                    // Обновляем информацию о пользователе
+                    userRef.update({
+                        lastSeen: Date.now(),
+                        status: currentUser.status || 'online'
+                    }).catch(error => {
+                        console.error('Ошибка обновления статуса:', error);
+                    });
+                }
+            });
+
+            // Отслеживаем статус текущего пользователя
+            trackUserStatus();
+        }
+
+        function trackUserStatus() {
+            if (!currentUser || !currentUser.id) return;
+
+            // Обновляем статус каждые 15 секунд
+            const statusInterval = setInterval(() => {
+                if (currentUser && currentUser.id) {
+                    const userRef = database.ref('users/' + currentUser.id);
+                    
+                    // Проверяем, активен ли пользователь
+                    const isActive = document.visibilityState === 'visible';
+                    const status = isActive ? (currentUser.status || 'online') : 'away';
+                    
+                    userRef.update({
+                        status: status,
+                        lastSeen: Date.now()
+                    }).catch(error => {
+                        console.error('Ошибка обновления статуса:', error);
+                    });
+                }
+            }, 15000);
+
+            // Отслеживаем видимость страницы
+            document.addEventListener('visibilitychange', () => {
+                if (currentUser && currentUser.id) {
+                    const userRef = database.ref('users/' + currentUser.id);
+                    const status = document.visibilityState === 'visible' ? currentUser.status : 'away';
+                    
+                    userRef.update({
+                        status: status,
+                        lastSeen: Date.now()
+                    }).catch(error => {
+                        console.error('Ошибка обновления статуса:', error);
+                    });
+                }
+            });
+
+            // Обновляем статус при закрытии страницы
+            window.addEventListener('beforeunload', () => {
+                if (currentUser && currentUser.id) {
+                    database.ref('users/' + currentUser.id).update({
+                        status: 'offline',
+                        lastSeen: Date.now()
+                    }).catch(error => {
+                        console.error('Ошибка обновления статуса при закрытии:', error);
+                    });
+                }
+            });
+
+            // Сохраняем интервал для очистки
+            userStatusListeners.push(statusInterval);
+        }
+
+        function cleanupStatusListeners() {
+            userStatusListeners.forEach(interval => clearInterval(interval));
+            userStatusListeners = [];
+        }
+
+        function changeStatus(newStatus) {
+            if (!currentUser) return;
+            
+            currentUser.status = newStatus;
+            updateCurrentUserStatus();
+            saveUserProfile();
+            
+            // Обновляем в Firebase
+            if (currentUser.id) {
+                database.ref('users/' + currentUser.id).update({
+                    status: newStatus,
+                    lastSeen: Date.now()
+                }).catch(error => {
+                    console.error('Ошибка изменения статуса:', error);
+                });
+            }
+            
+            showAlert(`Статус изменен на: ${getStatusText(newStatus)}`, 'success');
+        }
+
+        function updateCurrentUserStatus() {
+            const statusIndicator = document.getElementById('current-status-indicator');
+            const statusText = document.getElementById('status-text');
+            const profileStatus = document.getElementById('profile-status');
+            
+            if (statusIndicator) {
+                statusIndicator.className = `user-status-dot status-${currentUser.status}`;
+                if (currentUser.status === 'online') {
+                    statusIndicator.classList.add('status-pulse');
+                } else {
+                    statusIndicator.classList.remove('status-pulse');
+                }
+            }
+            
+            if (statusText) {
+                statusText.textContent = getStatusText(currentUser.status);
+            }
+            
+            if (profileStatus) {
+                profileStatus.value = currentUser.status;
+            }
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'online': 'Онлайн',
+                'offline': 'Не в сети',
+                'away': 'Отошел',
+                'busy': 'Занят'
+            };
+            return statusMap[status] || 'Неизвестно';
+        }
+
+        function getStatusClass(status) {
+            return `status-${status}`;
+        }
+
+        function formatLastSeen(timestamp) {
+            if (!timestamp) return '';
+            
+            const now = Date.now();
+            const diff = now - timestamp;
+            
+            if (diff < 60000) { // Менее минуты
+                return 'только что';
+            } else if (diff < 3600000) { // Менее часа
+                const minutes = Math.floor(diff / 60000);
+                return `${minutes} ${pluralize(minutes, ['минуту', 'минуты', 'минут'])} назад`;
+            } else if (diff < 86400000) { // Менее суток
+                const hours = Math.floor(diff / 3600000);
+                return `${hours} ${pluralize(hours, ['час', 'часа', 'часов'])} назад`;
+            } else {
+                const date = new Date(timestamp);
+                return date.toLocaleDateString('ru-RU');
+            }
+        }
+
+        function pluralize(number, words) {
+            const cases = [2, 0, 1, 1, 1, 2];
+            return words[(number % 100 > 4 && number % 100 < 20) ? 2 : cases[Math.min(number % 10, 5)]];
+        }
+
         // ========== ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ ==========
         function loadUserProfile() {
             const savedProfile = localStorage.getItem('user_profile');
@@ -1147,15 +1489,19 @@
                 currentUser = {
                     id: generateId(),
                     username: 'Гость_' + Math.floor(Math.random() * 1000),
-                    role: 'Гость',
+                    position: '',
+                    organization: '',
+                    role: 'Пользователь',    
                     avatar: null,
                     points: 0,
                     completedTasks: [],
                     status: 'online',
-                    lastSeen: Date.now()
+                    lastSeen: Date.now(),
+                    createdAt: Date.now()
                 };
                 saveUserProfile();
             }
+            initStatusSystem();
         }
 
         function saveUserProfile() {
@@ -1165,7 +1511,18 @@
         }
 
         function saveUserToFirebase() {
-            database.ref('users/' + currentUser.id).set(currentUser);
+            if (!currentUser || !currentUser.id) return;
+            
+            const userData = {
+                ...currentUser,
+                lastSeen: Date.now(),
+                status: currentUser.status || 'online'
+            };
+            
+            database.ref('users/' + currentUser.id).set(userData)
+                .catch(error => {
+                    console.error('Ошибка сохранения пользователя:', error);
+            });
         }
 
         function updateProfileUI() {
@@ -1177,7 +1534,13 @@
             avatar.src = avatarUrl;
             preview.src = avatarUrl;
             
-            // Проверяем админские права
+            // Заполняем поля в модальном окне
+            document.getElementById('profile-username').value = currentUser.username;
+            document.getElementById('profile-position').value = currentUser.position || '';
+            document.getElementById('profile-organization').value = currentUser.organization || '';
+            document.getElementById('profile-status').value = currentUser.status || 'online';
+            
+            updateCurrentUserStatus();
             checkAdminStatus();
         }
 
@@ -1254,7 +1617,6 @@
         function initChat() {
             loadUsers();
             loadMessages();
-            setupPresence();
         }
 
         function loadUsers() {
@@ -1267,21 +1629,62 @@
 
         function updateUsersList() {
             const usersList = document.getElementById('users-list');
+            if (!usersList) return;
+            
             usersList.innerHTML = '';
             
-            Object.values(users).forEach(user => {
+            let filteredUsers = Object.values(users);
+            
+            // Фильтрация по выбранной вкладке
+            if (currentUsersTab === 'online') {
+                filteredUsers = filteredUsers.filter(user => user.status === 'online');
+            } else if (currentUsersTab === 'away') {
+                filteredUsers = filteredUsers.filter(user => user.status === 'away');
+            } else if (currentUsersTab === 'busy') {
+                filteredUsers = filteredUsers.filter(user => user.status === 'busy');
+            }
+            // 'all' - все пользователи
+            
+            // Сортировка: онлайн сверху, потом по активности
+            filteredUsers.sort((a, b) => {
+                if (a.status === 'online' && b.status !== 'online') return -1;
+                if (a.status !== 'online' && b.status === 'online') return 1;
+                return (b.lastSeen || 0) - (a.lastSeen || 0);
+            });
+            
+            if (filteredUsers.length === 0) {
+                usersList.innerHTML = `
+                    <div class="loading-status">
+                        <i class="fas fa-user-slash"></i> Нет пользователей
+                    </div>
+                `;
+                return;
+            }
+            
+            filteredUsers.forEach(user => {
                 const userCard = document.createElement('div');
                 userCard.className = 'user-card';
+                userCard.onclick = () => startPrivateChat(user.id);
+                
+                const position = user.position || user.role || 'Пользователь';
+                const organization = user.organization ? ` • ${user.organization}` : '';
+                const lastSeen = user.status !== 'online' ? formatLastSeen(user.lastSeen) : '';
                 
                 userCard.innerHTML = `
-                    <img src="${user.avatar || getDefaultAvatar(user.username)}" 
-                         alt="${user.username}" 
-                         class="user-avatar-sm">
-                    <div class="user-details">
-                        <div class="user-details-name">${user.username}</div>
-                        <div class="user-details-role">${user.role}</div>
+                    <div style="position: relative;">
+                        <img src="${user.avatar || getDefaultAvatar(user.username)}" 
+                             alt="${user.username}" 
+                             class="user-avatar-sm">
+                        <span class="status-badge ${user.status || 'offline'}"></span>
                     </div>
-                    <span class="status-badge ${user.status === 'online' ? 'status-online' : 'status-offline'}"></span>
+                    <div class="user-details">
+                        <div class="user-details-name">
+                            ${user.username}
+                            ${user.id === currentUser?.id ? ' (Вы)' : ''}
+                        </div>
+                        <div class="user-details-role">${position}${organization}</div>
+                        ${lastSeen ? `<div class="last-seen">Был(а) ${lastSeen}</div>` : ''}
+                    </div>
                 `;
                 
                 usersList.appendChild(userCard);
@@ -1289,31 +1692,81 @@
         }
 
         function updateOnlineCount() {
-            const onlineCount = Object.values(users).filter(user => user.status === 'online').length;
-            document.getElementById('online-count').textContent = onlineCount;
-            document.getElementById('chat-subtitle').textContent = `${onlineCount} участников онлайн`;
+            const onlineUsers = Object.values(users).filter(user => user.status === 'online');
+            const allUsers = Object.values(users).length;
+            
+            document.getElementById('online-count').textContent = onlineUsers.length;
+            document.getElementById('online-tab-count').textContent = onlineUsers.length;
+            document.getElementById('all-tab-count').textContent = allUsers;
+            
+            document.getElementById('chat-subtitle').textContent = 
+                `${onlineUsers.length} из ${allUsers} участников онлайн`;
         }
 
-        function setupPresence() {
-            // Обновляем статус каждые 30 секунд
-            setInterval(() => {
-                if (currentUser) {
-                    database.ref('users/' + currentUser.id).update({
-                        status: 'online',
-                        lastSeen: Date.now()
-                    });
-                }
-            }, 30000);
+        function showUsersTab(tab) {
+            currentUsersTab = tab;
             
-            // При закрытии страницы
-            window.addEventListener('beforeunload', () => {
-                if (currentUser) {
-                    database.ref('users/' + currentUser.id).update({
-                        status: 'offline',
-                        lastSeen: Date.now()
-                    });
-                }
+            // Обновляем активные кнопки
+            document.querySelectorAll('.users-tabs .tab-btn').forEach(btn => {
+                btn.classList.remove('active');
             });
+            
+            event.target.classList.add('active');
+            updateUsersList();
+        }
+
+        function startPrivateChat(userId) {
+            const user = users[userId];
+            if (!user) return;
+            
+            showAlert(`Начало чата с ${user.username}`, 'info', 'Функция личных сообщений в разработке');
+        }
+
+        // ========== ОТОБРАЖЕНИЕ ПРИКРЕПЛЕННОГО ФАЙЛА ==========
+        function updateAttachmentPreview() {
+            const preview = document.getElementById('attachment-preview');
+            const icon = document.getElementById('attachment-icon');
+            const filename = document.getElementById('attachment-filename');
+            const filesize = document.getElementById('attachment-filesize');
+            
+            if (currentAttachment) {
+                preview.classList.add('visible');
+                
+                // Устанавливаем иконку в зависимости от типа файла
+                let iconClass = 'fas fa-file';
+                if (currentAttachment.type === 'image') {
+                    iconClass = 'fas fa-image';
+                } else if (currentAttachment.type === 'gif') {
+                    iconClass = 'fas fa-photo-video';
+                } else if (currentAttachment.type === 'video') {
+                    iconClass = 'fas fa-video';
+                } else if (currentAttachment.type.includes('pdf')) {
+                    iconClass = 'fas fa-file-pdf';
+                } else if (currentAttachment.type.includes('word') || currentAttachment.type.includes('document')) {
+                    iconClass = 'fas fa-file-word';
+                }
+                
+                icon.innerHTML = `<i class="${iconClass}"></i>`;
+                filename.textContent = currentAttachment.name;
+                
+                // Форматируем размер файла
+                const size = currentAttachment.size;
+                if (size < 1024) {
+                    filesize.textContent = size + ' B';
+                } else if (size < 1024 * 1024) {
+                    filesize.textContent = (size / 1024).toFixed(1) + ' KB';
+                } else {
+                    filesize.textContent = (size / (1024 * 1024)).toFixed(1) + ' MB';
+                }
+            } else {
+                preview.classList.remove('visible');
+            }
+        }
+
+        function removeAttachment() {
+            currentAttachment = null;
+            updateAttachmentPreview();
+            showAlert('Вложение удалено', 'info');
         }
 
         function loadMessages() {
@@ -1381,6 +1834,7 @@
             return div;
         }
 
+        // Обновляем функцию отправки сообщения для отображения предпросмотра
         function sendMessage() {
             const input = document.getElementById('message-input');
             const text = input.value.trim();
@@ -1395,18 +1849,25 @@
                 text: text,
                 userId: currentUser.id,
                 username: currentUser.username,
-                userRole: currentUser.role,
+                userRole: currentUser.position || currentUser.role || 'Пользователь',
+                userOrganization: currentUser.organization || '',
                 userAvatar: currentUser.avatar || getDefaultAvatar(currentUser.username),
                 timestamp: Date.now(),
                 attachment: currentAttachment
             };
             
-            database.ref('messages/' + message.id).set(message);
-            input.value = '';
-            currentAttachment = null;
-            input.focus();
-            
-            showAlert('Сообщение отправлено!', 'success');
+            database.ref('messages/' + message.id).set(message)
+                .then(() => {
+                    input.value = '';
+                    currentAttachment = null;
+                    updateAttachmentPreview();
+                    input.focus();
+                    showAlert('Сообщение отправлено!', 'success');
+                })
+                .catch(error => {
+                    console.error('Ошибка отправки сообщения:', error);
+                    showAlert('Ошибка отправки', 'error');
+                });
         }
 
         function deleteMessage(messageId) {
@@ -1477,6 +1938,8 @@
 
         function displayTasks() {
             const tasksList = document.getElementById('tasks-list');
+            if (!tasksList) return;
+            
             tasksList.innerHTML = '';
             
             const tasksArray = Object.entries(tasks).map(([id, task]) => ({ id, ...task }));
@@ -1891,19 +2354,6 @@
             
             const reader = new FileReader();
             reader.onload = function(e) {
-                const previewContainer = document.getElementById('preview-container');
-                previewContainer.innerHTML = '';
-                
-                if (attachmentType === 'image' || attachmentType === 'gif') {
-                    previewContainer.innerHTML = `<img src="${e.target.result}" style="max-width: 200px; border-radius: 10px;">`;
-                } else if (attachmentType === 'video') {
-                    previewContainer.innerHTML = `
-                        <video controls style="max-width: 200px; border-radius: 10px;">
-                            <source src="${e.target.result}" type="${file.type}">
-                        </video>
-                    `;
-                }
-                
                 currentAttachment = {
                     type: attachmentType,
                     data: e.target.result,
@@ -1911,7 +2361,8 @@
                     size: file.size
                 };
                 
-                document.getElementById('attachment-preview').style.display = 'block';
+                updateAttachmentPreview();
+                closeAttachmentModal();
             };
             reader.readAsDataURL(file);
         }
@@ -1930,7 +2381,9 @@
         function openProfileModal() {
             document.getElementById('profile-modal').classList.add('active');
             document.getElementById('profile-username').value = currentUser.username;
-            document.getElementById('profile-role').value = currentUser.role;
+            document.getElementById('profile-position').value = currentUser.position || '';
+            document.getElementById('profile-organization').value = currentUser.organization || '';
+            document.getElementById('profile-status').value = currentUser.status || 'online';
         }
 
         function closeProfileModal() {
@@ -1955,17 +2408,26 @@
 
         function saveProfile() {
             const username = document.getElementById('profile-username').value.trim();
-            const role = document.getElementById('profile-role').value;
+            const position = document.getElementById('profile-position').value.trim();
+            const organization = document.getElementById('profile-organization').value.trim();
+            const status = document.getElementById('profile-status').value;
             const avatar = document.getElementById('avatar-preview').src;
             
             if (!username) {
-                showAlert('Введите никнейм!', 'warning');
+                showAlert('Введите имя пользователя!', 'warning');
                 return;
             }
             
             currentUser.username = username;
-            currentUser.role = role;
+            currentUser.position = position;
+            currentUser.organization = organization;
+            currentUser.status = status;
             currentUser.avatar = avatar;
+            
+            // Если есть должность, используем её как роль
+            if (position) {
+                currentUser.role = position;
+            }
             
             saveUserProfile();
             updateProfileUI();
@@ -2036,14 +2498,19 @@
                 this.style.height = 'auto';
                 this.style.height = (this.scrollHeight) + 'px';
             });
+
+            // Закрытие модальных окон при клике вне их
+            document.addEventListener('click', function(event) {
+                if (event.target.classList.contains('modal')) {
+                    event.target.classList.remove('active');
+                }
+            });
+
+            // Очистка статусов при закрытии страницы
+            window.addEventListener('unload', cleanupStatusListeners);
         }
 
-        // Закрытие модальных окон при клике вне их
-        document.addEventListener('click', function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.classList.remove('active');
-            }
-        });
+
     </script>
 </body>
 </html>
