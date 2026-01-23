@@ -1797,10 +1797,15 @@
             });
             
             // Показываем выбранную вкладку
-            document.getElementById(tabName + '-tab').classList.add('active');
+            const tabElement = document.getElementById(tabName + '-tab');
+            if (tabElement) {
+                tabElement.classList.add('active');
+            }
             
             // Активируем кнопку
-            event.target.classList.add('active');
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
             
             // Загружаем данные для вкладки
             switch(tabName) {
@@ -1812,7 +1817,13 @@
                     loadTasksData();
                     break;
                 case 'events':
-                    loadEvents();
+                    // Если есть сохраненные мероприятия, отображаем их
+                    if (Object.keys(events).length > 0) {
+                        displayEvents();
+                    } else {
+                        // Иначе загружаем заново
+                        loadEvents();
+                    }
                     break;
                 case 'adaptation':
                     loadMaterials();
@@ -2531,13 +2542,35 @@
 
         // ========== МЕРОПРИЯТИЯ ==========
         function loadEvents() {
+             if (DEBUG) console.log('loadEvents() вызвана');
+    
+            // Сначала отписываемся от предыдущих слушателей
+            if (database.ref('events').off) {
+                database.ref('events').off();
+            }
+            
+            // Затем подписываемся заново
             database.ref('events').on('value', snapshot => {
                 events = snapshot.val() || {};
-                displayEvents();
-                // Загружаем участников для формы только если форма создания мероприятия видима
-                if (document.getElementById('create-event-form').style.display !== 'none') {
+                
+                if (DEBUG) {
+                    console.log('Данные мероприятий получены:', events);
+                    console.log('Количество мероприятий:', Object.keys(events).length);
+                }
+                
+                // Обновляем список мероприятий только если вкладка видима
+                const eventsTab = document.getElementById('events-tab');
+                if (eventsTab && eventsTab.classList.contains('active')) {
+                    displayEvents();
+                }
+                
+                // Всегда загружаем участников для формы создания
+                if (document.getElementById('create-event-form') && 
+                    document.getElementById('create-event-form').style.display !== 'none') {
                     loadEventParticipants();
                 }
+            }, error => {
+                console.error('Ошибка загрузки мероприятий:', error);
             });
         }
 
@@ -2547,7 +2580,10 @@
 
         function displayEvents() {
             const eventsList = document.getElementById('events-list');
-            if (!eventsList) return;
+            if (!eventsList) {
+                console.error('Элемент events-list не найден');
+                return;
+            }
             
             eventsList.innerHTML = '';
             
@@ -2559,7 +2595,7 @@
             if (eventsArray.length === 0) {
                 eventsList.innerHTML = `
                     <div class="event-card" style="text-align: center; padding: 40px;">
-                        <div class="event-icon">
+                        <div style="font-size: 48px; color: rgba(255,255,255,0.2); margin-bottom: 20px;">
                             <i class="fas fa-calendar-plus"></i>
                         </div>
                         <div class="event-title">Нет мероприятий</div>
@@ -2672,16 +2708,21 @@
             if (form.style.display === 'none') {
                 form.style.display = 'block';
                 btn.innerHTML = '<i class="fas fa-times"></i> Отмена';
+                
+                // Загружаем участников только когда форма видима
                 loadEventParticipants();
                 
                 // Устанавливаем минимальную дату (сегодня)
                 const now = new Date();
                 const minDate = now.toISOString().slice(0, 16);
-                document.getElementById('event-datetime').min = minDate;
-                
-                // Предустанавливаем дату (через 2 часа)
-                const futureDate = new Date(now.getTime() + 2 * 60 * 60 * 1000);
-                document.getElementById('event-datetime').value = futureDate.toISOString().slice(0, 16);
+                const datetimeInput = document.getElementById('event-datetime');
+                if (datetimeInput) {
+                    datetimeInput.min = minDate;
+                    
+                    // Предустанавливаем дату (через 2 часа)
+                    const futureDate = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+                    datetimeInput.value = futureDate.toISOString().slice(0, 16);
+                }
                 
             } else {
                 form.style.display = 'none';
