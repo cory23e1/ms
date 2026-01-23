@@ -1491,14 +1491,15 @@
             
             // Инициализация заданий
             initTasks();
+
+            // Инициализация мероприятий (ДОБАВЬТЕ ЭТУ СТРОКУ)
+            initEventsSystem();
             
             // Настройка обработчиков
             setupEventListeners();
             
             // Проверка прав администратора
             checkAdminStatus();
-
-            initEvents(); // Добавить эту строку
         });
 
         
@@ -2193,7 +2194,6 @@
         function initTasks() {
             loadTasksData();
             setupTaskFileUpload();
-            loadEvents();
         }
 
         function loadTasksData() {
@@ -2534,8 +2534,15 @@
             database.ref('events').on('value', snapshot => {
                 events = snapshot.val() || {};
                 displayEvents();
-                loadEventParticipants(); // Загружаем участников для формы
+                // Загружаем участников для формы только если форма создания мероприятия видима
+                if (document.getElementById('create-event-form').style.display !== 'none') {
+                    loadEventParticipants();
+                }
             });
+        }
+
+        function initEventsSystem() {
+            loadEvents();
         }
 
         function displayEvents() {
