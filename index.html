@@ -713,9 +713,8 @@
             padding: 0;
             cursor: pointer;
             transition: all 0.3s;
-            border: 1px solid transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             overflow: hidden;
-            position: relative;
         }
         
         .event-card:hover {
@@ -949,7 +948,10 @@
             
             .tasks-grid,
             .events-grid {
-                grid-template-columns: 1fr;
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+                gap: 20px;
+                margin-top: 20px;
             }
         }
 
@@ -1152,61 +1154,6 @@
             </div>
         </div>
 
-        <!-- ========== ВКЛАДКА ЗАДАНИЙ ========== -->
-        <div class="tab-content" id="tasks-tab">
-            <!-- Форма создания задания (только для админа) -->
-            <div class="create-task-form" id="create-task-form" style="display: none;">
-                <h2 class="mb-20"><i class="fas fa-plus-circle"></i> Создать новое задание</h2>
-                
-                <div class="form-group">
-                    <label class="form-label">Тема задания *</label>
-                    <input type="text" class="form-control" id="task-title" placeholder="Введите тему задания">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Описание задания *</label>
-                    <textarea class="form-control" id="task-description" placeholder="Подробное описание задания..." rows="4"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Награда *</label>
-                    <input type="text" class="form-control" id="task-reward" placeholder="Например: 100 очков, Бонус, Сертификат">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Прикрепить файлы (максимум 3 файла, до 5MB каждый)</label>
-                    <input type="file" class="form-control" id="task-files" multiple accept="image/*,video/*,.gif,.pdf,.doc,.docx,.txt">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Предпросмотр файлов:</label>
-                    <div class="file-preview" id="task-file-preview"></div>
-                </div>
-
-                <div class="d-flex gap-10">
-                    <button class="btn btn-primary" onclick="createTask()">
-                        <i class="fas fa-plus"></i> Создать задание
-                    </button>
-                    <button class="btn" onclick="clearTaskForm()" style="background: rgba(255,255,255,0.1); color: white;">
-                        <i class="fas fa-times"></i> Очистить
-                    </button>
-                </div>
-            </div>
-
-            <!-- Кнопка создания задания (только для админа) -->
-            <div class="d-flex justify-between align-center mb-20">
-                <h2><i class="fas fa-tasks"></i> Задания</h2>
-                <button class="btn btn-primary" id="show-create-form-btn" onclick="toggleCreateTaskForm()">
-                    <i class="fas fa-plus"></i> Создать задание
-                </button>
-            </div>
-
-            <!-- Список заданий -->
-            <div class="tasks-grid" id="tasks-list">
-                <!-- Задания загружаются динамически -->
-            </div>
-        </div>
-
         <!-- ========== ВКЛАДКА МЕРОПРИЯТИЙ ========== -->
         <div class="tab-content" id="events-tab">
         <!-- Форма создания мероприятия (только для админа) -->
@@ -1263,18 +1210,72 @@
                 </div>
             </div>
     
-        <!-- Заголовок и кнопка создания -->
-        <div class="d-flex justify-between align-center mb-20">
-            <h2><i class="fas fa-calendar-alt"></i> Мероприятия</h2>
-            <button class="btn btn-primary" id="show-create-event-btn" onclick="toggleCreateEventForm()">
-                <i class="fas fa-plus"></i> Создать мероприятие
-            </button>
-        </div>
+            <!-- Заголовок и кнопка создания -->
+            <div class="d-flex justify-between align-center mb-20">
+                <h2><i class="fas fa-calendar-alt"></i> Мероприятия</h2>
+                <button class="btn btn-primary" id="show-create-event-btn" onclick="toggleCreateEventForm()">
+                    <i class="fas fa-plus"></i> Создать мероприятие
+                </button>
+            </div>
     
-        <!-- Список мероприятий -->
-        <div class="events-grid" id="events-list">
-            <!-- Мероприятия загружаются динамически -->
+            <!-- Список мероприятий -->
+            <div class="events-grid" id="events-list">
+                <!-- Мероприятия загружаются динамически -->
+            </div>
         </div>
+        <!-- ========== ВКЛАДКА ЗАДАНИЙ ========== -->
+        <div class="tab-content" id="tasks-tab">
+            <!-- Форма создания задания (только для админа) -->
+            <div class="create-task-form" id="create-task-form" style="display: none;">
+                <h2 class="mb-20"><i class="fas fa-plus-circle"></i> Создать новое задание</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">Тема задания *</label>
+                    <input type="text" class="form-control" id="task-title" placeholder="Введите тему задания">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Описание задания *</label>
+                    <textarea class="form-control" id="task-description" placeholder="Подробное описание задания..." rows="4"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Награда *</label>
+                    <input type="text" class="form-control" id="task-reward" placeholder="Например: 100 очков, Бонус, Сертификат">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Прикрепить файлы (максимум 3 файла, до 5MB каждый)</label>
+                    <input type="file" class="form-control" id="task-files" multiple accept="image/*,video/*,.gif,.pdf,.doc,.docx,.txt">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Предпросмотр файлов:</label>
+                    <div class="file-preview" id="task-file-preview"></div>
+                </div>
+
+                <div class="d-flex gap-10">
+                    <button class="btn btn-primary" onclick="createTask()">
+                        <i class="fas fa-plus"></i> Создать задание
+                    </button>
+                    <button class="btn" onclick="clearTaskForm()" style="background: rgba(255,255,255,0.1); color: white;">
+                        <i class="fas fa-times"></i> Очистить
+                    </button>
+                </div>
+            </div>
+
+            <!-- Кнопка создания задания (только для админа) -->
+            <div class="d-flex justify-between align-center mb-20">
+                <h2><i class="fas fa-tasks"></i> Задания</h2>
+                <button class="btn btn-primary" id="show-create-form-btn" onclick="toggleCreateTaskForm()">
+                    <i class="fas fa-plus"></i> Создать задание
+                </button>
+            </div>
+
+            <!-- Список заданий -->
+            <div class="tasks-grid" id="tasks-list">
+                <!-- Задания загружаются динамически -->
+            </div>
         </div>
 
         <!-- ========== ВКЛАДКА АДАПТАЦИИ ========== -->
@@ -1824,9 +1825,12 @@
         }
 
         function showTab(tabName) {
+            console.log('Переключаю на вкладку:', tabName);
+            
             // Скрываем все вкладки
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
+                tab.style.display = 'none'; // Гарантированно скрываем
             });
             
             // Убираем активный класс у всех кнопок
@@ -1838,11 +1842,14 @@
             const tabElement = document.getElementById(tabName + '-tab');
             if (tabElement) {
                 tabElement.classList.add('active');
+                tabElement.style.display = 'block'; // Гарантированно показываем
             }
             
             // Активируем кнопку
-            if (event && event.target) {
-                event.target.classList.add('active');
+            const clickedElement = event && event.target ? event.target : 
+                                  document.querySelector(`.nav-link[onclick*="${tabName}"]`);
+            if (clickedElement) {
+                clickedElement.classList.add('active');
             }
             
             // Загружаем данные для вкладки
@@ -1855,11 +1862,12 @@
                     loadTasksData();
                     break;
                 case 'events':
-                    // Если есть сохраненные мероприятия, отображаем их
+                    console.log('Загружаю мероприятия для вкладки "Мероприятия"');
+                    // Проверяем, есть ли уже данные
                     if (Object.keys(events).length > 0) {
                         displayEvents();
                     } else {
-                        // Иначе загружаем заново
+                        // Если данных нет, загружаем
                         loadEvents();
                     }
                     break;
@@ -1868,7 +1876,6 @@
                     break;
             }
         }
-
         // ========== АДМИН ПАНЕЛЬ ==========
         function checkAdminStatus() {
             isAdmin = currentUser.username === 'admin' || currentUser.role === 'Администратор';
