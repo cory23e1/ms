@@ -1074,13 +1074,7 @@
                  onclick="openProfileModal()">
         </div>
     </nav>
-    <div style="position: fixed; top: 100px; left: 20px; z-index: 9999; background: white; color: black; padding: 10px;">
-        <button onclick="showTab('chat')">Чат</button>
-        <button onclick="showTab('events')">Мероприятия</button>
-        <button onclick="showTab('tasks')">Задания</button>
-        <button onclick="showTab('adaptation')">Адаптация</button>
-    </div>
-
+    
     <!-- Основной контейнер -->
     <div class="container">
         <!-- ========== ВКЛАДКА ЧАТА ========== -->
@@ -1194,10 +1188,6 @@
 
         <!-- ========== ВКЛАДКА МЕРОПРИЯТИЙ ========== -->
     <div class="tab-content" id="events-tab">
-        <div style="background: red; padding: 20px; margin: 20px;">
-            <h2>ТЕСТОВЫЙ КОНТЕНТ МЕРОПРИЯТИЙ</h2>
-            <p>Если это видно, значит вкладка работает!</p>
-        </div>
         <!-- Форма создания мероприятия (только для админа) -->
         <div class="create-task-form" id="create-event-form" style="display: none;">
             <h2 class="mb-20"><i class="fas fa-calendar-plus"></i> Создать мероприятие</h2>
