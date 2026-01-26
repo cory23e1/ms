@@ -1001,6 +1001,39 @@
         #events-tab.active {
             display: block !important;
         }
+
+        /* Отладочные стили - проверка видимости вкладок */
+        .debug {
+            border: 3px solid red !important;
+            background: rgba(255, 0, 0, 0.1) !important;
+        }
+        
+        /* Принудительное отображение активной вкладки */
+        .tab-content {
+            display: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+        
+        .tab-content.active {
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+        
+        /* Контейнер мероприятий */
+        #events-list {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)) !important;
+            gap: 20px !important;
+        }
+        
+        /* Проверка, что контейнер видим */
+        .container {
+            display: block !important;
+            visibility: visible !important;
+        }
     </style>
 </head>
 <body>
@@ -1041,6 +1074,12 @@
                  onclick="openProfileModal()">
         </div>
     </nav>
+    <div style="position: fixed; top: 100px; left: 20px; z-index: 9999; background: white; color: black; padding: 10px;">
+        <button onclick="showTab('chat')">Чат</button>
+        <button onclick="showTab('events')">Мероприятия</button>
+        <button onclick="showTab('tasks')">Задания</button>
+        <button onclick="showTab('adaptation')">Адаптация</button>
+    </div>
 
     <!-- Основной контейнер -->
     <div class="container">
@@ -1154,6 +1193,10 @@
 
         <!-- ========== ВКЛАДКА МЕРОПРИЯТИЙ ========== -->
 <div class="tab-content" id="events-tab">
+    <div style="background: red; padding: 20px; margin: 20px;">
+        <h2>ТЕСТОВЫЙ КОНТЕНТ МЕРОПРИЯТИЙ</h2>
+        <p>Если это видно, значит вкладка работает!</p>
+    </div>
     <!-- Форма создания мероприятия (только для админа) -->
     <div class="create-task-form" id="create-event-form" style="display: none;">
         <h2 class="mb-20"><i class="fas fa-calendar-plus"></i> Создать мероприятие</h2>
@@ -1540,6 +1583,12 @@
             
             // Проверка прав администратора
             checkAdminStatus();
+
+            // После инициализации проверяем структуру
+            setTimeout(() => {
+                checkTabsStructure();
+                console.log('Текущий пользователь:', currentUser);
+            }, 1000);
         });
 
         
@@ -1828,55 +1877,100 @@
         }
         
         function showTab(tabName) {
-            console.log('Переключаю на вкладку:', tabName);
+            console.log('======= ПЕРЕКЛЮЧЕНИЕ ВКЛАДКИ =======');
+            console.log('Показываем вкладку:', tabName);
+            
+            // Получаем все вкладки и навигационные ссылки
+            const tabs = document.querySelectorAll('.tab-content');
+            const navLinks = document.querySelectorAll('.nav-link');
             
             // Скрываем все вкладки
-            document.querySelectorAll('.tab-content').forEach(tab => {
+            tabs.forEach(tab => {
                 tab.classList.remove('active');
+                tab.style.display = 'none';
+                tab.style.opacity = '0';
+                tab.style.visibility = 'hidden';
+                console.log('Скрыта вкладка:', tab.id);
             });
             
-            // Убираем активный класс у всех кнопок навигации
-            document.querySelectorAll('.nav-link').forEach(link => {
+            // Убираем активный класс у всех кнопок
+            navLinks.forEach(link => {
                 link.classList.remove('active');
             });
             
             // Показываем выбранную вкладку
-            const tabElement = document.getElementById(tabName + '-tab');
-            if (tabElement) {
-                tabElement.classList.add('active');
+            const targetTab = document.getElementById(tabName + '-tab');
+            if (targetTab) {
+                targetTab.classList.add('active');
+                targetTab.style.display = 'block';
+                targetTab.style.opacity = '1';
+                targetTab.style.visibility = 'visible';
+                console.log('Показана вкладка:', targetTab.id);
+                console.log('Стиль display:', targetTab.style.display);
+                console.log('Стиль visibility:', targetTab.style.visibility);
+            } else {
+                console.error('Вкладка не найдена:', tabName + '-tab');
             }
             
-            // Активируем кнопку в навигации
-            const navLinks = document.querySelectorAll('.nav-link');
+            // Активируем соответствующую кнопку в навигации
             navLinks.forEach(link => {
                 if (link.getAttribute('onclick') && link.getAttribute('onclick').includes(tabName)) {
                     link.classList.add('active');
+                    console.log('Активирована кнопка:', link.textContent);
                 }
             });
             
             // Загружаем данные для вкладки
-            switch(tabName) {
-                case 'chat':
-                    loadUsers();
-                    loadMessages();
-                    break;
-                case 'tasks':
-                    loadTasksData();
-                    break;
-                case 'events':
-                    console.log('Загружаю мероприятия для вкладки "Мероприятия"');
-                    // Проверяем, есть ли уже данные
-                    if (Object.keys(events).length > 0) {
-                        displayEvents();
-                    } else {
-                        // Если данных нет, загружаем
+            setTimeout(() => {
+                switch(tabName) {
+                    case 'chat':
+                        console.log('Загружаю чат...');
+                        loadUsers();
+                        loadMessages();
+                        break;
+                    case 'tasks':
+                        console.log('Загружаю задания...');
+                        loadTasksData();
+                        break;
+                    case 'events':
+                        console.log('Загружаю мероприятия...');
                         loadEvents();
-                    }
-                    break;
-                case 'adaptation':
-                    loadMaterials();
-                    break;
-            }
+                        break;
+                    case 'adaptation':
+                        console.log('Загружаю адаптацию...');
+                        loadMaterials();
+                        break;
+                }
+            }, 100);
+        }
+
+        function checkTabsStructure() {
+            console.log('======= ПРОВЕРКА СТРУКТУРЫ =======');
+            
+            // Проверяем основные элементы
+            const container = document.querySelector('.container');
+            console.log('Контейнер найден:', !!container);
+            
+            // Проверяем все вкладки
+            const tabs = ['chat', 'events', 'tasks', 'adaptation'];
+            tabs.forEach(tab => {
+                const element = document.getElementById(tab + '-tab');
+                console.log(`Вкладка ${tab}:`, element ? 'найдена' : 'НЕ НАЙДЕНА');
+                if (element) {
+                    console.log(`  - display: ${window.getComputedStyle(element).display}`);
+                    console.log(`  - visibility: ${window.getComputedStyle(element).visibility}`);
+                    console.log(`  - opacity: ${window.getComputedStyle(element).opacity}`);
+                    console.log(`  - классы: ${element.className}`);
+                }
+            });
+            
+            // Проверяем навигацию
+            const navLinks = document.querySelectorAll('.nav-link');
+            console.log('Найдено ссылок навигации:', navLinks.length);
+            
+            // Проверяем видимость контента
+            const activeTab = document.querySelector('.tab-content.active');
+            console.log('Активная вкладка:', activeTab ? activeTab.id : 'нет');
         }
         
         // ========== АДМИН ПАНЕЛЬ ==========
