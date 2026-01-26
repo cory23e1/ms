@@ -1034,6 +1034,88 @@
             display: block !important;
             visibility: visible !important;
         }
+
+        .event-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 10px;
+        }
+        
+        .event-tab-btn {
+            padding: 8px 15px;
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .event-tab-btn:hover {
+            background: rgba(67, 97, 238, 0.1);
+            color: white;
+        }
+        
+        .event-tab-btn.active {
+            background: rgba(67, 97, 238, 0.3);
+            color: white;
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .event-tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .event-tab-content.active {
+            display: block;
+        }
+        
+        /* Стили для чата мероприятия */
+        .event-chat-message {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            border-left: 3px solid var(--primary);
+        }
+        
+        .event-chat-message-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+        
+        .event-chat-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .event-chat-sender {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .event-chat-time {
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+            margin-left: auto;
+        }
+        
+        .event-chat-text {
+            font-size: 14px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
     </style>
 </head>
 <body>
@@ -1465,49 +1547,83 @@
 
     <!-- Модальное окно просмотра мероприятия -->
     <div class="modal" id="event-modal">
-        <div class="modal-content" style="max-width: 600px;">
-            <div style="position: relative;">
-                <img id="event-modal-image" src="" alt="Обложка мероприятия" 
-                     style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
-                <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 5px;"
-                     id="event-modal-status"></div>
+        <div class="modal-content" style="max-width: 800px; max-height: 90vh;">
+            <!-- Вкладки мероприятия -->
+            <div class="event-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <button class="event-tab-btn active" data-tab="info" onclick="switchEventTab('info')">
+                    <i class="fas fa-info-circle"></i> Информация
+                </button>
+                <button class="event-tab-btn" data-tab="chat" onclick="switchEventTab('chat')">
+                    <i class="fas fa-comments"></i> Обсуждение
+                    <span class="event-chat-counter" id="event-chat-counter" style="margin-left: 5px; background: var(--primary); color: white; padding: 1px 6px; border-radius: 10px; font-size: 11px;">0</span>
+                </button>
+                <button class="event-tab-btn" data-tab="participants" onclick="switchEventTab('participants')">
+                    <i class="fas fa-users"></i> Участники
+                </button>
             </div>
             
-            <h2 id="event-modal-title" class="mb-10"></h2>
-            
-            <div class="mb-15" style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
-                <div style="display: flex; align-items: center; gap: 5px;">
-                    <i class="fas fa-calendar" style="color: var(--primary);"></i>
-                    <span id="event-modal-date"></span>
+            <!-- Вкладка информации -->
+            <div class="event-tab-content active" id="event-tab-info">
+                <div style="position: relative;">
+                    <img id="event-modal-image" src="" alt="Обложка мероприятия" 
+                         style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;">
+                    <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 5px;"
+                         id="event-modal-status"></div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 5px;">
-                    <i class="fas fa-map-marker-alt" style="color: var(--warning);"></i>
-                    <span id="event-modal-location"></span>
+                
+                <h2 id="event-modal-title" class="mb-10"></h2>
+                
+                <div class="mb-15" style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <i class="fas fa-calendar" style="color: var(--primary);"></i>
+                        <span id="event-modal-date"></span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <i class="fas fa-map-marker-alt" style="color: var(--warning);"></i>
+                        <span id="event-modal-location"></span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <i class="fas fa-users" style="color: var(--success);"></i>
+                        <span id="event-modal-participants-count"></span>
+                    </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 5px;">
-                    <i class="fas fa-users" style="color: var(--success);"></i>
-                    <span id="event-modal-participants-count"></span>
+                
+                <div class="mb-20">
+                    <h4><i class="fas fa-align-left"></i> Описание</h4>
+                    <p id="event-modal-description" style="line-height: 1.6; margin-top: 10px; white-space: pre-wrap;"></p>
                 </div>
             </div>
             
-            <div class="mb-20">
-                <h4><i class="fas fa-align-left"></i> Описание</h4>
-                <p id="event-modal-description" style="line-height: 1.6; margin-top: 10px;"></p>
+            <!-- Вкладка чата -->
+            <div class="event-tab-content" id="event-tab-chat" style="display: none; height: 400px; flex-direction: column;">
+                <div id="event-chat-messages" style="flex: 1; overflow-y: auto; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 10px; margin-bottom: 10px;">
+                    <!-- Сообщения загружаются динамически -->
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <textarea id="event-chat-input" 
+                             placeholder="Напишите сообщение в обсуждение мероприятия..." 
+                             style="flex: 1; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; resize: none; min-height: 50px;"></textarea>
+                    <button class="btn btn-primary" onclick="sendEventMessage()" style="align-self: flex-end; height: 50px;">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
             </div>
             
-            <div class="mb-20">
-                <h4><i class="fas fa-user-friends"></i> Участники</h4>
-                <div id="event-modal-participants" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;"></div>
+            <!-- Вкладка участников -->
+            <div class="event-tab-content" id="event-tab-participants" style="display: none;">
+                <h4><i class="fas fa-user-friends"></i> Участники (<span id="event-modal-participants-count-2"></span>)</h4>
+                <div id="event-modal-participants" style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 15px;"></div>
             </div>
             
-            <div id="event-modal-actions" class="d-flex gap-10"></div>
+            <!-- Кнопки действий -->
+            <div id="event-modal-actions" class="d-flex gap-10" style="margin-top: 20px;"></div>
             
             <button class="btn w-100 mt-20" onclick="closeEventModal()" style="background: rgba(255,255,255,0.1); color: white;">
                 <i class="fas fa-times"></i> Закрыть
             </button>
         </div>
     </div>
-
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
@@ -1542,6 +1658,9 @@
         let userStatusListeners = [];
         let events = {};
         let eventImage = null;
+        
+        let currentEventId = null;
+        let eventMessagesListener = null;
 
         // ========== ИНИЦИАЛИЗАЦИЯ ==========
         document.addEventListener('DOMContentLoaded', function() {
@@ -2852,7 +2971,31 @@
                     </div>
                 </div>
             `;
-            
+
+            // Добавляем счетчик сообщений если они есть
+            database.ref('eventMessages/' + event.id).once('value').then(snapshot => {
+                const messages = snapshot.val() || {};
+                const count = Object.keys(messages).length;
+                
+                if (count > 0) {
+                    const badge = document.createElement('span');
+                    badge.className = 'event-chat-badge';
+                    badge.style.cssText = `
+                        position: absolute;
+                        top: 10px;
+                        left: 10px;
+                        background: var(--accent);
+                        color: white;
+                        padding: 2px 6px;
+                        border-radius: 10px;
+                        font-size: 11px;
+                        z-index: 10;
+                    `;
+                    badge.textContent = count;
+                    card.querySelector('div:first-child').appendChild(badge);
+                }
+            });
+                            
             console.log('Карточка создана:', card);
             return card;
         }
@@ -3018,6 +3161,8 @@
             const event = events[eventId];
             if (!event) return;
             
+            currentEventId = eventId;
+            
             const modal = document.getElementById('event-modal');
             const now = Date.now();
             const isParticipant = event.participants && event.participants[currentUser.id];
@@ -3026,6 +3171,7 @@
             const image = document.getElementById('event-modal-image');
             if (event.image) {
                 image.src = event.image;
+                image.style.display = 'block';
             } else {
                 image.style.display = 'none';
             }
@@ -3068,6 +3214,7 @@
             
             const participantsCount = event.participants ? Object.keys(event.participants).length : 0;
             document.getElementById('event-modal-participants-count').textContent = `${participantsCount} участников`;
+            document.getElementById('event-modal-participants-count-2').textContent = participantsCount;
             
             // Показываем аватары участников
             if (event.participants) {
@@ -3087,6 +3234,12 @@
                     }
                 });
             }
+            
+            // Загружаем количество сообщений
+            database.ref('eventMessages/' + eventId).once('value').then(snapshot => {
+                const messages = snapshot.val() || {};
+                updateEventChatCounter(eventId, Object.keys(messages).length);
+            });
             
             // Кнопки действий
             const actionsDiv = document.getElementById('event-modal-actions');
@@ -3114,10 +3267,18 @@
                 `;
             }
             
+            // Сбрасываем вкладки к информации
+            switchEventTab('info');
+            
             modal.classList.add('active');
         }
         
         function closeEventModal() {
+            if (eventMessagesListener) {
+                database.ref('eventMessages/' + currentEventId).off();
+                eventMessagesListener = null;
+            }
+            currentEventId = null;
             document.getElementById('event-modal').classList.remove('active');
         }
         
@@ -3172,6 +3333,185 @@
                         });
                 }
             });
+        }
+
+        function switchEventTab(tabName) {
+            // Убираем активный класс у всех вкладок и кнопок
+            document.querySelectorAll('.event-tab-content').forEach(tab => {
+                tab.style.display = 'none';
+                tab.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.event-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Активируем выбранную вкладку и кнопку
+            const tabContent = document.getElementById('event-tab-' + tabName);
+            const tabBtn = document.querySelector(`.event-tab-btn[data-tab="${tabName}"]`);
+            
+            if (tabContent) {
+                tabContent.style.display = tabName === 'chat' ? 'flex' : 'block';
+                tabContent.classList.add('active');
+            }
+            
+            if (tabBtn) {
+                tabBtn.classList.add('active');
+            }
+            
+            // Если открыли вкладку чата, загружаем сообщения
+            if (tabName === 'chat' && currentEventId) {
+                loadEventMessages(currentEventId);
+            }
+        }
+        
+        function loadEventMessages(eventId) {
+            if (eventMessagesListener) {
+                // Отписываемся от предыдущего слушателя
+                database.ref('eventMessages/' + eventId).off();
+            }
+            
+            const messagesContainer = document.getElementById('event-chat-messages');
+            if (!messagesContainer) return;
+            
+            messagesContainer.innerHTML = '<div class="loading-status"><i class="fas fa-spinner fa-spin"></i> Загрузка сообщений...</div>';
+            
+            // Подписываемся на сообщения мероприятия
+            eventMessagesListener = database.ref('eventMessages/' + eventId)
+                .limitToLast(50)
+                .on('value', snapshot => {
+                    const messages = snapshot.val() || {};
+                    displayEventMessages(messages);
+                    updateEventChatCounter(eventId, Object.keys(messages).length);
+                });
+        }
+        
+        function displayEventMessages(messages) {
+            const messagesContainer = document.getElementById('event-chat-messages');
+            if (!messagesContainer) return;
+            
+            messagesContainer.innerHTML = '';
+            
+            const messagesArray = Object.values(messages).sort((a, b) => a.timestamp - b.timestamp);
+            
+            if (messagesArray.length === 0) {
+                messagesContainer.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
+                        <i class="fas fa-comments fa-2x" style="margin-bottom: 10px;"></i>
+                        <div>Обсуждение мероприятия еще не началось</div>
+                        <div style="font-size: 12px; margin-top: 5px;">Будьте первым, кто оставит сообщение!</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            messagesArray.forEach(message => {
+                const messageElement = createEventMessageElement(message);
+                messagesContainer.appendChild(messageElement);
+            });
+            
+            // Прокручиваем вниз
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function createEventMessageElement(message) {
+            const div = document.createElement('div');
+            div.className = 'event-chat-message';
+            
+            const isCurrentUser = message.userId === currentUser?.id;
+            
+            div.innerHTML = `
+                <div class="event-chat-message-header">
+                    <img src="${message.userAvatar || getDefaultAvatar(message.username)}" 
+                         alt="${message.username}" 
+                         class="event-chat-avatar">
+                    <div class="event-chat-sender">
+                        ${message.username}
+                        ${isCurrentUser ? ' <span style="font-size: 11px; color: var(--primary);">(Вы)</span>' : ''}
+                    </div>
+                    <div class="event-chat-time">
+                        ${new Date(message.timestamp).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
+                        ${new Date(message.timestamp).toLocaleDateString() !== new Date().toLocaleDateString() ? 
+                          ' • ' + new Date(message.timestamp).toLocaleDateString('ru-RU', {day: 'numeric', month: 'short'}) : ''}
+                    </div>
+                </div>
+                <div class="event-chat-text">${message.text}</div>
+                ${message.attachment ? `
+                    <div style="margin-top: 8px;">
+                        <small style="color: rgba(255,255,255,0.7);">
+                            <i class="fas fa-paperclip"></i> Прикреплен файл: ${message.attachment.name}
+                        </small>
+                    </div>
+                ` : ''}
+            `;
+            
+            return div;
+        }
+        
+        function sendEventMessage() {
+            if (!currentEventId) {
+                showAlert('Ошибка', 'error', 'Не выбрано мероприятие');
+                return;
+            }
+            
+            const input = document.getElementById('event-chat-input');
+            const text = input.value.trim();
+            
+            if (!text) {
+                showAlert('Введите сообщение!', 'warning');
+                return;
+            }
+            
+            const message = {
+                id: generateId(),
+                text: text,
+                userId: currentUser.id,
+                username: currentUser.username,
+                userAvatar: currentUser.avatar || getDefaultAvatar(currentUser.username),
+                timestamp: Date.now(),
+                eventId: currentEventId
+            };
+            
+            database.ref(`eventMessages/${currentEventId}/${message.id}`).set(message)
+                .then(() => {
+                    input.value = '';
+                    input.focus();
+                })
+                .catch(error => {
+                    console.error('Ошибка отправки сообщения:', error);
+                    showAlert('Ошибка отправки', 'error');
+                });
+        }
+        
+        function updateEventChatCounter(eventId, count) {
+            const counter = document.getElementById('event-chat-counter');
+            if (counter) {
+                counter.textContent = count;
+            }
+            
+            // Также обновляем счетчик на карточке мероприятия
+            const eventCard = document.querySelector(`.event-card-simple[data-event-id="${eventId}"]`);
+            if (eventCard) {
+                const existingBadge = eventCard.querySelector('.event-chat-badge');
+                if (existingBadge) {
+                    existingBadge.textContent = count;
+                } else if (count > 0) {
+                    const badge = document.createElement('span');
+                    badge.className = 'event-chat-badge';
+                    badge.style.cssText = `
+                        position: absolute;
+                        top: 10px;
+                        left: 10px;
+                        background: var(--accent);
+                        color: white;
+                        padding: 2px 6px;
+                        border-radius: 10px;
+                        font-size: 11px;
+                    `;
+                    badge.textContent = count;
+                    eventCard.querySelector('div:first-child').appendChild(badge);
+                }
+            }
         }
         
         // ========== АДАПТАЦИЯ ==========
@@ -3403,7 +3743,7 @@
 
         function setupEventListeners() {
             // Отправка сообщения по Enter
-    document.getElementById('message-input').addEventListener('keypress', function(e) {
+            document.getElementById('message-input').addEventListener('keypress', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     sendMessage();
@@ -3432,6 +3772,20 @@
 
             // Очистка статусов при закрытии страницы
             window.addEventListener('unload', cleanupStatusListeners);
+
+            // Отправка сообщения в чате мероприятия по Enter
+            document.getElementById('event-chat-input')?.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendEventMessage();
+                }
+            });
+            
+            // Авторазмер textarea в чате мероприятия
+            document.getElementById('event-chat-input')?.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
         }
 
 
