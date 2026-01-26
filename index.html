@@ -1190,80 +1190,81 @@
                 </div>
             </div>
         </div>
+    </div>
 
         <!-- ========== ВКЛАДКА МЕРОПРИЯТИЙ ========== -->
-<div class="tab-content" id="events-tab">
-    <div style="background: red; padding: 20px; margin: 20px;">
-        <h2>ТЕСТОВЫЙ КОНТЕНТ МЕРОПРИЯТИЙ</h2>
-        <p>Если это видно, значит вкладка работает!</p>
-    </div>
-    <!-- Форма создания мероприятия (только для админа) -->
-    <div class="create-task-form" id="create-event-form" style="display: none;">
-        <h2 class="mb-20"><i class="fas fa-calendar-plus"></i> Создать мероприятие</h2>
-        
-        <div class="form-group">
-            <label class="form-label">Название мероприятия *</label>
-            <input type="text" class="form-control" id="event-title" placeholder="Введите название мероприятия">
+    <div class="tab-content" id="events-tab">
+        <div style="background: red; padding: 20px; margin: 20px;">
+            <h2>ТЕСТОВЫЙ КОНТЕНТ МЕРОПРИЯТИЙ</h2>
+            <p>Если это видно, значит вкладка работает!</p>
         </div>
+        <!-- Форма создания мероприятия (только для админа) -->
+        <div class="create-task-form" id="create-event-form" style="display: none;">
+            <h2 class="mb-20"><i class="fas fa-calendar-plus"></i> Создать мероприятие</h2>
+            
+            <div class="form-group">
+                <label class="form-label">Название мероприятия *</label>
+                <input type="text" class="form-control" id="event-title" placeholder="Введите название мероприятия">
+            </div>
 
-        <div class="form-group">
-            <label class="form-label">Описание *</label>
-            <textarea class="form-control" id="event-description" placeholder="Подробное описание мероприятия..." rows="4"></textarea>
-        </div>
+            <div class="form-group">
+                <label class="form-label">Описание *</label>
+                <textarea class="form-control" id="event-description" placeholder="Подробное описание мероприятия..." rows="4"></textarea>
+            </div>
 
-        <div class="form-group">
-            <label class="form-label">Дата и время *</label>
-            <input type="datetime-local" class="form-control" id="event-datetime">
-        </div>
+            <div class="form-group">
+                <label class="form-label">Дата и время *</label>
+                <input type="datetime-local" class="form-control" id="event-datetime">
+            </div>
 
-        <div class="form-group">
-            <label class="form-label">Место проведения</label>
-            <input type="text" class="form-control" id="event-location" placeholder="Например: Онлайн, офис, конференц-зал">
-        </div>
+            <div class="form-group">
+                <label class="form-label">Место проведения</label>
+                <input type="text" class="form-control" id="event-location" placeholder="Например: Онлайн, офис, конференц-зал">
+            </div>
 
-        <div class="form-group">
-            <label class="form-label">Обложка мероприятия</label>
-            <input type="file" class="form-control" id="event-image" accept="image/*">
-            <small style="color: rgba(255,255,255,0.5);">Рекомендуемый размер: 1200x600px</small>
-        </div>
+            <div class="form-group">
+                <label class="form-label">Обложка мероприятия</label>
+                <input type="file" class="form-control" id="event-image" accept="image/*">
+                <small style="color: rgba(255,255,255,0.5);">Рекомендуемый размер: 1200x600px</small>
+            </div>
 
-        <div class="form-group">
-            <label class="form-label">Выберите участников</label>
-            <div class="participants-select" id="event-participants" style="max-height: 200px; overflow-y: auto; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
-                <!-- Участники загружаются динамически -->
+            <div class="form-group">
+                <label class="form-label">Выберите участников</label>
+                <div class="participants-select" id="event-participants" style="max-height: 200px; overflow-y: auto; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                    <!-- Участники загружаются динамически -->
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Предпросмотр обложки:</label>
+                <div id="event-image-preview" style="margin-top: 10px;">
+                    <img id="event-image-preview-img" style="max-width: 300px; border-radius: 10px; display: none;">
+                </div>
+            </div>
+
+            <div class="d-flex gap-10">
+                <button class="btn btn-primary" onclick="createEvent()">
+                    <i class="fas fa-plus"></i> Создать мероприятие
+                </button>
+                <button class="btn" onclick="clearEventForm()" style="background: rgba(255,255,255,0.1); color: white;">
+                    <i class="fas fa-times"></i> Очистить
+                </button>
             </div>
         </div>
 
-        <div class="form-group">
-            <label class="form-label">Предпросмотр обложки:</label>
-            <div id="event-image-preview" style="margin-top: 10px;">
-                <img id="event-image-preview-img" style="max-width: 300px; border-radius: 10px; display: none;">
-            </div>
-        </div>
-
-        <div class="d-flex gap-10">
-            <button class="btn btn-primary" onclick="createEvent()">
+        <!-- Заголовок и кнопка создания -->
+        <div class="d-flex justify-between align-center mb-20">
+            <h2><i class="fas fa-calendar-alt"></i> Мероприятия</h2>
+            <button class="btn btn-primary" id="show-create-event-btn" onclick="toggleCreateEventForm()">
                 <i class="fas fa-plus"></i> Создать мероприятие
             </button>
-            <button class="btn" onclick="clearEventForm()" style="background: rgba(255,255,255,0.1); color: white;">
-                <i class="fas fa-times"></i> Очистить
-            </button>
+        </div>
+
+        <!-- Список мероприятий -->
+        <div class="events-grid" id="events-list">
+            <!-- Мероприятия загружаются динамически -->
         </div>
     </div>
-
-    <!-- Заголовок и кнопка создания -->
-    <div class="d-flex justify-between align-center mb-20">
-        <h2><i class="fas fa-calendar-alt"></i> Мероприятия</h2>
-        <button class="btn btn-primary" id="show-create-event-btn" onclick="toggleCreateEventForm()">
-            <i class="fas fa-plus"></i> Создать мероприятие
-        </button>
-    </div>
-
-    <!-- Список мероприятий -->
-    <div class="events-grid" id="events-list">
-        <!-- Мероприятия загружаются динамически -->
-    </div>
-</div>
 
 <!-- ========== ВКЛАДКА ЗАДАНИЙ ========== -->
 <div class="tab-content" id="tasks-tab">
