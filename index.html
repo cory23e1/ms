@@ -1014,16 +1014,16 @@
         </div>
         
         <ul class="nav-links">
-            <li><a href="#" class="nav-link active" onclick="showTab('chat')">
+            <li><a href="#" class="nav-link active" data-tab="chat">
                 <i class="fas fa-comments"></i> Мессенджер
             </a></li>
-            <li><a href="#" class="nav-link" onclick="showTab('events')">
+            <li><a href="#" class="nav-link" data-tab="events">
                 <i class="fas fa-calendar-alt"></i> Мероприятия
             </a></li>
-            <li><a href="#" class="nav-link" onclick="showTab('tasks')">
+            <li><a href="#" class="nav-link" data-tab="tasks">
                 <i class="fas fa-tasks"></i> Задания
             </a></li>
-            <li><a href="#" class="nav-link" onclick="showTab('adaptation')">
+            <li><a href="#" class="nav-link" data-tab="adaptation">
                 <i class="fas fa-graduation-cap"></i> Адаптация
             </a></li>
         </ul>
@@ -1524,6 +1524,9 @@
             
             // Настройка навигации
             setupNavigation();
+
+            // Принудительно показываем вкладку чата при загрузке
+            showTab('chat');
             
             // Инициализация чата
             initChat();
@@ -1818,22 +1821,23 @@
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
-                    const tab = this.getAttribute('onclick').match(/'([^']+)'/)[1];
-                    showTab(tab);
+                    const tab = this.getAttribute('data-tab');
+                    if (tab) {
+                        showTab(tab);
+                    }
                 });
             });
         }
-
+        
         function showTab(tabName) {
             console.log('Переключаю на вкладку:', tabName);
             
             // Скрываем все вкладки
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
-                tab.style.display = 'none'; // Гарантированно скрываем
             });
             
-            // Убираем активный класс у всех кнопок
+            // Убираем активный класс у всех кнопок навигации
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.classList.remove('active');
             });
@@ -1842,15 +1846,15 @@
             const tabElement = document.getElementById(tabName + '-tab');
             if (tabElement) {
                 tabElement.classList.add('active');
-                tabElement.style.display = 'block'; // Гарантированно показываем
             }
             
-            // Активируем кнопку
-            const clickedElement = event && event.target ? event.target : 
-                                  document.querySelector(`.nav-link[onclick*="${tabName}"]`);
-            if (clickedElement) {
-                clickedElement.classList.add('active');
-            }
+            // Активируем кнопку в навигации
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                if (link.getAttribute('onclick') && link.getAttribute('onclick').includes(tabName)) {
+                    link.classList.add('active');
+                }
+            });
             
             // Загружаем данные для вкладки
             switch(tabName) {
@@ -1876,6 +1880,7 @@
                     break;
             }
         }
+        
         // ========== АДМИН ПАНЕЛЬ ==========
         function checkAdminStatus() {
             isAdmin = currentUser.username === 'admin' || currentUser.role === 'Администратор';
