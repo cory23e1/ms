@@ -1155,147 +1155,147 @@
         </div>
 
         <!-- ========== ВКЛАДКА МЕРОПРИЯТИЙ ========== -->
-        <div class="tab-content" id="events-tab">
-        <!-- Форма создания мероприятия (только для админа) -->
-            <div class="create-task-form" id="create-event-form" style="display: none;">
-                <h2 class="mb-20"><i class="fas fa-calendar-plus"></i> Создать мероприятие</h2>
-                
-                <div class="form-group">
-                    <label class="form-label">Название мероприятия *</label>
-                    <input type="text" class="form-control" id="event-title" placeholder="Введите название мероприятия">
-                </div>
+<div class="tab-content" id="events-tab">
+    <!-- Форма создания мероприятия (только для админа) -->
+    <div class="create-task-form" id="create-event-form" style="display: none;">
+        <h2 class="mb-20"><i class="fas fa-calendar-plus"></i> Создать мероприятие</h2>
         
-                <div class="form-group">
-                    <label class="form-label">Описание *</label>
-                    <textarea class="form-control" id="event-description" placeholder="Подробное описание мероприятия..." rows="4"></textarea>
-                </div>
-        
-                <div class="form-group">
-                    <label class="form-label">Дата и время *</label>
-                    <input type="datetime-local" class="form-control" id="event-datetime">
-                </div>
-        
-                <div class="form-group">
-                    <label class="form-label">Место проведения</label>
-                    <input type="text" class="form-control" id="event-location" placeholder="Например: Онлайн, офис, конференц-зал">
-                </div>
-        
-                <div class="form-group">
-                    <label class="form-label">Обложка мероприятия</label>
-                    <input type="file" class="form-control" id="event-image" accept="image/*">
-                    <small style="color: rgba(255,255,255,0.5);">Рекомендуемый размер: 1200x600px</small>
-                </div>
-        
-                <div class="form-group">
-                    <label class="form-label">Выберите участников</label>
-                    <div class="participants-select" id="event-participants" style="max-height: 200px; overflow-y: auto; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
-                        <!-- Участники загружаются динамически -->
-                    </div>
-                </div>
-        
-                <div class="form-group">
-                    <label class="form-label">Предпросмотр обложки:</label>
-                    <div id="event-image-preview" style="margin-top: 10px;">
-                        <img id="event-image-preview-img" style="max-width: 300px; border-radius: 10px; display: none;">
-                    </div>
-                </div>
-        
-                <div class="d-flex gap-10">
-                    <button class="btn btn-primary" onclick="createEvent()">
-                        <i class="fas fa-plus"></i> Создать мероприятие
-                    </button>
-                    <button class="btn" onclick="clearEventForm()" style="background: rgba(255,255,255,0.1); color: white;">
-                        <i class="fas fa-times"></i> Очистить
-                    </button>
-                </div>
-            </div>
-    
-            <!-- Заголовок и кнопка создания -->
-            <div class="d-flex justify-between align-center mb-20">
-                <h2><i class="fas fa-calendar-alt"></i> Мероприятия</h2>
-                <button class="btn btn-primary" id="show-create-event-btn" onclick="toggleCreateEventForm()">
-                    <i class="fas fa-plus"></i> Создать мероприятие
-                </button>
-            </div>
-    
-            <!-- Список мероприятий -->
-            <div class="events-grid" id="events-list">
-                <!-- Мероприятия загружаются динамически -->
-            </div>
+        <div class="form-group">
+            <label class="form-label">Название мероприятия *</label>
+            <input type="text" class="form-control" id="event-title" placeholder="Введите название мероприятия">
         </div>
-        <!-- ========== ВКЛАДКА ЗАДАНИЙ ========== -->
-        <div class="tab-content" id="tasks-tab">
-            <!-- Форма создания задания (только для админа) -->
-            <div class="create-task-form" id="create-task-form" style="display: none;">
-                <h2 class="mb-20"><i class="fas fa-plus-circle"></i> Создать новое задание</h2>
-                
-                <div class="form-group">
-                    <label class="form-label">Тема задания *</label>
-                    <input type="text" class="form-control" id="task-title" placeholder="Введите тему задания">
-                </div>
 
-                <div class="form-group">
-                    <label class="form-label">Описание задания *</label>
-                    <textarea class="form-control" id="task-description" placeholder="Подробное описание задания..." rows="4"></textarea>
-                </div>
+        <div class="form-group">
+            <label class="form-label">Описание *</label>
+            <textarea class="form-control" id="event-description" placeholder="Подробное описание мероприятия..." rows="4"></textarea>
+        </div>
 
-                <div class="form-group">
-                    <label class="form-label">Награда *</label>
-                    <input type="text" class="form-control" id="task-reward" placeholder="Например: 100 очков, Бонус, Сертификат">
-                </div>
+        <div class="form-group">
+            <label class="form-label">Дата и время *</label>
+            <input type="datetime-local" class="form-control" id="event-datetime">
+        </div>
 
-                <div class="form-group">
-                    <label class="form-label">Прикрепить файлы (максимум 3 файла, до 5MB каждый)</label>
-                    <input type="file" class="form-control" id="task-files" multiple accept="image/*,video/*,.gif,.pdf,.doc,.docx,.txt">
-                </div>
+        <div class="form-group">
+            <label class="form-label">Место проведения</label>
+            <input type="text" class="form-control" id="event-location" placeholder="Например: Онлайн, офис, конференц-зал">
+        </div>
 
-                <div class="form-group">
-                    <label class="form-label">Предпросмотр файлов:</label>
-                    <div class="file-preview" id="task-file-preview"></div>
-                </div>
+        <div class="form-group">
+            <label class="form-label">Обложка мероприятия</label>
+            <input type="file" class="form-control" id="event-image" accept="image/*">
+            <small style="color: rgba(255,255,255,0.5);">Рекомендуемый размер: 1200x600px</small>
+        </div>
 
-                <div class="d-flex gap-10">
-                    <button class="btn btn-primary" onclick="createTask()">
-                        <i class="fas fa-plus"></i> Создать задание
-                    </button>
-                    <button class="btn" onclick="clearTaskForm()" style="background: rgba(255,255,255,0.1); color: white;">
-                        <i class="fas fa-times"></i> Очистить
-                    </button>
-                </div>
-            </div>
-
-            <!-- Кнопка создания задания (только для админа) -->
-            <div class="d-flex justify-between align-center mb-20">
-                <h2><i class="fas fa-tasks"></i> Задания</h2>
-                <button class="btn btn-primary" id="show-create-form-btn" onclick="toggleCreateTaskForm()">
-                    <i class="fas fa-plus"></i> Создать задание
-                </button>
-            </div>
-
-            <!-- Список заданий -->
-            <div class="tasks-grid" id="tasks-list">
-                <!-- Задания загружаются динамически -->
+        <div class="form-group">
+            <label class="form-label">Выберите участников</label>
+            <div class="participants-select" id="event-participants" style="max-height: 200px; overflow-y: auto; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                <!-- Участники загружаются динамически -->
             </div>
         </div>
 
-        <!-- ========== ВКЛАДКА АДАПТАЦИИ ========== -->
-        <div class="tab-content" id="adaptation-tab">
-            <h2 class="mb-20"><i class="fas fa-graduation-cap"></i> Материалы для адаптации</h2>
-            
-            <div class="materials-list" id="materials-list">
-                <!-- Материалы загружаются динамически -->
-                <div class="material-item">
-                    <div class="material-icon">
-                        <i class="fas fa-book"></i>
-                    </div>
-                    <div class="material-content">
-                        <div class="material-title">Добро пожаловать!</div>
-                        <div class="material-description">Здесь будут размещены материалы для адаптации новых сотрудников</div>
-                    </div>
-                </div>
+        <div class="form-group">
+            <label class="form-label">Предпросмотр обложки:</label>
+            <div id="event-image-preview" style="margin-top: 10px;">
+                <img id="event-image-preview-img" style="max-width: 300px; border-radius: 10px; display: none;">
+            </div>
+        </div>
+
+        <div class="d-flex gap-10">
+            <button class="btn btn-primary" onclick="createEvent()">
+                <i class="fas fa-plus"></i> Создать мероприятие
+            </button>
+            <button class="btn" onclick="clearEventForm()" style="background: rgba(255,255,255,0.1); color: white;">
+                <i class="fas fa-times"></i> Очистить
+            </button>
+        </div>
+    </div>
+
+    <!-- Заголовок и кнопка создания -->
+    <div class="d-flex justify-between align-center mb-20">
+        <h2><i class="fas fa-calendar-alt"></i> Мероприятия</h2>
+        <button class="btn btn-primary" id="show-create-event-btn" onclick="toggleCreateEventForm()">
+            <i class="fas fa-plus"></i> Создать мероприятие
+        </button>
+    </div>
+
+    <!-- Список мероприятий -->
+    <div class="events-grid" id="events-list">
+        <!-- Мероприятия загружаются динамически -->
+    </div>
+</div>
+
+<!-- ========== ВКЛАДКА ЗАДАНИЙ ========== -->
+<div class="tab-content" id="tasks-tab">
+    <!-- Форма создания задания (только для админа) -->
+    <div class="create-task-form" id="create-task-form" style="display: none;">
+        <h2 class="mb-20"><i class="fas fa-plus-circle"></i> Создать новое задание</h2>
+        
+        <div class="form-group">
+            <label class="form-label">Тема задания *</label>
+            <input type="text" class="form-control" id="task-title" placeholder="Введите тему задания">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Описание задания *</label>
+            <textarea class="form-control" id="task-description" placeholder="Подробное описание задания..." rows="4"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Награда *</label>
+            <input type="text" class="form-control" id="task-reward" placeholder="Например: 100 очков, Бонус, Сертификат">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Прикрепить файлы (максимум 3 файла, до 5MB каждый)</label>
+            <input type="file" class="form-control" id="task-files" multiple accept="image/*,video/*,.gif,.pdf,.doc,.docx,.txt">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Предпросмотр файлов:</label>
+            <div class="file-preview" id="task-file-preview"></div>
+        </div>
+
+        <div class="d-flex gap-10">
+            <button class="btn btn-primary" onclick="createTask()">
+                <i class="fas fa-plus"></i> Создать задание
+            </button>
+            <button class="btn" onclick="clearTaskForm()" style="background: rgba(255,255,255,0.1); color: white;">
+                <i class="fas fa-times"></i> Очистить
+            </button>
+        </div>
+    </div>
+
+    <!-- Кнопка создания задания (только для админа) -->
+    <div class="d-flex justify-between align-center mb-20">
+        <h2><i class="fas fa-tasks"></i> Задания</h2>
+        <button class="btn btn-primary" id="show-create-form-btn" onclick="toggleCreateTaskForm()">
+            <i class="fas fa-plus"></i> Создать задание
+        </button>
+    </div>
+
+    <!-- Список заданий -->
+    <div class="tasks-grid" id="tasks-list">
+        <!-- Задания загружаются динамически -->
+    </div>
+</div>
+
+<!-- ========== ВКЛАДКА АДАПТАЦИИ ========== -->
+<div class="tab-content" id="adaptation-tab">
+    <h2 class="mb-20"><i class="fas fa-graduation-cap"></i> Материалы для адаптации</h2>
+    
+    <div class="materials-list" id="materials-list">
+        <!-- Материалы загружаются динамически -->
+        <div class="material-item">
+            <div class="material-icon">
+                <i class="fas fa-book"></i>
+            </div>
+            <div class="material-content">
+                <div class="material-title">Добро пожаловать!</div>
+                <div class="material-description">Здесь будут размещены материалы для адаптации новых сотрудников</div>
             </div>
         </div>
     </div>
+</div>
 
     <!-- ========== МОДАЛЬНЫЕ ОКНА ========== -->
     <!-- Модальное окно профиля -->
