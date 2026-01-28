@@ -2321,9 +2321,16 @@
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
 
+        // ========== ОБНОВЛЕННАЯ ФУНКЦИЯ СОЗДАНИЯ ЭЛЕМЕНТА СООБЩЕНИЯ ==========
         function createMessageElement(message, isCurrentUser) {
             const div = document.createElement('div');
             div.className = `message ${isCurrentUser ? 'sent' : ''}`;
+            
+            // Определяем timestamp: используем серверное если есть, иначе локальное
+            const timestamp = message.firebaseTimestamp || message.timestamp || message.localTimestamp || Date.now();
+            
+            // Форматируем время для отображения (Самара UTC+4)
+            const displayTime = getSamaraTime(timestamp);
             
             let attachmentHtml = '';
             if (message.attachment) {
@@ -2349,7 +2356,7 @@
                             ${message.username}
                             <span class="message-role">${message.userRole}</span>
                         </div>
-                        <div class="message-time">${new Date(message.timestamp).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</div>
+                        <div class="message-time">${displayTime}</div>
                     </div>
                     <div class="message-text">${message.text}</div>
                     ${attachmentHtml}
@@ -2360,7 +2367,7 @@
                     ` : ''}
                 </div>
             `;
-
+        
             return div;
         }
 
@@ -2374,6 +2381,10 @@
                 return;
             }
             
+            // Используем серверное время Firebase (в UTC миллисекундах)
+            const timestamp = Date.now(); // Будет заменено на серверное время
+            const serverTimestamp = firebase.database.ServerValue.TIMESTAMP;
+            
             const message = {
                 id: generateId(),
                 text: text,
@@ -2382,8 +2393,11 @@
                 userRole: currentUser.position || currentUser.role || 'Пользователь',
                 userOrganization: currentUser.organization || '',
                 userAvatar: currentUser.avatar || getDefaultAvatar(currentUser.username),
-                timestamp: Date.now(),
-                attachment: currentAttachment
+                timestamp: serverTimestamp, // Используем серверное время Firebase
+                firebaseTimestamp: serverTimestamp,
+                localTimestamp: timestamp, // Сохраняем и локальное для fallback
+                attachment: currentAttachment,
+                timezone: 'UTC+4' // Указываем часовой пояс
             };
             
             database.ref('messages/' + message.id).set(message)
@@ -3420,6 +3434,12 @@
             
             const isCurrentUser = message.userId === currentUser?.id;
             
+            // Определяем timestamp
+            const timestamp = message.firebaseTimestamp || message.timestamp || message.localTimestamp || Date.now();
+            
+            // Форматируем время для отображения (Самара UTC+4)
+            const displayTime = formatSamaraDateTime(timestamp);
+            
             div.innerHTML = `
                 <div class="event-chat-message-header">
                     <img src="${message.userAvatar || getDefaultAvatar(message.username)}" 
@@ -3430,9 +3450,7 @@
                         ${isCurrentUser ? ' <span style="font-size: 11px; color: var(--primary);">(Вы)</span>' : ''}
                     </div>
                     <div class="event-chat-time">
-                        ${new Date(message.timestamp).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
-                        ${new Date(message.timestamp).toLocaleDateString() !== new Date().toLocaleDateString() ? 
-                          ' • ' + new Date(message.timestamp).toLocaleDateString('ru-RU', {day: 'numeric', month: 'short'}) : ''}
+                        ${displayTime}
                     </div>
                 </div>
                 <div class="event-chat-text">${message.text}</div>
@@ -3462,14 +3480,20 @@
                 return;
             }
             
+            const timestamp = Date.now(); // Будет заменено на серверное время
+            const serverTimestamp = firebase.database.ServerValue.TIMESTAMP;
+            
             const message = {
                 id: generateId(),
                 text: text,
                 userId: currentUser.id,
                 username: currentUser.username,
                 userAvatar: currentUser.avatar || getDefaultAvatar(currentUser.username),
-                timestamp: Date.now(),
-                eventId: currentEventId
+                timestamp: serverTimestamp, // Используем серверное время Firebase
+                firebaseTimestamp: serverTimestamp,
+                localTimestamp: timestamp, // Сохраняем и локальное для fallback
+                eventId: currentEventId,
+                timezone: 'UTC+4'
             };
             
             database.ref(`eventMessages/${currentEventId}/${message.id}`).set(message)
@@ -3787,6 +3811,48 @@
                 this.style.height = (this.scrollHeight) + 'px';
             });
         }
+
+        // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ВРЕМЕНИ ==========
+        function getSamaraTime(timestamp) {
+            // Преобразуем timestamp в объект Date
+            const date = new Date(timestamp);
+            
+            // Получаем время в UTC
+            const utcHours = date.getUTCHours();
+            const utcMinutes = date.getUTCMinutes();
+            const utcSeconds = date.getUTCSeconds();
+            
+            // Добавляем 4 часа для Самары (UTC+4)
+            const samaraHours = (utcHours + 4) % 24;
+            
+            // Форматируем время для отображения
+            const hours = samaraHours.toString().padStart(2, '0');
+            const minutes = utcMinutes.toString().padStart(2, '0');
+            
+            return `${hours}:${minutes}`;
+        }
+        
+        function formatSamaraDateTime(timestamp) {
+            const date = new Date(timestamp);
+            
+            // Добавляем 4 часа для Самары
+            const samaraTime = new Date(date.getTime() + (4 * 60 * 60 * 1000));
+            
+            const today = new Date();
+            const isToday = samaraTime.toDateString() === today.toDateString();
+            
+            const hours = samaraTime.getUTCHours().toString().padStart(2, '0');
+            const minutes = samaraTime.getUTCMinutes().toString().padStart(2, '0');
+            
+            if (isToday) {
+                return `${hours}:${minutes}`;
+            } else {
+                const day = samaraTime.getUTCDate();
+                const month = samaraTime.toLocaleDateString('ru-RU', { month: 'short' });
+                return `${hours}:${minutes} • ${day} ${month}`;
+            }
+        }
+
 
 
     </script>
