@@ -420,17 +420,91 @@
             gap: 15px;
         }
 
+        /* ========== СТИЛИ ДЛЯ ЭМОДЗИ ПИКЕРА ========== */
+        .emoji-picker {
+            background: rgba(26, 26, 46, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .emoji-categories {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .emoji-category-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .emoji-category-btn:hover {
+            background: rgba(67, 97, 238, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .emoji-category-btn.active {
+            background: rgba(67, 97, 238, 0.4);
+            border-color: var(--primary);
+        }
+        
+        .emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 5px;
+        }
+        
+        .emoji-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 24px;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .emoji-btn:hover {
+            background: rgba(67, 97, 238, 0.2);
+            transform: scale(1.1);
+        }
+
         .message {
             display: flex;
             gap: 12px;
             max-width: 70%;
-            animation: slideIn 0.3s ease;
+            animation: slideIn 0.2s ease;
         }
 
         @keyframes slideIn {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(10px);
             }
             to {
                 opacity: 1;
@@ -528,6 +602,11 @@
             min-height: 50px;
         }
 
+        .chat-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
         .chat-btn {
             width: 50px;
             height: 50px;
@@ -540,6 +619,11 @@
             align-items: center;
             justify-content: center;
             font-size: 18px;
+            transition: all 0.2s;
+        }
+
+        .chat-btn:active {
+            transform: scale(0.95);
         }
 
         /* ========== СТИЛИ ДЛЯ ВКЛАДКИ ЗАДАНИЙ ========== */
@@ -1235,6 +1319,23 @@
                             </button>
                         </div>
                         
+                        <div class="emoji-picker" id="emoji-picker" style="display: none;">
+                            <div class="emoji-categories">
+                                <button class="emoji-category-btn active" onclick="showEmojiCategory('smileys')">😀</button>
+                                <button class="emoji-category-btn" onclick="showEmojiCategory('people')">👋</button>
+                                <button class="emoji-category-btn" onclick="showEmojiCategory('animals')">🐶</button>
+                                <button class="emoji-category-btn" onclick="showEmojiCategory('food')">🍎</button>
+                                <button class="emoji-category-btn" onclick="showEmojiCategory('activities')">⚽</button>
+                                <button class="emoji-category-btn" onclick="showEmojiCategory('objects')">💡</button>
+                                <button class="emoji-category-btn" onclick="showEmojiCategory('symbols')">❤️</button>
+                                <button class="emoji-category-btn" onclick="showEmojiCategory('flags')">🏁</button>
+                            </div>
+                            
+                            <div class="emoji-grid" id="emoji-grid">
+                                <!-- Эмодзи будут загружены динамически -->
+                            </div>
+                        </div>
+                        
                         <div class="chat-input">
                             <textarea class="message-input" 
                                       id="message-input" 
@@ -1244,6 +1345,9 @@
                             <div class="chat-buttons">
                                 <button class="chat-btn" onclick="openAttachmentModal()">
                                     <i class="fas fa-paperclip"></i>
+                                </button>
+                                <button class="chat-btn" onclick="toggleEmojiPicker()" type="button">
+                                    <i class="fas fa-smile"></i>
                                 </button>
                                 <button class="chat-btn" onclick="sendMessage()">
                                     <i class="fas fa-paper-plane"></i>
@@ -1661,6 +1765,17 @@
         
         let currentEventId = null;
         let eventMessagesListener = null;
+        let emojiPickerVisible = false;
+        const emojiCategories = {
+            smileys: ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🥸', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕'],
+            people: ['👋', '🤚', '🖐', '✋', '🖖', '👌', '🤌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '🖕', '👇', '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '✍️', '💅', '🤳', '💪', '🦾', '🦿', '🦵', '🦶', '👂', '🦻', '👃', '🧠', '🦷', '🦴', '👀', '👁️', '👅', '👄', '👶', '🧒', '👦', '👧', '🧑', '👱', '👨', '🧔', '👩', '🧓', '👴', '👵'],
+            animals: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐽', '🐸', '🐵', '🙈', '🙉', '🙊', '🐒', '🐔', '🐧', '🐦', '🐤', '🐣', '🐥', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🐛', '🦋', '🐌', '🐞', '🐜', '🦟', '🦗', '🕷️', '🦂', '🐢', '🐍', '🦎', '🦖', '🦕', '🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟', '🐬', '🐳', '🐋', '🦈', '🐊', '🐅', '🐆', '🦓', '🦍', '🦧', '🐘', '🦛', '🦏', '🐪', '🐫', '🦒', '🦘', '🐃', '🐂', '🐄', '🐎', '🐖', '🐏', '🐑', '🦙', '🐐', '🦌', '🐕', '🐩', '🦮', '🐕‍🦺', '🐈', '🐈‍⬛'],
+            food: ['🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🍆', '🥑', '🥦', '🥬', '🥒', '🌶️', '🫑', '🌽', '🥕', '🫒', '🧄', '🧅', '🥔', '🍠', '🥐', '🥯', '🍞', '🥖', '🥨', '🧀', '🥚', '🍳', '🧈', '🥞', '🧇', '🥓', '🥩', '🍗', '🍖', '🦴', '🌭', '🍔', '🍟', '🍕', '🫓', '🥪', '🥙', '🧆', '🌮', '🌯', '🫔', '🥗', '🥘', '🫕', '🥫', '🍝', '🍜', '🍲', '🍛', '🍣', '🍱', '🥟', '🦪', '🍤', '🍙', '🍚', '🍘', '🍥', '🥠', '🥮', '🍢', '🍡', '🍧', '🍨', '🍦', '🥧', '🧁', '🍰', '🎂', '🍮', '🍭', '🍬', '🍫', '🍿', '🍩', '🍪', '🌰', '🥜', '🍯', '🥛', '🍼', '🫖', '☕', '🍵', '🧃', '🥤', '🧋', '🍶', '🍺', '🍻', '🥂', '🍷', '🥃', '🍸', '🍹', '🧉', '🍾'],
+            activities: ['⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🥏', '🎱', '🪀', '🏓', '🏸', '🏒', '🏑', '🥍', '🏏', '🪃', '🥅', '⛳', '🪁', '🏹', '🎣', '🤿', '🥊', '🥋', '🎽', '🛹', '🛼', '🛷', '⛸️', '🥌', '🎿', '⛷️', '🏂', '🪂', '🏋️', '🤼', '🤸', '⛹️', '🤺', '🤾', '🏌️', '🏇', '🧘', '🏄', '🏊', '🤽', '🚣', '🧗', '🚵', '🚴', '🏆', '🥇', '🥈', '🥉', '🏅', '🎖️', '🏵️', '🎗️', '🎫', '🎟️', '🎪', '🤹', '🎭', '🩰', '🎨', '🎬', '🎤', '🎧', '🎼', '🎹', '🥁', '🎷', '🎺', '🎸', '🪕', '🎻', '🎲', '♟️', '🎯', '🎳', '🎮', '🎰'],
+            objects: ['⌚', '📱', '📲', '💻', '⌨️', '🖥️', '🖨️', '🖱️', '🖲️', '🕹️', '🗜️', '💽', '💾', '💿', '📀', '📼', '📷', '📸', '📹', '🎥', '📽️', '🎞️', '📞', '☎️', '📟', '📠', '📺', '📻', '🎙️', '🎚️', '🎛️', '🧭', '⏱️', '⏲️', '⏰', '🕰️', '🌡️', '⛱️', '🧨', '🎈', '🎉', '🎊', '🎎', '🎏', '🎐', '🧧', '🎀', '🎁', '🤿', '🪀', '🧩', '🪅', '🪆', '🧸', '🪆', '🪔', '🧵', '🪡', '🧶', '🪢', '👓', '🕶️', '🥽', '🥼', '🦺', '👔', '👕', '👖', '🧣', '🧤', '🧥', '🧦', '👗', '👘', '🥻', '🩱', '🩲', '🩳', '👙', '👚', '👛', '👜', '👝', '🎒', '🩴', '👞', '👟', '🥾', '🥿', '👠', '👡', '🩰', '👢', '👑', '👒', '🎩', '🎓', '🧢', '🪖', '💄', '💍', '💼'],
+            symbols: ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❤️‍🔥', '❤️‍🩹', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💟', '☮️', '✝️', '☪️', '🕉️', '☸️', '✡️', '🔯', '🕎', '☯️', '☦️', '🛐', '⛎', '♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓', '🆔', '⚛️', '🉑', '☢️', '☣️', '📴', '📳', '🈶', '🈚', '🈸', '🈺', '🈷️', '✴️', '🆚', '💮', '🉐', '㊙️', '㊗️', '🈴', '🈵', '🈹', '🈲', '🅰️', '🅱️', '🆎', '🆑', '🅾️', '🆘', '❌', '⭕', '🛑', '⛔', '📛', '🚫', '💯', '💢', '♨️', '🚷', '🚯', '🚳', '🚱', '🔞', '📵', '🚭'],
+            flags: ['🏁', '🚩', '🎌', '🏴', '🏳️', '🏳️‍🌈', '🏳️‍⚧️', '🏴‍☠️', '🇦🇨', '🇦🇩', '🇦🇪', '🇦🇫', '🇦🇬', '🇦🇮', '🇦🇱', '🇦🇲', '🇦🇴', '🇦🇶', '🇦🇷', '🇦🇸', '🇦🇹', '🇦🇺', '🇦🇼', '🇦🇽', '🇦🇿', '🇧🇦', '🇧🇧', '🇧🇩', '🇧🇪', '🇧🇫', '🇧🇬', '🇧🇭', '🇧🇮', '🇧🇯', '🇧🇱', '🇧🇲', '🇧🇳', '🇧🇴', '🇧🇶', '🇧🇷', '🇧🇸', '🇧🇹', '🇧🇻', '🇧🇼', '🇧🇾', '🇧🇿', '🇨🇦', '🇨🇨', '🇨🇩', '🇨🇫', '🇨🇬', '🇨🇭', '🇨🇮', '🇨🇰', '🇨🇱', '🇨🇲', '🇨🇳', '🇨🇴', '🇨🇷', '🇨🇺', '🇨🇻', '🇨🇼', '🇨🇽', '🇨🇾', '🇨🇿', '🇩🇪', '🇩🇬', '🇩🇯', '🇩🇰', '🇩🇲', '🇩🇴', '🇩🇿', '🇪🇦', '🇪🇨', '🇪🇪', '🇪🇬', '🇪🇭', '🇪🇷', '🇪🇸', '🇪🇹', '🇪🇺', '🇫🇮', '🇫🇯', '🇫🇰', '🇫🇲', '🇫🇴', '🇫🇷', '🇬🇦', '🇬🇧', '🇬🇩', '🇬🇪', '🇬🇫', '🇬🇬', '🇬🇭', '🇬🇮', '🇬🇱', '🇬🇲', '🇬🇳', '🇬🇵', '🇬🇶', '🇬🇷', '🇬🇸', '🇬🇹', '🇬🇺', '🇬🇼', '🇬🇾']
+        };
 
         // ========== ИНИЦИАЛИЗАЦИЯ ==========
         document.addEventListener('DOMContentLoaded', function() {
@@ -1698,6 +1813,11 @@
             setTimeout(() => {
                 checkTabsStructure();
                 console.log('Текущий пользователь:', currentUser);
+            }, 1000);
+
+            // Инициализируем панель эмодзи
+            setTimeout(() => {
+                showEmojiCategory('smileys');
             }, 1000);
         });
 
@@ -2381,8 +2501,13 @@
                 return;
             }
             
-            // Используем серверное время Firebase (в UTC миллисекундах)
-            const timestamp = Date.now(); // Будет заменено на серверное время
+            // Скрываем панель эмодзи если открыта
+            if (emojiPickerVisible) {
+                document.getElementById('emoji-picker').style.display = 'none';
+                emojiPickerVisible = false;
+            }
+            
+            // Используем серверное время Firebase
             const serverTimestamp = firebase.database.ServerValue.TIMESTAMP;
             
             const message = {
@@ -2393,24 +2518,64 @@
                 userRole: currentUser.position || currentUser.role || 'Пользователь',
                 userOrganization: currentUser.organization || '',
                 userAvatar: currentUser.avatar || getDefaultAvatar(currentUser.username),
-                timestamp: serverTimestamp, // Используем серверное время Firebase
+                timestamp: serverTimestamp,
                 firebaseTimestamp: serverTimestamp,
-                localTimestamp: timestamp, // Сохраняем и локальное для fallback
+                localTimestamp: Date.now(),
                 attachment: currentAttachment,
-                timezone: 'UTC+4' // Указываем часовой пояс
+                timezone: 'UTC+4'
             };
             
+            // Немедленно очищаем поле ввода для лучшего UX
+            const originalText = text;
+            input.value = '';
+            currentAttachment = null;
+            updateAttachmentPreview();
+            
+            // Оптимизация: уменьшаем анимацию при отправке
+            input.style.transition = 'none';
+            input.style.height = 'auto';
+            
+            // Добавляем класс для визуальной обратной связи
+            const sendBtn = event.target;
+            const originalHTML = sendBtn.innerHTML;
+            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            sendBtn.disabled = true;
+            
+            // Отправляем сообщение
             database.ref('messages/' + message.id).set(message)
                 .then(() => {
-                    input.value = '';
-                    currentAttachment = null;
-                    updateAttachmentPreview();
                     input.focus();
-                    showAlert('Сообщение отправлено!', 'success');
+                    
+                    // Быстро показываем уведомление
+                    setTimeout(() => {
+                        Swal.fire({
+                            title: '✓',
+                            text: 'Отправлено',
+                            icon: 'success',
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 1500,
+                            timerProgressBar: true
+                        });
+                    }, 50);
                 })
                 .catch(error => {
                     console.error('Ошибка отправки сообщения:', error);
-                    showAlert('Ошибка отправки', 'error');
+                    
+                    // Восстанавливаем текст при ошибке
+                    input.value = originalText;
+                    currentAttachment = message.attachment;
+                    updateAttachmentPreview();
+                    
+                    showAlert('Ошибка отправки', 'error', 'Попробуйте еще раз');
+                })
+                .finally(() => {
+                    // Восстанавливаем кнопку
+                    setTimeout(() => {
+                        sendBtn.innerHTML = originalHTML;
+                        sendBtn.disabled = false;
+                    }, 500);
                 });
         }
 
@@ -3480,7 +3645,6 @@
                 return;
             }
             
-            const timestamp = Date.now(); // Будет заменено на серверное время
             const serverTimestamp = firebase.database.ServerValue.TIMESTAMP;
             
             const message = {
@@ -3489,21 +3653,39 @@
                 userId: currentUser.id,
                 username: currentUser.username,
                 userAvatar: currentUser.avatar || getDefaultAvatar(currentUser.username),
-                timestamp: serverTimestamp, // Используем серверное время Firebase
+                timestamp: serverTimestamp,
                 firebaseTimestamp: serverTimestamp,
-                localTimestamp: timestamp, // Сохраняем и локальное для fallback
+                localTimestamp: Date.now(),
                 eventId: currentEventId,
                 timezone: 'UTC+4'
             };
             
+            // Немедленно очищаем поле ввода
+            input.value = '';
+            input.style.height = 'auto';
+            
+            // Визуальная обратная связь
+            const sendBtn = document.querySelector('#event-tab-chat .btn-primary');
+            if (sendBtn) {
+                const originalHTML = sendBtn.innerHTML;
+                sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                sendBtn.disabled = true;
+                
+                setTimeout(() => {
+                    sendBtn.innerHTML = originalHTML;
+                    sendBtn.disabled = false;
+                }, 500);
+            }
+            
             database.ref(`eventMessages/${currentEventId}/${message.id}`).set(message)
                 .then(() => {
-                    input.value = '';
                     input.focus();
                 })
                 .catch(error => {
                     console.error('Ошибка отправки сообщения:', error);
-                    showAlert('Ошибка отправки', 'error');
+                    // Восстанавливаем текст при ошибке
+                    input.value = text;
+                    showAlert('Ошибка отправки', 'error', 'Попробуйте еще раз');
                 });
         }
         
@@ -3766,18 +3948,47 @@
         }
 
         function setupEventListeners() {
-            // Отправка сообщения по Enter
+            // Отправка сообщения по Enter (с улучшенной обработкой)
             document.getElementById('message-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
+                if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     sendMessage();
                 }
             });
             
-            // Авторазмер textarea
+            // Авторазмер textarea с оптимизацией
             document.getElementById('message-input').addEventListener('input', function() {
                 this.style.height = 'auto';
-                this.style.height = (this.scrollHeight) + 'px';
+                this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+            });
+
+            // Закрытие панели эмодзи при клике вне её
+            document.addEventListener('click', function(event) {
+                const picker = document.getElementById('emoji-picker');
+                const emojiBtn = document.querySelector('.chat-btn .fa-smile')?.closest('.chat-btn');
+                
+                if (picker && emojiPickerVisible && 
+                    !picker.contains(event.target) && 
+                    !emojiBtn?.contains(event.target)) {
+                    picker.style.display = 'none';
+                    emojiPickerVisible = false;
+                }
+            });
+
+            // Оптимизация для быстрой отправки
+            const messageInput = document.getElementById('message-input');
+            let lastSendTime = 0;
+            const SEND_COOLDOWN = 500; // 500ms cooldown
+
+            messageInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    const now = Date.now();
+                    if (now - lastSendTime < SEND_COOLDOWN) {
+                        e.preventDefault();
+                        return;
+                    }
+                    lastSendTime = now;
+                }
             });
             
             // Обработка выбора файла в модалке
@@ -3808,7 +4019,7 @@
             // Авторазмер textarea в чате мероприятия
             document.getElementById('event-chat-input')?.addEventListener('input', function() {
                 this.style.height = 'auto';
-                this.style.height = (this.scrollHeight) + 'px';
+                this.style.height = Math.min(this.scrollHeight, 100) + 'px';
             });
         }
 
@@ -3853,6 +4064,55 @@
             }
         }
 
+        // ========== ФУНКЦИИ ДЛЯ ЭМОДЗИ ==========
+        function toggleEmojiPicker() {
+            const picker = document.getElementById('emoji-picker');
+            if (picker.style.display === 'none') {
+                picker.style.display = 'block';
+                emojiPickerVisible = true;
+                showEmojiCategory('smileys');
+            } else {
+                picker.style.display = 'none';
+                emojiPickerVisible = false;
+            }
+        }
+        
+        function showEmojiCategory(category) {
+            const grid = document.getElementById('emoji-grid');
+            const emojis = emojiCategories[category] || [];
+            
+            grid.innerHTML = '';
+            
+            // Обновляем активную категорию
+            document.querySelectorAll('.emoji-category-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Добавляем эмодзи в сетку
+            emojis.forEach(emoji => {
+                const btn = document.createElement('button');
+                btn.className = 'emoji-btn';
+                btn.textContent = emoji;
+                btn.onclick = () => insertEmoji(emoji);
+                grid.appendChild(btn);
+            });
+        }
+        
+        function insertEmoji(emoji) {
+            const input = document.getElementById('message-input');
+            const cursorPos = input.selectionStart;
+            const textBefore = input.value.substring(0, cursorPos);
+            const textAfter = input.value.substring(cursorPos);
+            
+            input.value = textBefore + emoji + textAfter;
+            input.focus();
+            input.selectionStart = input.selectionEnd = cursorPos + emoji.length;
+            
+            // Автоматически скрываем панель эмодзи после выбора
+            document.getElementById('emoji-picker').style.display = 'none';
+            emojiPickerVisible = false;
+        }
 
 
     </script>
