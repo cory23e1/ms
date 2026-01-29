@@ -1322,14 +1322,14 @@
                         
                         <div class="emoji-picker" id="emoji-picker" style="display: none;">
                             <div class="emoji-categories">
-                                <button class="emoji-category-btn active" onclick="showEmojiCategory('smileys')">😀</button>
-                                <button class="emoji-category-btn" onclick="showEmojiCategory('people')">👋</button>
-                                <button class="emoji-category-btn" onclick="showEmojiCategory('animals')">🐶</button>
-                                <button class="emoji-category-btn" onclick="showEmojiCategory('food')">🍎</button>
-                                <button class="emoji-category-btn" onclick="showEmojiCategory('activities')">⚽</button>
-                                <button class="emoji-category-btn" onclick="showEmojiCategory('objects')">💡</button>
-                                <button class="emoji-category-btn" onclick="showEmojiCategory('symbols')">❤️</button>
-                                <button class="emoji-category-btn" onclick="showEmojiCategory('flags')">🏁</button>
+                                <button class="emoji-category-btn active" data-category="smileys" onclick="showEmojiCategory('smileys', this)">😀</button>
+                                <button class="emoji-category-btn" data-category="people" onclick="showEmojiCategory('people', this)">👋</button>
+                                <button class="emoji-category-btn" data-category="animals" onclick="showEmojiCategory('animals', this)">🐶</button>
+                                <button class="emoji-category-btn" data-category="food" onclick="showEmojiCategory('food', this)">🍎</button>
+                                <button class="emoji-category-btn" data-category="activities" onclick="showEmojiCategory('activities', this)">⚽</button>
+                                <button class="emoji-category-btn" data-category="objects" onclick="showEmojiCategory('objects', this)">💡</button>
+                                <button class="emoji-category-btn" data-category="symbols" onclick="showEmojiCategory('symbols', this)">❤️</button>
+                                <button class="emoji-category-btn" data-category="flags" onclick="showEmojiCategory('flags', this)">🏁</button>
                             </div>
                             
                             <div class="emoji-grid" id="emoji-grid">
@@ -4253,7 +4253,7 @@
             }
         }
         
-        function showEmojiCategory(category) {
+        function showEmojiCategory(category, clickedElement = null) {
             const grid = document.getElementById('emoji-grid');
             const emojis = emojiCategories[category] || [];
             
@@ -4263,7 +4263,19 @@
             document.querySelectorAll('.emoji-category-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            event.target.classList.add('active');
+            
+            // Если элемент передан, используем его, иначе ищем по категории
+            let activeButton;
+            if (clickedElement) {
+                activeButton = clickedElement;
+            } else {
+                // Ищем кнопку с соответствующей категорией
+                activeButton = document.querySelector(`.emoji-category-btn[data-category="${category}"]`);
+            }
+            
+            if (activeButton) {
+                activeButton.classList.add('active');
+            }
             
             // Добавляем эмодзи в сетку
             emojis.forEach(emoji => {
