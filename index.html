@@ -1763,6 +1763,14 @@
         let userStatusListeners = [];
         let events = {};
         let eventImage = null;
+
+        let firebaseListeners = {
+            users: null,
+            messages: null,
+            tasks: null,
+            events: null,
+            eventMessages: null
+        };
         
         let currentEventId = null;
         let eventMessagesListener = null;
@@ -1795,14 +1803,14 @@
             // Принудительно показываем вкладку чата при загрузке
             showTab('chat');
             
-            // Инициализация чата
-            initChat();
+            // // Инициализация чата
+            // initChat();
             
-            // Инициализация заданий
-            initTasks();
+            // // Инициализация заданий
+            // initTasks();
 
-            // Инициализация мероприятий (ДОБАВЬТЕ ЭТУ СТРОКУ)
-            initEventsSystem();
+            // // Инициализация мероприятий (ДОБАВЬТЕ ЭТУ СТРОКУ)
+            // initEventsSystem();
             
             // Настройка обработчиков
             setupEventListeners();
@@ -1832,7 +1840,7 @@
             // Обновляем статус каждые 60 секунд (вместо 15)
             statusUpdateInterval = setInterval(() => {
                 updateUserStatusInFirebase();
-            }, 60000);
+            }, 120000);
             
             // Обновляем статус при изменении видимости страницы
             document.addEventListener('visibilitychange', () => {
@@ -1910,7 +1918,7 @@
                         console.error('Ошибка обновления статуса:', error);
                     });
                 }
-            }, 15000);
+            }, 60000);
 
             // Отслеживаем видимость страницы
             document.addEventListener('visibilitychange', () => {
@@ -1957,6 +1965,22 @@
 
         function changeStatus(newStatus) {
             setUserStatus(newStatus);
+            
+            // ИЗМЕНЕНО: Убрали автоматическое обновление списка пользователей
+            // Просто меняем статус текущего пользователя
+            if (currentUser) {
+                currentUser.status = newStatus;
+                updateCurrentUserStatus();
+                
+                // Обновляем в Firebase
+                if (currentUser.id) {
+                    database.ref('users/' + currentUser.id).update({
+                        status: newStatus,
+                        lastSeen: Date.now()
+                    });
+                }
+            }
+            
             showAlert(`Статус изменен на: ${getStatusText(newStatus)}`, 'success');
         }
 
@@ -2111,10 +2135,13 @@
             console.log('======= ПЕРЕКЛЮЧЕНИЕ ВКЛАДКИ =======');
             console.log('Показываем вкладку:', tabName);
             
+            // НОВОЕ: Отключаем все предыдущие слушатели
+            detachAllFirebaseListeners();
+            
             // Получаем все вкладки и навигационные ссылки
             const tabs = document.querySelectorAll('.tab-content');
             const navLinks = document.querySelectorAll('.nav-link');
-            
+
             // Скрываем все вкладки
             tabs.forEach(tab => {
                 tab.classList.remove('active');
@@ -2137,15 +2164,13 @@
                 targetTab.style.opacity = '1';
                 targetTab.style.visibility = 'visible';
                 console.log('Показана вкладка:', targetTab.id);
-                console.log('Стиль display:', targetTab.style.display);
-                console.log('Стиль visibility:', targetTab.style.visibility);
             } else {
                 console.error('Вкладка не найдена:', tabName + '-tab');
             }
             
             // Активируем соответствующую кнопку в навигации
             navLinks.forEach(link => {
-                if (link.getAttribute('onclick') && link.getAttribute('onclick').includes(tabName)) {
+                if (link.getAttribute('data-tab') === tabName) {
                     link.classList.add('active');
                     console.log('Активирована кнопка:', link.textContent);
                 }
@@ -2156,20 +2181,20 @@
                 switch(tabName) {
                     case 'chat':
                         console.log('Загружаю чат...');
-                        loadUsers();
-                        loadMessages();
+                        setupUsersListener();  // НОВОЕ: Используем оптимизированную функцию
+                        setupMessagesListener(); // НОВОЕ: Используем оптимизированную функцию
                         break;
                     case 'tasks':
                         console.log('Загружаю задания...');
-                        loadTasksData();
+                        setupTasksListener();  // НОВОЕ: Используем оптимизированную функцию
                         break;
                     case 'events':
                         console.log('Загружаю мероприятия...');
-                        loadEvents();
+                        setupEventsListener(); // НОВОЕ: Используем оптимизированную функцию
                         break;
                     case 'adaptation':
                         console.log('Загружаю адаптацию...');
-                        loadMaterials();
+                        loadMaterialsOnce();  // НОВОЕ: Загружаем один раз
                         break;
                 }
             }, 100);
@@ -2222,22 +2247,38 @@
 
         // ========== ЧАТ ==========
         function initChat() {
-            loadUsers();
-            loadMessages();
+            console.log('Чат инициализирован');
         }
 
-        function loadUsers() {
-            // Загружаем пользователей только один раз при инициализации
-            database.ref('users').once('value').then(snapshot => {
-                users = snapshot.val() || {};
-                updateUsersList();
-                updateOnlineCount();
+        // function loadUsers() {
+        //     // Загружаем пользователей только один раз при инициализации
+        //     database.ref('users').once('value').then(snapshot => {
+        //         users = snapshot.val() || {};
+        //         updateUsersList();
+        //         updateOnlineCount();
                 
-                // Затем подписываемся на изменения с ограничением частоты
-                setupUsersListener();
-            }).catch(error => {
-                console.error('Ошибка загрузки пользователей:', error);
-            });
+        //         // Затем подписываемся на изменения с ограничением частоты
+        //         setupUsersListener();
+        //     }).catch(error => {
+        //         console.error('Ошибка загрузки пользователей:', error);
+        //     });
+        // }
+
+        function setupUsersListener() {
+            // Отключаем предыдущий слушатель
+            detachFirebaseListener('users');
+            
+            // Загружаем только онлайн пользователей с лимитом
+            firebaseListeners.users = database.ref('users')
+                .orderByChild('status')
+                .limitToLast(50)  // Максимум 50 пользователей
+                .on('value', (snapshot) => {
+                    users = snapshot.val() || {};
+                    updateUsersList();
+                    updateOnlineCount();
+                }, (error) => {
+                    console.error('Ошибка загрузки пользователей:', error);
+                });
         }
 
         function setupUsersListener() {
@@ -2420,11 +2461,27 @@
             showAlert('Вложение удалено', 'info');
         }
 
-        function loadMessages() {
-            database.ref('messages').limitToLast(50).on('value', snapshot => {
-                const messages = snapshot.val() || {};
-                displayMessages(messages);
-            });
+        // function loadMessages() {
+        //     database.ref('messages').limitToLast(50).on('value', snapshot => {
+        //         const messages = snapshot.val() || {};
+        //         displayMessages(messages);
+        //     });
+        // }
+        // ИЗМЕНЕНО: Оптимизированная функция для загрузки сообщений
+        function setupMessagesListener() {
+            // Отключаем предыдущий слушатель
+            detachFirebaseListener('messages');
+            
+            // Загружаем только последние 50 сообщений
+            firebaseListeners.messages = database.ref('messages')
+                .orderByChild('timestamp')
+                .limitToLast(50)
+                .on('value', (snapshot) => {
+                    const messages = snapshot.val() || {};
+                    displayMessages(messages);
+                }, (error) => {
+                    console.error('Ошибка загрузки сообщений:', error);
+                });
         }
 
         function displayMessages(messages) {
@@ -2639,11 +2696,29 @@
             setupTaskFileUpload();
         }
 
-        function loadTasksData() {
-            database.ref('tasks').on('value', snapshot => {
-                tasks = snapshot.val() || {};
-                displayTasks();
-            });
+        // function loadTasksData() {
+        //     database.ref('tasks').on('value', snapshot => {
+        //         tasks = snapshot.val() || {};
+        //         displayTasks();
+        //     });
+        // }
+
+        function setupTasksListener() {
+            // Отключаем предыдущий слушатель
+            detachFirebaseListener('tasks');
+            
+            // Загружаем задания один раз (не в реальном времени)
+            database.ref('tasks')
+                .orderByChild('createdAt')
+                .limitToLast(30)
+                .once('value')
+                .then((snapshot) => {
+                    tasks = snapshot.val() || {};
+                    displayTasks();
+                })
+                .catch((error) => {
+                    console.error('Ошибка загрузки заданий:', error);
+                });
         }
 
         function initEvents() {
@@ -2973,44 +3048,69 @@
         }
 
         // ========== МЕРОПРИЯТИЯ ==========
-        function loadEvents() {
-             if (DEBUG) console.log('loadEvents() вызвана');
+        // function loadEvents() {
+        //      if (DEBUG) console.log('loadEvents() вызвана');
     
-            // Сначала отписываемся от предыдущих слушателей
-            if (database.ref('events').off) {
-                database.ref('events').off();
-            }
+        //     // Сначала отписываемся от предыдущих слушателей
+        //     if (database.ref('events').off) {
+        //         database.ref('events').off();
+        //     }
             
-            // Затем подписываемся заново
-            database.ref('events').on('value', snapshot => {
-                events = snapshot.val() || {};
+        //     // Затем подписываемся заново
+        //     database.ref('events').on('value', snapshot => {
+        //         events = snapshot.val() || {};
                 
-                if (DEBUG) {
-                    console.log('Данные мероприятий получены:', events);
-                    console.log('Количество мероприятий:', Object.keys(events).length);
-                }
+        //         if (DEBUG) {
+        //             console.log('Данные мероприятий получены:', events);
+        //             console.log('Количество мероприятий:', Object.keys(events).length);
+        //         }
                 
-                // Обновляем список мероприятий только если вкладка видима
-                const eventsTab = document.getElementById('events-tab');
-                if (eventsTab && eventsTab.classList.contains('active')) {
+        //         // Обновляем список мероприятий только если вкладка видима
+        //         const eventsTab = document.getElementById('events-tab');
+        //         if (eventsTab && eventsTab.classList.contains('active')) {
+        //             displayEvents();
+        //         }
+        //         console.log('eventsTab display:', window.getComputedStyle(eventsTab).display);
+        //         console.log('eventsTab visibility:', window.getComputedStyle(eventsTab).visibility);
+        //         console.log('eventsTab opacity:', window.getComputedStyle(eventsTab).opacity);
+                
+        //         // Всегда загружаем участников для формы создания
+        //         if (document.getElementById('create-event-form') && 
+        //             document.getElementById('create-event-form').style.display !== 'none') {
+        //             loadEventParticipants();
+        //         }
+        //     }, error => {
+        //         console.error('Ошибка загрузки мероприятий:', error);
+        //     });
+        // }
+
+        function setupEventsListener() {
+            // Отключаем предыдущий слушатель
+            detachFirebaseListener('events');
+            
+            const now = Date.now();
+            
+            // Загружаем только будущие мероприятия + сегодняшние
+            firebaseListeners.events = database.ref('events')
+                .orderByChild('datetime')
+                .startAt(now - 86400000) // За последние 24 часа + будущие
+                .limitToLast(30) // Максимум 30 мероприятий
+                .on('value', (snapshot) => {
+                    events = snapshot.val() || {};
                     displayEvents();
-                }
-                console.log('eventsTab display:', window.getComputedStyle(eventsTab).display);
-                console.log('eventsTab visibility:', window.getComputedStyle(eventsTab).visibility);
-                console.log('eventsTab opacity:', window.getComputedStyle(eventsTab).opacity);
-                
-                // Всегда загружаем участников для формы создания
-                if (document.getElementById('create-event-form') && 
-                    document.getElementById('create-event-form').style.display !== 'none') {
-                    loadEventParticipants();
-                }
-            }, error => {
-                console.error('Ошибка загрузки мероприятий:', error);
-            });
+                    
+                    // Всегда загружаем участников для формы создания
+                    if (document.getElementById('create-event-form') && 
+                        document.getElementById('create-event-form').style.display !== 'none') {
+                        loadEventParticipants();
+                    }
+                }, (error) => {
+                    console.error('Ошибка загрузки мероприятий:', error);
+                });
         }
 
         function initEventsSystem() {
-            loadEvents();
+            console.log('Система мероприятий инициализирована');
         }
 
         function displayEvents() {
@@ -3545,10 +3645,12 @@
             }
         }
         
+        // ИЗМЕНЕНО: Оптимизированная функция для загрузки сообщений мероприятия
         function loadEventMessages(eventId) {
-            if (eventMessagesListener) {
-                // Отписываемся от предыдущего слушателя
-                database.ref('eventMessages/' + eventId).off();
+            // Отключаем предыдущий слушатель
+            if (firebaseListeners.eventMessages) {
+                database.ref('eventMessages/' + currentEventId).off();
+                firebaseListeners.eventMessages = null;
             }
             
             const messagesContainer = document.getElementById('event-chat-messages');
@@ -3556,9 +3658,10 @@
             
             messagesContainer.innerHTML = '<div class="loading-status"><i class="fas fa-spinner fa-spin"></i> Загрузка сообщений...</div>';
             
-            // Подписываемся на сообщения мероприятия
-            eventMessagesListener = database.ref('eventMessages/' + eventId)
-                .limitToLast(50)
+            // Подписываемся на сообщения мероприятия с ограничением
+            firebaseListeners.eventMessages = database.ref('eventMessages/' + eventId)
+                .orderByChild('timestamp')
+                .limitToLast(50) // Максимум 50 сообщений
                 .on('value', snapshot => {
                     const messages = snapshot.val() || {};
                     displayEventMessages(messages);
@@ -3722,38 +3825,63 @@
         }
         
         // ========== АДАПТАЦИЯ ==========
-        function loadMaterials() {
-            // Заглушка - можно расширить функционал
+        function loadMaterialsOnce() {
             const materialsList = document.getElementById('materials-list');
-            materialsList.innerHTML = `
-                <div class="material-item">
+            
+            // Загружаем один раз (кешируем)
+            if (materialsList.innerHTML.includes('Добро пожаловать!')) {
+                // Загружаем данные только один раз
+                database.ref('materials')
+                    .once('value')
+                    .then((snapshot) => {
+                        const materials = snapshot.val() || {};
+                        displayMaterials(materials);
+                    })
+                    .catch((error) => {
+                        console.error('Ошибка загрузки материалов:', error);
+                        // Оставляем дефолтный контент
+                    });
+            }
+        }
+
+        // НОВОЕ: Функция отображения материалов
+        function displayMaterials(materials) {
+            const materialsList = document.getElementById('materials-list');
+            if (!materialsList) return;
+            
+            materialsList.innerHTML = '';
+            
+            if (Object.keys(materials).length === 0) {
+                materialsList.innerHTML = `
+                    <div class="material-item">
+                        <div class="material-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="material-content">
+                            <div class="material-title">Добро пожаловать!</div>
+                            <div class="material-description">Здесь будут размещены материалы для адаптации новых сотрудников</div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Отображаем материалы из Firebase
+            Object.values(materials).forEach(material => {
+                const materialItem = document.createElement('div');
+                materialItem.className = 'material-item';
+                materialItem.innerHTML = `
                     <div class="material-icon">
-                        <i class="fas fa-book"></i>
+                        <i class="fas ${material.icon || 'fa-book'}"></i>
                     </div>
                     <div class="material-content">
-                        <div class="material-title">Руководство по адаптации</div>
-                        <div class="material-description">Полное руководство для новых сотрудников</div>
+                        <div class="material-title">${material.title}</div>
+                        <div class="material-description">${material.description}</div>
+                        ${material.link ? `<a href="${material.link}" target="_blank" style="color: var(--primary);">Открыть</a>` : ''}
                     </div>
-                </div>
-                <div class="material-item">
-                    <div class="material-icon">
-                        <i class="fas fa-video"></i>
-                    </div>
-                    <div class="material-content">
-                        <div class="material-title">Обучающие видео</div>
-                        <div class="material-description">Видеоуроки по работе с системой</div>
-                    </div>
-                </div>
-                <div class="material-item">
-                    <div class="material-icon">
-                        <i class="fas fa-file-pdf"></i>
-                    </div>
-                    <div class="material-content">
-                        <div class="material-title">Политика компании</div>
-                        <div class="material-description">Документы и политики компании</div>
-                    </div>
-                </div>
-            `;
+                `;
+                materialsList.appendChild(materialItem);
+            });
         }
 
         // ========== ВЛОЖЕНИЯ ==========
@@ -4022,6 +4150,53 @@
                 this.style.height = 'auto';
                 this.style.height = Math.min(this.scrollHeight, 100) + 'px';
             });
+
+            // НОВОЕ: Очистка слушателей при закрытии страницы
+            window.addEventListener('beforeunload', () => {
+                detachAllFirebaseListeners();
+                cleanupStatusListeners();
+            });
+            
+            // НОВОЕ: При скрытии вкладки отключаем обновления
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') {
+                    // Отключаем тяжелые слушатели
+                    detachFirebaseListener('messages');
+                    detachFirebaseListener('events');
+                }
+            });
+        }
+
+        function detachAllFirebaseListeners() {
+            console.log('Отключаем все слушатели Firebase...');
+            
+            // Отключаем все слушатели в объекте
+            Object.keys(firebaseListeners).forEach(key => {
+                if (firebaseListeners[key]) {
+                    if (typeof firebaseListeners[key] === 'function') {
+                        // Если это функция, значит это слушатель
+                        database.ref(key).off('value', firebaseListeners[key]);
+                    } else {
+                        // Если это объект с несколькими слушателями
+                        database.ref(key).off();
+                    }
+                    firebaseListeners[key] = null;
+                }
+            });
+            
+            // Отдельно отключаем слушатель чата мероприятий
+            if (currentEventId && firebaseListeners.eventMessages) {
+                database.ref('eventMessages/' + currentEventId).off();
+                firebaseListeners.eventMessages = null;
+            }
+        }
+        
+        // Функция для отключения конкретного слушателя
+        function detachFirebaseListener(listenerName) {
+            if (firebaseListeners[listenerName]) {
+                database.ref(listenerName).off('value', firebaseListeners[listenerName]);
+                firebaseListeners[listenerName] = null;
+            }
         }
 
         // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ВРЕМЕНИ ==========
