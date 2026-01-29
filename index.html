@@ -1322,14 +1322,14 @@
                         
                         <div class="emoji-picker" id="emoji-picker" style="display: none;">
                             <div class="emoji-categories">
-                                <button class="emoji-category-btn active" data-category="smileys" onclick="showEmojiCategory('smileys', this)">😀</button>
-                                <button class="emoji-category-btn" data-category="people" onclick="showEmojiCategory('people', this)">👋</button>
-                                <button class="emoji-category-btn" data-category="animals" onclick="showEmojiCategory('animals', this)">🐶</button>
-                                <button class="emoji-category-btn" data-category="food" onclick="showEmojiCategory('food', this)">🍎</button>
-                                <button class="emoji-category-btn" data-category="activities" onclick="showEmojiCategory('activities', this)">⚽</button>
-                                <button class="emoji-category-btn" data-category="objects" onclick="showEmojiCategory('objects', this)">💡</button>
-                                <button class="emoji-category-btn" data-category="symbols" onclick="showEmojiCategory('symbols', this)">❤️</button>
-                                <button class="emoji-category-btn" data-category="flags" onclick="showEmojiCategory('flags', this)">🏁</button>
+                                <button class="emoji-category-btn active" onclick="showEmojiCategory('smileys', this)">😀</button>
+                                <button class="emoji-category-btn" onclick="showEmojiCategory('people', this)">👋</button>
+                                <button class="emoji-category-btn" onclick="showEmojiCategory('animals', this)">🐶</button>
+                                <button class="emoji-category-btn" onclick="showEmojiCategory('food', this)">🍎</button>
+                                <button class="emoji-category-btn" onclick="showEmojiCategory('activities', this)">⚽</button>
+                                <button class="emoji-category-btn" onclick="showEmojiCategory('objects', this)">💡</button>
+                                <button class="emoji-category-btn" onclick="showEmojiCategory('symbols', this)">❤️</button>
+                                <button class="emoji-category-btn" onclick="showEmojiCategory('flags', this)">🏁</button>
                             </div>
                             
                             <div class="emoji-grid" id="emoji-grid">
@@ -1806,13 +1806,13 @@
             // // Инициализация чата
             // initChat();
             
-            // // Инициализация заданий
-            // initTasks();
-
-            // // Инициализация мероприятий (ДОБАВЬТЕ ЭТУ СТРОКУ)
-            // initEventsSystem();
-            
             // Настройка обработчиков
+            setupUsersListener();
+            setupMessagesListener(); // Теперь здесь
+            // Инициализация систем
+            initTasks();
+            initEventsSystem();
+            
             setupEventListeners();
             
             // Проверка прав администратора
@@ -2470,18 +2470,43 @@
         // ИЗМЕНЕНО: Оптимизированная функция для загрузки сообщений
         function setupMessagesListener() {
             // Отключаем предыдущий слушатель
-            detachFirebaseListener('messages');
+            if (firebaseListeners.messages && typeof firebaseListeners.messages === 'function') {
+                firebaseListeners.messages();
+            }
             
-            // Загружаем только последние 50 сообщений
-            firebaseListeners.messages = database.ref('messages')
-                .orderByChild('timestamp')
-                .limitToLast(50)
-                .on('value', (snapshot) => {
-                    const messages = snapshot.val() || {};
-                    displayMessages(messages);
-                }, (error) => {
-                    console.error('Ошибка загрузки сообщений:', error);
+            const messagesRef = database.ref('messages');
+            
+            // Загружаем существующие сообщения
+            messagesRef.orderByChild('timestamp').limitToLast(50).once('value').then(snapshot => {
+                const messages = snapshot.val() || {};
+                displayMessages(messages);
+                
+                // Затем слушаем новые сообщения
+                const handleNewMessage = messagesRef.orderByChild('timestamp').limitToLast(50).on('child_added', (childSnapshot) => {
+                    const message = childSnapshot.val();
+                    
+                    // Проверяем, не добавлено ли уже это сообщение
+                    const messagesContainer = document.getElementById('chat-messages');
+                    const existingMessage = messagesContainer.querySelector(`[data-message-id="${message.id}"]`);
+                    
+                    if (!existingMessage) {
+                        const isCurrentUser = message.userId === currentUser?.id;
+                        const messageElement = createMessageElement(message, isCurrentUser);
+                        messagesContainer.appendChild(messageElement);
+                        
+                        // Прокручиваем вниз
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    }
                 });
+                
+                // Сохраняем функцию для отключения слушателя
+                firebaseListeners.messages = () => {
+                    messagesRef.off('child_added', handleNewMessage);
+                };
+                
+            }).catch(error => {
+                console.error('Ошибка загрузки сообщений:', error);
+            });
         }
 
         function displayMessages(messages) {
@@ -2503,6 +2528,7 @@
         function createMessageElement(message, isCurrentUser) {
             const div = document.createElement('div');
             div.className = `message ${isCurrentUser ? 'sent' : ''}`;
+            div.setAttribute('data-message-id', message.id); // Добавляем ID для отслеживания
             
             // Определяем timestamp: используем серверное если есть, иначе локальное
             const timestamp = message.firebaseTimestamp || message.timestamp || message.localTimestamp || Date.now();
@@ -2567,9 +2593,10 @@
             
             // Используем серверное время Firebase
             const serverTimestamp = firebase.database.ServerValue.TIMESTAMP;
+            const messageId = generateId();
             
             const message = {
-                id: generateId(),
+                id: messageId,
                 text: text,
                 userId: currentUser.id,
                 username: currentUser.username,
@@ -2583,58 +2610,72 @@
                 timezone: 'UTC+4'
             };
             
-            // Немедленно очищаем поле ввода для лучшего UX
+            // НЕМЕДЛЕННО добавляем сообщение в UI (оптимистичное обновление)
+            const messagesContainer = document.getElementById('chat-messages');
+            const isCurrentUser = true;
+            const messageElement = createMessageElement(message, isCurrentUser);
+            messagesContainer.appendChild(messageElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // Очищаем поле ввода
             const originalText = text;
             input.value = '';
+            input.style.height = 'auto';
             currentAttachment = null;
             updateAttachmentPreview();
             
-            // Оптимизация: уменьшаем анимацию при отправке
-            input.style.transition = 'none';
-            input.style.height = 'auto';
-            
-            // Добавляем класс для визуальной обратной связи
-            const sendBtn = event.target;
-            const originalHTML = sendBtn.innerHTML;
-            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            sendBtn.disabled = true;
-            
-            // Отправляем сообщение
-            database.ref('messages/' + message.id).set(message)
-                .then(() => {
-                    input.focus();
-                    
-                    // Быстро показываем уведомление
-                    setTimeout(() => {
-                        Swal.fire({
-                            title: '✓',
-                            text: 'Отправлено',
-                            icon: 'success',
-                            toast: true,
-                            position: 'top-end',
-                            showConfirmButton: false,
-                            timer: 1500,
-                            timerProgressBar: true
-                        });
-                    }, 50);
-                })
-                .catch(error => {
-                    console.error('Ошибка отправки сообщения:', error);
-                    
-                    // Восстанавливаем текст при ошибке
-                    input.value = originalText;
-                    currentAttachment = message.attachment;
-                    updateAttachmentPreview();
-                    
-                    showAlert('Ошибка отправки', 'error', 'Попробуйте еще раз');
-                })
-                .finally(() => {
-                    // Восстанавливаем кнопку
-                    setTimeout(() => {
-                        sendBtn.innerHTML = originalHTML;
-                        sendBtn.disabled = false;
-                    }, 500);
-                });
+            // Визуальная обратная связь
+            const sendBtn = document.querySelector('.chat-btn .fa-paper-plane')?.closest('.chat-btn');
+            if (sendBtn) {
+                const originalHTML = sendBtn.innerHTML;
+                sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                sendBtn.disabled = true;
+                
+                // Отправляем в Firebase
+                database.ref('messages/' + messageId).set(message)
+                    .then(() => {
+                        input.focus();
+                        
+                        // Быстро показываем уведомление
+                        setTimeout(() => {
+                            Swal.fire({
+                                title: '✓',
+                                text: 'Отправлено',
+                                icon: 'success',
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 1500,
+                                timerProgressBar: true
+                            });
+                        }, 50);
+                    })
+                    .catch(error => {
+                        console.error('Ошибка отправки сообщения:', error);
+                        
+                        // Удаляем сообщение из UI при ошибке
+                        const messageElementToRemove = messagesContainer.querySelector(`[data-message-id="${messageId}"]`);
+                        if (messageElementToRemove) {
+                            messageElementToRemove.remove();
+                        }
+                        
+                        // Восстанавливаем текст при ошибке
+                        input.value = originalText;
+                        currentAttachment = message.attachment;
+                        updateAttachmentPreview();
+                        
+                        showAlert('Ошибка отправки', 'error', 'Попробуйте еще раз');
+                    })
+                    .finally(() => {
+                        // Восстанавливаем кнопку
+                        setTimeout(() => {
+                            if (sendBtn) {
+                                sendBtn.innerHTML = originalHTML;
+                                sendBtn.disabled = false;
+                            }
+                        }, 500);
+                    });
+            }
         }
 
         function deleteMessage(messageId) {
@@ -4172,22 +4213,16 @@
             
             // Отключаем все слушатели в объекте
             Object.keys(firebaseListeners).forEach(key => {
-                if (firebaseListeners[key]) {
-                    if (typeof firebaseListeners[key] === 'function') {
-                        // Если это функция, значит это слушатель
-                        database.ref(key).off('value', firebaseListeners[key]);
-                    } else {
-                        // Если это объект с несколькими слушателями
-                        database.ref(key).off();
-                    }
+                if (firebaseListeners[key] && typeof firebaseListeners[key] === 'function') {
+                    firebaseListeners[key](); // Вызываем функцию отключения
                     firebaseListeners[key] = null;
                 }
             });
             
             // Отдельно отключаем слушатель чата мероприятий
-            if (currentEventId && firebaseListeners.eventMessages) {
+            if (currentEventId && eventMessagesListener) {
                 database.ref('eventMessages/' + currentEventId).off();
-                firebaseListeners.eventMessages = null;
+                eventMessagesListener = null;
             }
         }
         
@@ -4264,17 +4299,12 @@
                 btn.classList.remove('active');
             });
             
-            // Если элемент передан, используем его, иначе ищем по категории
-            let activeButton;
             if (clickedElement) {
-                activeButton = clickedElement;
+                clickedElement.classList.add('active');
             } else {
-                // Ищем кнопку с соответствующей категорией
-                activeButton = document.querySelector(`.emoji-category-btn[data-category="${category}"]`);
-            }
-            
-            if (activeButton) {
-                activeButton.classList.add('active');
+                // Находим первую кнопку с нужной категорией
+                const firstBtn = document.querySelector(`.emoji-category-btn`);
+                if (firstBtn) firstBtn.classList.add('active');
             }
             
             // Добавляем эмодзи в сетку
