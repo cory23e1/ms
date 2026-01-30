@@ -1521,7 +1521,7 @@
                     <input type="text" class="form-control" id="-organization" placeholder="Например: IT Company Inc.">
                 </div>
                 
-                <button class="btn btn-primary w-100" onclick="()">
+                <button class="btn btn-primary w-100" onclick="register()">
                     <i class="fas fa-user-plus"></i> Зарегистрироваться
                 </button>
                 
@@ -1685,6 +1685,7 @@
                                     </button>
                                 </div>
                             </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -2259,10 +2260,10 @@
                 showAlert('Ошибка', 'warning', 'Заполните все обязательные поля!');
                 return;
             }
-
+        
             // Проверка кодовой фразы
             if (secret !== "sexing") {
-                showAlert('Ошибка', 'error', 'Неверная кодовая фраза!');
+                showAlert('Ошибка', 'error', 'Неверная кодовая фразе!');
                 return;
             }
             
