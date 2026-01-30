@@ -2175,10 +2175,13 @@
         }
         
         function setReplyTo(messageId, senderName, messageText) {
+            // Проверяем, что параметры переданы
+            console.log('setReplyTo вызвана с параметрами:', { messageId, senderName, messageText });
+            
             currentReply = {
                 id: messageId,
                 sender: senderName,
-                text: messageText.substring(0, 100) + (messageText.length > 100 ? '...' : '')
+                text: messageText
             };
             
             // Показываем индикатор ответа
@@ -2186,16 +2189,20 @@
             const senderElement = document.getElementById('reply-sender');
             const textElement = document.getElementById('reply-text');
             
-            senderElement.textContent = `Отвечаете ${senderName}`;
-            textElement.textContent = messageText.substring(0, 100) + (messageText.length > 100 ? '...' : '');
-            indicator.style.display = 'flex';
-            
-            // Фокусируемся на поле ввода
-            const input = document.getElementById('message-input');
-            input.focus();
-            
-            // Прокручиваем к полю ввода
-            input.scrollIntoView({ behavior: 'smooth' });
+            if (indicator && senderElement && textElement) {
+                senderElement.textContent = `Отвечаете ${senderName}`;
+                textElement.textContent = messageText.length > 100 ? messageText.substring(0, 100) + '...' : messageText;
+                indicator.style.display = 'flex';
+                
+                // Фокусируемся на поле ввода
+                const input = document.getElementById('message-input');
+                input.focus();
+                
+                // Прокручиваем к полю ввода
+                input.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                console.error('Элементы индикатора ответа не найдены');
+            }
         }
         
         function cancelReply() {
@@ -2978,7 +2985,7 @@
                     <div class="message-text">${message.text}</div>
                     ${attachmentHtml}
                     <div class="message-actions">
-                        <button class="reply-btn" onclick="event.stopPropagation();">
+                        <button class="reply-btn" onclick="handleReplyClick(event, '${message.id}', '${escapeHtml(message.username)}', '${escapeHtml(message.text.substring(0, 100))}')">
                             <i class="fas fa-reply"></i> Ответить
                         </button>
                         ${isAdmin ? `
@@ -2991,6 +2998,19 @@
             `;
             
             return div;
+        }
+
+        // Добавьте вспомогательную функцию для экранирования HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Добавьте функцию обработки клика на кнопку "Ответить"
+        function handleReplyClick(event, messageId, senderName, messageText) {
+            event.stopPropagation(); // Останавливаем всплытие события
+            setReplyTo(messageId, senderName, messageText);
         }
 
         function scrollToMessage(messageId) {
@@ -3048,6 +3068,11 @@
                     sender: currentReply.sender,
                     text: currentReply.text
                 };
+                
+                // Сбрасываем текущий ответ после отправки
+                setTimeout(() => {
+                    cancelReply();
+                }, 100);
             }
             
             // Немедленно очищаем поле ввода и сбрасываем ответ
@@ -4569,6 +4594,30 @@
             document.getElementById('event-chat-input')?.addEventListener('input', function() {
                 this.style.height = 'auto';
                 this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+            });
+
+            // Делегирование событий для кнопок "Ответить" (обработка динамически созданных элементов)
+            document.addEventListener('click', function(event) {
+                // Проверяем, была ли нажата кнопка "Ответить"
+                const replyBtn = event.target.closest('.reply-btn');
+                if (replyBtn) {
+                    // Предотвращаем всплытие, чтобы не конфликтовать с другими обработчиками
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    // Находим ближайшее сообщение
+                    const messageElement = replyBtn.closest('.message');
+                    if (messageElement) {
+                        const messageId = messageElement.dataset.messageId;
+                        const messageText = messageElement.querySelector('.message-text')?.textContent || '';
+                        const senderName = messageElement.querySelector('.message-sender')?.textContent || 'Пользователь';
+                        
+                        // Убираем роль из имени отправителя
+                        const cleanSenderName = senderName.replace(/<span[^>]*>.*?<\/span>/g, '').trim();
+                        
+                        setReplyTo(messageId, cleanSenderName, messageText);
+                    }
+                }
             });
 
             // Отмена ответа по Escape
