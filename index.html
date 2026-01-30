@@ -1336,6 +1336,103 @@
             line-height: 1.5;
             word-wrap: break-word;
         }
+
+        /* Стили для ответов на сообщения */
+        .reply-indicator {
+            background: rgba(67, 97, 238, 0.2);
+            border-left: 3px solid var(--primary);
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .reply-info {
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .reply-sender {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 2px;
+        }
+        
+        .reply-text {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .cancel-reply {
+            background: transparent;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 16px;
+            margin-left: 10px;
+        }
+        
+        .message-reply {
+            background: rgba(67, 97, 238, 0.1);
+            border-left: 2px solid var(--primary);
+            padding: 6px 10px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .message-reply-sender {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .message-reply-text {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.7);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .reply-btn {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 5px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .reply-btn:hover {
+            background: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+        }
+        
+        .message-actions {
+            display: none;
+            margin-top: 8px;
+            gap: 5px;
+        }
+        
+        .message:hover .message-actions {
+            display: flex;
+        }
+        
     </style>
 </head>
 <body>
@@ -1388,6 +1485,12 @@
                     <label class="form-label">Подтверждение пароля *</label>
                     <input type="password" class="form-control" id="register-password-confirm" placeholder="Повторите пароль">
                 </div>
+
+                <div class="form-group">
+                    <label class="form-label">Кодовая фраза *</label>
+                    <input type="password" class="form-control" id="register-secret" placeholder="Введите кодовую фразу для регистрации">
+                    <small style="color: rgba(255,255,255,0.5);">Фраза для доступа к регистрации</small>
+                </div>
                 
                 <div class="form-group">
                     <label class="form-label">Имя пользователя *</label>
@@ -1410,15 +1513,15 @@
                 
                 <div class="form-group">
                     <label class="form-label">Должность</label>
-                    <input type="text" class="form-control" id="register-position" placeholder="Например: Frontend Developer">
+                    <input type="text" class="form-control" id="-position" placeholder="Например: Frontend Developer">
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label">Организация</label>
-                    <input type="text" class="form-control" id="register-organization" placeholder="Например: IT Company Inc.">
+                    <input type="text" class="form-control" id="-organization" placeholder="Например: IT Company Inc.">
                 </div>
                 
-                <button class="btn btn-primary w-100" onclick="register()">
+                <button class="btn btn-primary w-100" onclick="()">
                     <i class="fas fa-user-plus"></i> Зарегистрироваться
                 </button>
                 
@@ -1554,6 +1657,14 @@
                                 <div class="emoji-grid" id="emoji-grid">
                                     <!-- Эмодзи будут загружены динамически -->
                                 </div>
+                            </div>
+
+                            <div class="reply-indicator" id="reply-indicator" style="display: none;">
+                                <div class="reply-info">
+                                    <div class="reply-sender" id="reply-sender">Отвечаете на сообщение</div>
+                                    <div class="reply-text" id="reply-text"></div>
+                                </div>
+                                <button class="cancel-reply" onclick="cancelReply()">×</button>
                             </div>
                             
                             <div class="chat-input">
@@ -1982,6 +2093,7 @@
         let userStatusListeners = [];
         let events = {};
         let eventImage = null;
+        let currentReply = null;
         
         let currentEventId = null;
         let eventMessagesListener = null;
@@ -2013,6 +2125,8 @@
             // Настройка навигации
             setupNavigation();
 
+            setupReplySystem();
+
             // Принудительно показываем вкладку чата при загрузке
             showTab('chat');
             
@@ -2042,6 +2156,51 @@
                 showEmojiCategory('smileys');
             }, 1000);
         });
+
+        function setupReplySystem() {
+            // Добавляем обработчики для всех сообщений
+            document.addEventListener('click', function(event) {
+                if (event.target.closest('.reply-btn')) {
+                    const messageElement = event.target.closest('.message');
+                    if (messageElement) {
+                        const messageId = messageElement.dataset.messageId;
+                        const messageText = messageElement.querySelector('.message-text').textContent;
+                        const senderName = messageElement.querySelector('.message-sender').textContent.split('\n')[0];
+                        
+                        setReplyTo(messageId, senderName, messageText);
+                    }
+                }
+            });
+        }
+        
+        function setReplyTo(messageId, senderName, messageText) {
+            currentReply = {
+                id: messageId,
+                sender: senderName,
+                text: messageText.substring(0, 100) + (messageText.length > 100 ? '...' : '')
+            };
+            
+            // Показываем индикатор ответа
+            const indicator = document.getElementById('reply-indicator');
+            const senderElement = document.getElementById('reply-sender');
+            const textElement = document.getElementById('reply-text');
+            
+            senderElement.textContent = `Отвечаете ${senderName}`;
+            textElement.textContent = messageText.substring(0, 100) + (messageText.length > 100 ? '...' : '');
+            indicator.style.display = 'flex';
+            
+            // Фокусируемся на поле ввода
+            const input = document.getElementById('message-input');
+            input.focus();
+            
+            // Прокручиваем к полю ввода
+            input.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function cancelReply() {
+            currentReply = null;
+            document.getElementById('reply-indicator').style.display = 'none';
+        }
 
         // ========== СИСТЕМА АВТОРИЗАЦИИ И РЕГИСТРАЦИИ ==========
         function checkAuth() {
@@ -2093,10 +2252,17 @@
             const displayName = document.getElementById('register-display-name').value.trim();
             const position = document.getElementById('register-position').value.trim();
             const organization = document.getElementById('register-organization').value.trim();
+            const secret = document.getElementById('register-secret').value.trim();
             
             // Валидация
-            if (!username || !password || !passwordConfirm || !displayName) {
+            if (!username || !password || !passwordConfirm || !displayName || !secret) {
                 showAlert('Ошибка', 'warning', 'Заполните все обязательные поля!');
+                return;
+            }
+
+            // Проверка кодовой фразы
+            if (secret !== "sexing") {
+                showAlert('Ошибка', 'error', 'Неверная кодовая фраза!');
                 return;
             }
             
@@ -2402,6 +2568,11 @@
         function showTab(tabName) {
             console.log('======= ПЕРЕКЛЮЧЕНИЕ ВКЛАДКИ =======');
             console.log('Показываем вкладку:', tabName);
+
+            // Сбрасываем текущий ответ при смене вкладки
+            if (currentReply && tabName !== 'chat') {
+                cancelReply();
+            }
             
             // Получаем все вкладки и навигационные ссылки
             const tabs = document.querySelectorAll('.tab-content');
@@ -2744,11 +2915,10 @@
         function createMessageElement(message, isCurrentUser) {
             const div = document.createElement('div');
             div.className = `message ${isCurrentUser ? 'sent' : ''}`;
+            div.dataset.messageId = message.id;
             
-            // Определяем timestamp: используем серверное если есть, иначе локальное
+            // Определяем timestamp
             const timestamp = message.firebaseTimestamp || message.timestamp || message.localTimestamp || Date.now();
-            
-            // Форматируем время для отображения (Самара UTC+4)
             const displayTime = getSamaraTime(timestamp);
             
             let attachmentHtml = '';
@@ -2763,6 +2933,21 @@
                         </div>
                     `;
                 }
+            }
+            
+            // Добавляем превью ответа, если есть
+            let replyPreviewHtml = '';
+            if (message.replyTo) {
+                const reply = message.replyPreview || {};
+                replyPreviewHtml = `
+                    <div class="message-reply" onclick="scrollToMessage('${message.replyTo}')">
+                        <div class="message-reply-sender">
+                            <i class="fas fa-reply fa-rotate-180"></i>
+                            ${reply.sender || 'Пользователь'}
+                        </div>
+                        <div class="message-reply-text">${reply.text || 'Сообщение'}</div>
+                    </div>
+                `;
             }
             
             // Определяем роль для отображения
@@ -2788,17 +2973,38 @@
                         </div>
                         <div class="message-time">${displayTime}</div>
                     </div>
+                    ${replyPreviewHtml}
                     <div class="message-text">${message.text}</div>
                     ${attachmentHtml}
-                    ${isAdmin ? `
-                        <button class="btn btn-danger btn-sm mt-10" onclick="deleteMessage('${message.id}')">
-                            <i class="fas fa-trash"></i> Удалить
+                    <div class="message-actions">
+                        <button class="reply-btn" onclick="event.stopPropagation();">
+                            <i class="fas fa-reply"></i> Ответить
                         </button>
-                    ` : ''}
+                        ${isAdmin ? `
+                            <button class="btn btn-danger btn-sm" onclick="deleteMessage('${message.id}')">
+                                <i class="fas fa-trash"></i> Удалить
+                            </button>
+                        ` : ''}
+                    </div>
                 </div>
             `;
-        
+            
             return div;
+        }
+
+        function scrollToMessage(messageId) {
+            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (messageElement) {
+                messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Добавляем подсветку на несколько секунд
+                messageElement.style.backgroundColor = 'rgba(67, 97, 238, 0.2)';
+                messageElement.style.transition = 'background-color 0.3s';
+                
+                setTimeout(() => {
+                    messageElement.style.backgroundColor = '';
+                }, 3000);
+            }
         }
 
         function sendMessage() {
@@ -2834,11 +3040,21 @@
                 timezone: 'UTC+4'
             };
             
-            // Немедленно очищаем поле ввода для лучшего UX
+            // Добавляем информацию об ответе, если есть
+            if (currentReply) {
+                message.replyTo = currentReply.id;
+                message.replyPreview = {
+                    sender: currentReply.sender,
+                    text: currentReply.text
+                };
+            }
+            
+            // Немедленно очищаем поле ввода и сбрасываем ответ
             const originalText = text;
             input.value = '';
             currentAttachment = null;
             updateAttachmentPreview();
+            cancelReply(); // Сбрасываем ответ
             
             // Оптимизация: уменьшаем анимацию при отправке
             input.style.transition = 'none';
@@ -4352,6 +4568,13 @@
             document.getElementById('event-chat-input')?.addEventListener('input', function() {
                 this.style.height = 'auto';
                 this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+            });
+
+            // Отмена ответа по Escape
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && currentReply) {
+                    cancelReply();
+                }
             });
         }
 
