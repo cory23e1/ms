@@ -1542,16 +1542,16 @@
             </div>
             
             <ul class="nav-links">
-                <li><a href="#" class="nav-link active" data-tab="chat">
+                <li><a href="#" class="nav-link active" data-tab="chat" onclick="showTab('chat')">
                     <i class="fas fa-comments"></i> Мессенджер
                 </a></li>
-                <li><a href="#" class="nav-link" data-tab="events">
+                <li><a href="#" class="nav-link" data-tab="events" onclick="showTab('events')">
                     <i class="fas fa-calendar-alt"></i> Мероприятия
                 </a></li>
-                <li><a href="#" class="nav-link" data-tab="tasks">
+                <li><a href="#" class="nav-link" data-tab="tasks" onclick="showTab('tasks')">
                     <i class="fas fa-tasks"></i> Задания
                 </a></li>
-                <li><a href="#" class="nav-link" data-tab="adaptation">
+                <li><a href="#" class="nav-link" data-tab="adaptation" onclick="showTab('adaptation')">
                     <i class="fas fa-graduation-cap"></i> Адаптация
                 </a></li>
             </ul>
@@ -1644,14 +1644,14 @@
                             
                             <div class="emoji-picker" id="emoji-picker" style="display: none;">
                                 <div class="emoji-categories">
-                                    <button class="emoji-category-btn active" onclick="showEmojiCategory('smileys')">😀</button>
-                                    <button class="emoji-category-btn" onclick="showEmojiCategory('people')">👋</button>
-                                    <button class="emoji-category-btn" onclick="showEmojiCategory('animals')">🐶</button>
-                                    <button class="emoji-category-btn" onclick="showEmojiCategory('food')">🍎</button>
-                                    <button class="emoji-category-btn" onclick="showEmojiCategory('activities')">⚽</button>
-                                    <button class="emoji-category-btn" onclick="showEmojiCategory('objects')">💡</button>
-                                    <button class="emoji-category-btn" onclick="showEmojiCategory('symbols')">❤️</button>
-                                    <button class="emoji-category-btn" onclick="showEmojiCategory('flags')">🏁</button>
+                                    <button class="emoji-category-btn active" onclick="showEmojiCategory('smileys', event)">😀</button>
+                                    <button class="emoji-category-btn" onclick="showEmojiCategory('people', event)">👋</button>
+                                    <button class="emoji-category-btn" onclick="showEmojiCategory('animals', event)">🐶</button>
+                                    <button class="emoji-category-btn" onclick="showEmojiCategory('food', event)">🍎</button>
+                                    <button class="emoji-category-btn" onclick="showEmojiCategory('activities', event)">⚽</button>
+                                    <button class="emoji-category-btn" onclick="showEmojiCategory('objects', event)">💡</button>
+                                    <button class="emoji-category-btn" onclick="showEmojiCategory('symbols', event)">❤️</button>
+                                    <button class="emoji-category-btn" onclick="showEmojiCategory('flags', event)">🏁</button>
                                 </div>
                                 
                                 <div class="emoji-grid" id="emoji-grid">
@@ -4682,7 +4682,7 @@
             }
         }
         
-        function showEmojiCategory(category) {
+        function showEmojiCategory(category, eventParam = null) {
             const grid = document.getElementById('emoji-grid');
             const emojis = emojiCategories[category] || [];
             
@@ -4692,7 +4692,14 @@
             document.querySelectorAll('.emoji-category-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            event.target.classList.add('active');
+            
+            // Используем eventParam если он передан, иначе ищем кнопку по категории
+            let targetButton = eventParam ? eventParam.currentTarget || eventParam.target : 
+                document.querySelector(`.emoji-category-btn[onclick*="${category}"]`);
+            
+            if (targetButton) {
+                targetButton.classList.add('active');
+            }
             
             // Добавляем эмодзи в сетку
             emojis.forEach(emoji => {
