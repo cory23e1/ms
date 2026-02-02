@@ -3566,6 +3566,20 @@
                         </div>
                     `;
                 }
+                else if (message.attachment.type === 'video') {
+                    // Добавляем видео-плеер для видеофайлов
+                    attachmentHtml = `
+                        <div class="message-attachment">
+                            <video controls style="max-width: 300px; border-radius: 10px;">
+                                <source src="${message.attachment.data}" type="${message.attachment.fileType || 'video/mp4'}">
+                                Ваш браузер не поддерживает видео.
+                            </video>
+                            <div style="font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 5px;">
+                                ${message.attachment.name}
+                            </div>
+                        </div>
+                    `;
+                }
             }
             
             // Добавляем превью ответа, если есть
@@ -3659,6 +3673,23 @@
             
             if (!text && !currentAttachment) {
                 showAlert('Введите сообщение или прикрепите файл!', 'warning');
+                return;
+            }
+
+            // Проверяем размер видео
+            if (currentAttachment && currentAttachment.type === 'video' && currentAttachment.size > 2 * 1024 * 1024) {
+                Swal.fire({
+                    title: 'Большое видео',
+                    text: 'Видеофайл более 2MB может загружаться медленно. Продолжить?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Отправить',
+                    cancelButtonText: 'Отмена'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        sendMessageWithAttachment();
+                    }
+                });
                 return;
             }
             
@@ -4975,54 +5006,105 @@
         function selectAttachmentType(type) {
             attachmentType = type;
             const input = document.getElementById('file-input');
-            input.accept = type === 'image' ? 'image/*' : 
-                          type === 'gif' ? '.gif,image/gif' : 
-                          type === 'video' ? 'video/*' : '*/*';
+            
+            // Устанавливаем правильные accept атрибуты
+            switch(type) {
+                case 'image':
+                    input.accept = 'image/*';
+                    break;
+                case 'gif':
+                    input.accept = '.gif,image/gif';
+                    break;
+                case 'video':
+                    // Разрешаем основные видеоформаты
+                    input.accept = 'video/*,.mp4,.webm,.avi,.mov,.wmv';
+                    break;
+                case 'file':
+                    input.accept = '*/*';
+                    break;
+            }
         }
 
         function previewAttachment(file) {
             if (!file) return;
+            
+            if (file.size > 5 * 1024 * 1024) {
+                showAlert('Файл слишком большой! Максимум 5MB', 'error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentAttachment = {
+                    type: attachmentType,
+                    data: e.target.result,
+                    name: file.name,
+                    size: file.size,
+                    fileType: file.type // Добавляем тип файла
+                };
                 
-                if (file.size > 5 * 1024 * 1024) {
-                    showAlert('Файл слишком большой! Максимум 5MB', 'error');
-                    return;
-                }
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    currentAttachment = {
-                        type: attachmentType,
-                        data: e.target.result,
-                        name: file.name,
-                        size: file.size
-                    };
+                // Обновляем предпросмотр в модальном окне
+                const previewContainer = document.getElementById('preview-container');
+                if (previewContainer) {
+                    previewContainer.innerHTML = '';
                     
-                    // Обновляем предпросмотр в модальном окне
-                    const previewContainer = document.getElementById('preview-container');
-                    if (previewContainer) {
-                        previewContainer.innerHTML = '';
-                        if (attachmentType === 'image' || attachmentType === 'gif') {
-                            previewContainer.innerHTML = `<img src="${e.target.result}" style="max-width: 200px; border-radius: 10px;">`;
-                        } else if (attachmentType === 'video') {
-                            previewContainer.innerHTML = `
-                                <video controls style="max-width: 200px; border-radius: 10px;">
-                                    <source src="${e.target.result}" type="${file.type}">
-                                </video>
-                            `;
-                        } else {
+                    if (attachmentType === 'image' || attachmentType === 'gif') {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.style.maxWidth = '200px';
+                        img.style.borderRadius = '10px';
+                        previewContainer.appendChild(img);
+                    } else if (attachmentType === 'video') {
+                        const video = document.createElement('video');
+                        video.controls = true;
+                        video.style.maxWidth = '200px';
+                        video.style.borderRadius = '10px';
+                        
+                        const source = document.createElement('source');
+                        source.src = e.target.result;
+                        source.type = file.type; // Важно указать правильный MIME-тип
+                        
+                        video.appendChild(source);
+                        previewContainer.appendChild(video);
+                        
+                        // Добавляем обработчик для загрузки метаданных
+                        video.onloadedmetadata = function() {
+                            console.log('Видео загружено:', file.name, 'длительность:', video.duration);
+                        };
+                        
+                        video.onerror = function() {
+                            console.error('Ошибка загрузки видео');
                             previewContainer.innerHTML = `
                                 <div style="padding: 20px; text-align: center; background: rgba(67, 97, 238, 0.1); border-radius: 10px;">
-                                    <i class="fas fa-file fa-2x"></i>
+                                    <i class="fas fa-video fa-2x"></i>
                                     <div style="margin-top: 10px;">${file.name}</div>
+                                    <div style="margin-top: 5px; color: var(--warning); font-size: 12px;">
+                                        Предпросмотр видео недоступен
+                                    </div>
                                 </div>
                             `;
-                        }
-                        
-                        // Показываем блок предпросмотра
-                        document.getElementById('attachment-preview').style.display = 'block';
+                        };
+                    } else {
+                        previewContainer.innerHTML = `
+                            <div style="padding: 20px; text-align: center; background: rgba(67, 97, 238, 0.1); border-radius: 10px;">
+                                <i class="fas fa-file fa-2x"></i>
+                                <div style="margin-top: 10px;">${file.name}</div>
+                            </div>
+                        `;
                     }
-                };
-                reader.readAsDataURL(file);
+                    
+                    // Показываем блок предпросмотра
+                    document.getElementById('attachment-preview').style.display = 'block';
+                }
+            };
+            
+            // Обработка ошибок чтения файла
+            reader.onerror = function(error) {
+                console.error('Ошибка чтения файла:', error);
+                showAlert('Ошибка чтения файла', 'error');
+            };
+            
+            reader.readAsDataURL(file);
         }
 
         function attachFile() {
@@ -5305,6 +5387,16 @@
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape' && currentReply) {
                     cancelReply();
+                }
+            });
+
+            document.getElementById('message-input').addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+                
+                // Прокручиваем к полю ввода на мобильных
+                if (window.innerWidth <= 768) {
+                    this.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
             });
         }
