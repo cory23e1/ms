@@ -8,7 +8,9 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
+    <!-- Supabase SKD -->
+    <script src="https://unpkg.com/@supabase/supabase-js"></script>
     
     <!-- Библиотеки -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -2861,12 +2863,23 @@
             appId: "1:571640671300:web:e1e0f4369b93a3ef8f2011"
         };
 
+        const supabaseConfig = {
+            supabaseUrl: 'https://ywayvavqovmyzmfpdomi.storage.supabase.co/storage/v1/s3',
+            supabaseKey: '6005da92c2660dd93e6e453bff7a3d0584ba3db2e2a0d5c73317645fb18056a5'
+        };
+
         const DEBUG = true;
 
         // Инициализация Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const storage = firebase.storage();
+
+        // Инициализация Supabase
+        const supabase = window.supabase.createClient(
+            supabaseConfig.supabaseUrl,
+            supabaseConfig.supabaseKey
+        );
 
         // ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==========
         let currentUser = null;
@@ -3858,6 +3871,85 @@
 
         // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
 
+        // Функция загрузки файла в Supabase Storage
+        async function uploadToSupabase(file, folder = 'videos') {
+            try {
+                // Генерируем уникальное имя файла
+                const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
+                const filePath = `${folder}/${fileName}`;
+                
+                // Загружаем файл
+                const { data, error } = await supabase.storage
+                    .from('ms-adaptive-files') // Название bucket'а
+                    .upload(filePath, file);
+                
+                if (error) throw error;
+                
+                // Получаем публичную ссылку
+                const { data: { publicUrl } } = supabase.storage
+                    .from('ms-adaptive-files')
+                    .getPublicUrl(filePath);
+                
+                return {
+                    url: publicUrl,
+                    path: filePath,
+                    name: file.name,
+                    size: file.size
+                };
+            } catch (error) {
+                console.error('Supabase upload error:', error);
+                throw error;
+            }
+        }
+        
+        // Функция для скачивания
+        async function downloadFromSupabase(filePath, fileName) {
+            const { data, error } = await supabase.storage
+                .from('ms-adaptive-files')
+                .download(filePath);
+            
+            if (error) throw error;
+            
+            const url = URL.createObjectURL(data);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        async function handleVideoUpload(file) {
+            try {
+                // Показать индикатор загрузки
+                showAlert('Загрузка видео...', 'info');
+                
+                // Загружаем в Supabase
+                const videoData = await uploadToSupabase(file, 'videos');
+                
+                // Генерируем превью
+                const thumbnail = await generateVideoThumbnail(file);
+                const thumbnailData = await uploadToSupabase(
+                    await thumbnailToFile(thumbnail), 
+                    'thumbnails'
+                );
+                
+                return {
+                    type: 'video',
+                    url: videoData.url,
+                    thumbnail: thumbnailData.url,
+                    name: videoData.name,
+                    size: videoData.size,
+                    storage: 'supabase'
+                };
+                
+            } catch (error) {
+                console.error('Upload failed:', error);
+                throw error;
+            }
+        }
+            
         // Функция для воспроизведения видео
         function playVideo(videoUrl, videoName) {
             const modal = document.createElement('div');
@@ -4002,30 +4094,16 @@
             
             // Если есть видео-вложение
             if (currentAttachment && currentAttachment.type === 'video') {
-                try {
-                    // Показываем индикатор загрузки
-                    showAlert('Загрузка видео...', 'info');
-                    
-                    // Конвертируем base64 в Blob
-                    const blob = base64ToBlob(currentAttachment.data, currentAttachment.fileType);
-                    
-                    // Загружаем в Storage
-                    const videoUrl = await uploadVideoToStorage(blob, messageId);
-                    
-                    // Добавляем вложение с URL из Storage
-                    message.attachment = {
-                        type: 'video',
-                        name: currentAttachment.name,
-                        size: currentAttachment.size,
-                        url: videoUrl, // Сохраняем URL из Storage
-                        thumbnail: await generateVideoThumbnail(blob) // Генерируем превью
-                    };
-                    
-                } catch (error) {
-                    console.error('Video upload error:', error);
-                    showAlert('Ошибка загрузки видео', 'error');
-                    return;
-                }
+                // Конвертируем base64 в File
+                const blob = base64ToBlob(currentAttachment.data, currentAttachment.fileType);
+                const file = new File([blob], currentAttachment.name, {
+                    type: currentAttachment.fileType
+                });
+                
+                // Загружаем
+                const videoInfo = await handleVideoUpload(file);
+                
+                message.attachment = videoInfo;
             } else if (currentAttachment) {
                 // Для других типов файлов (изображения, документы) можно использовать base64
                 // Но лучше и их загружать в Storage
