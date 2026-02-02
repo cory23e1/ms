@@ -3879,7 +3879,7 @@
                 const filePath = `${folder}/${fileName}`;
                 
                 // Загружаем файл
-                const { data, error } = await supabase.storage
+                const { data, error } = await supabase.storage // УБРАЛИ const supabase =
                     .from('ms-adaptive-files') // Название bucket'а
                     .upload(filePath, file);
                 
