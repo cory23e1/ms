@@ -591,9 +591,44 @@
             word-wrap: break-word;
         }
 
-        .message-attachment {
-            margin-top: 8px;
+        /* Стили для видео в сообщениях */
+        .message-attachment video {
             max-width: 300px;
+            max-height: 300px;
+            border-radius: 10px;
+            background: #000;
+            display: block;
+        }
+
+        /* Стили для файлов в сообщениях */
+        .file-attachment {
+            background: rgba(67, 97, 238, 0.1);
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .file-attachment-icon {
+            font-size: 24px;
+            color: var(--primary);
+        }
+        
+        .file-attachment-info {
+            flex: 1;
+        }
+        
+        .file-attachment-name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+        
+        .file-attachment-size {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
         }
 
         .attachment-image {
@@ -3483,44 +3518,29 @@
                 preview.classList.add('visible');
                 
                 // Устанавливаем иконку в зависимости от типа файла
-                let iconClass = 'fas fa-file';
-                if (currentAttachment.type === 'image') {
-                    iconClass = 'fas fa-image';
-                } else if (currentAttachment.type === 'gif') {
-                    iconClass = 'fas fa-photo-video';
-                } else if (currentAttachment.type === 'video') {
-                    iconClass = 'fas fa-video';
-                } else if (currentAttachment.name && currentAttachment.name.toLowerCase().includes('.pdf')) {
-                    iconClass = 'fas fa-file-pdf';
-                } else if (currentAttachment.name && (
-                    currentAttachment.name.toLowerCase().includes('.doc') || 
-                    currentAttachment.name.toLowerCase().includes('.docx')
-                )) {
-                    iconClass = 'fas fa-file-word';
-                }
+                let iconClass = getFileIcon(currentAttachment.name);
                 
                 icon.innerHTML = `<i class="${iconClass}"></i>`;
                 filename.textContent = currentAttachment.name;
                 
                 // Форматируем размер файла
-                const size = currentAttachment.size;
-                if (size < 1024) {
-                    filesize.textContent = size + ' B';
-                } else if (size < 1024 * 1024) {
-                    filesize.textContent = (size / 1024).toFixed(1) + ' KB';
-                } else {
-                    filesize.textContent = (size / (1024 * 1024)).toFixed(1) + ' MB';
-                }
+                filesize.textContent = formatFileSize(currentAttachment.size);
             } else {
                 preview.classList.remove('visible');
             }
         }
 
         function removeAttachment() {
+            // Очищаем временные URL если есть
+            if (currentAttachment && currentAttachment.tempUrl) {
+                URL.revokeObjectURL(currentAttachment.tempUrl);
+            }
+            
             currentAttachment = null;
             updateAttachmentPreview();
             showAlert('Вложение удалено', 'info');
         }
+
 
         function loadMessages() {
             database.ref('messages').limitToLast(50).on('value', snapshot => {
@@ -3562,21 +3582,48 @@
                             <img src="${message.attachment.data}" 
                                  alt="${message.attachment.name}" 
                                  class="attachment-image"
-                                 onclick="viewImage('${message.attachment.data}')">
+                                 onclick="viewImage('${message.attachment.data}')"
+                                 style="max-width: 300px; max-height: 300px; object-fit: contain;">
                         </div>
                     `;
                 }
                 else if (message.attachment.type === 'video') {
-                    // ВАЖНО: Используем правильный MIME-тип для тега video
-                    const mimeType = message.attachment.fileType || 'video/mp4';
+                    // Используем правильный MIME-тип для тега video
+                    const mimeType = message.attachment.fileType || getVideoMimeType(message.attachment.name);
+                    
                     attachmentHtml = `
                         <div class="message-attachment">
-                            <video controls style="max-width: 300px; border-radius: 10px;">
+                            <video controls 
+                                   style="max-width: 300px; max-height: 300px; border-radius: 10px; background: #000;"
+                                   preload="metadata"
+                                   poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMxYTFhMmUiLz48cGF0aCBkPSJNMTEwIDE1MEwyMjAgMTUwTTE1MCAxMTBMMTUwIDE5MCIgc3Ryb2tlPSIjNDM2MWVlIiBzdHJva2Utd2lkdGg9IjEwIiBmaWxsPSJub25lIi8+PC9zdmc+">
                                 <source src="${message.attachment.data}" type="${mimeType}">
-                                Ваш браузер не поддерживает видео.
+                                Ваш браузер не поддерживает видео. 
+                                <a href="${message.attachment.data}" download="${message.attachment.name}">Скачать видео</a>
                             </video>
                             <div style="font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 5px;">
-                                ${message.attachment.name}
+                                <i class="fas fa-video"></i> ${message.attachment.name}
+                            </div>
+                        </div>
+                    `;
+                }
+                else if (message.attachment.type === 'file') {
+                    attachmentHtml = `
+                        <div class="message-attachment">
+                            <div style="background: rgba(67, 97, 238, 0.1); padding: 10px; border-radius: 10px; display: flex; align-items: center; gap: 10px;">
+                                <div style="font-size: 24px; color: var(--primary);">
+                                    <i class="${getFileIcon(message.attachment.name)}"></i>
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 600; font-size: 14px;">${message.attachment.name}</div>
+                                    <div style="font-size: 12px; color: rgba(255,255,255,0.7);">
+                                        ${formatFileSize(message.attachment.size)}
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary btn-sm" 
+                                        onclick="downloadAttachment('${message.attachment.data}', '${message.attachment.name}')">
+                                    <i class="fas fa-download"></i>
+                                </button>
                             </div>
                         </div>
                     `;
@@ -3622,10 +3669,10 @@
                         <div class="message-time">${displayTime}</div>
                     </div>
                     ${replyPreviewHtml}
-                    <div class="message-text">${message.text}</div>
+                    <div class="message-text">${message.text || ''}</div>
                     ${attachmentHtml}
                     <div class="message-actions">
-                        <button class="reply-btn" onclick="handleReplyClick(event, '${message.id}', '${escapeHtml(message.username)}', '${escapeHtml(message.text.substring(0, 100))}')">
+                        <button class="reply-btn" onclick="handleReplyClick(event, '${message.id}', '${escapeHtml(message.username)}', '${escapeHtml((message.text || '').substring(0, 100))}')">
                             <i class="fas fa-reply"></i> Ответить
                         </button>
                         ${isAdmin ? `
@@ -3638,6 +3685,43 @@
             `;
             
             return div;
+        }
+
+        // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
+        function getVideoMimeType(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const mimeTypes = {
+                'mp4': 'video/mp4',
+                'webm': 'video/webm',
+                'ogg': 'video/ogg',
+                'mov': 'video/quicktime',
+                'avi': 'video/x-msvideo',
+                'wmv': 'video/x-ms-wmv'
+            };
+            return mimeTypes[ext] || 'video/mp4';
+        }
+        
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            
+            if (['pdf'].includes(ext)) return 'fas fa-file-pdf';
+            if (['doc', 'docx'].includes(ext)) return 'fas fa-file-word';
+            if (['xls', 'xlsx'].includes(ext)) return 'fas fa-file-excel';
+            if (['ppt', 'pptx'].includes(ext)) return 'fas fa-file-powerpoint';
+            if (['zip', 'rar', '7z'].includes(ext)) return 'fas fa-file-archive';
+            if (['txt', 'rtf', 'md'].includes(ext)) return 'fas fa-file-alt';
+            if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(ext)) return 'fas fa-file-image';
+            if (['mp4', 'webm', 'ogg', 'mov', 'avi', 'wmv'].includes(ext)) return 'fas fa-file-video';
+            if (['mp3', 'wav', 'ogg', 'flac'].includes(ext)) return 'fas fa-file-audio';
+            
+            return 'fas fa-file';
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+            return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
         }
 
         // Добавьте вспомогательную функцию для экранирования HTML
@@ -3676,16 +3760,16 @@
                 showAlert('Введите сообщение или прикрепите файл!', 'warning');
                 return;
             }
-
-             // Проверяем размер видео
+        
+            // Проверяем размер вложения
             const isLargeVideo = currentAttachment && 
                                 currentAttachment.type === 'video' && 
-                                currentAttachment.size > 2 * 1024 * 1024;
+                                currentAttachment.size > 20 * 1024 * 1024; // 20MB
             
             if (isLargeVideo) {
                 Swal.fire({
                     title: 'Большое видео',
-                    text: 'Видеофайл более 2MB может загружаться медленно. Продолжить?',
+                    text: 'Видеофайл более 20MB может загружаться медленно. Продолжить?',
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonText: 'Отправить',
@@ -3699,7 +3783,7 @@
                 proceedWithSending(text);
             }
             
-           function proceedWithSending(text){
+            function proceedWithSending(text) {
                 // Скрываем панель эмодзи если открыта
                 if (emojiPickerVisible) {
                     document.getElementById('emoji-picker').style.display = 'none';
@@ -3750,10 +3834,17 @@
                 input.style.height = 'auto';
                 
                 // Добавляем класс для визуальной обратной связи
-                const sendBtn = event.target;
-                const originalHTML = sendBtn.innerHTML;
-                sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                sendBtn.disabled = true;
+                const sendBtn = document.querySelector('.chat-btn .fa-paper-plane')?.closest('.chat-btn');
+                if (sendBtn) {
+                    const originalHTML = sendBtn.innerHTML;
+                    sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    sendBtn.disabled = true;
+                    
+                    setTimeout(() => {
+                        sendBtn.innerHTML = originalHTML;
+                        sendBtn.disabled = false;
+                    }, 500);
+                }
                 
                 // Отправляем сообщение
                 database.ref('messages/' + message.id).set(message)
@@ -3783,15 +3874,8 @@
                         updateAttachmentPreview();
                         
                         showAlert('Ошибка отправки', 'error', 'Попробуйте еще раз');
-                    })
-                    .finally(() => {
-                        // Восстанавливаем кнопку
-                        setTimeout(() => {
-                            sendBtn.innerHTML = originalHTML;
-                            sendBtn.disabled = false;
-                        }, 500);
                     });
-           }
+            }
         }
 
         function deleteMessage(messageId) {
@@ -5004,11 +5088,20 @@
         }
 
         function closeAttachmentModal() {
+            // Очищаем временные URL если есть
+            if (currentAttachment && currentAttachment.tempUrl) {
+                URL.revokeObjectURL(currentAttachment.tempUrl);
+            }
+            
             document.getElementById('attachment-modal').classList.remove('active');
-            document.getElementById('attachment-preview').style.display = 'none';
             document.getElementById('preview-container').innerHTML = '';
             document.getElementById('file-input').value = '';
-            // НЕ сбрасываем currentAttachment здесь, только в модалке
+            
+            // Скрываем секцию предпросмотра в модалке
+            const previewSection = document.getElementById('attachment-preview');
+            if (previewSection) {
+                previewSection.style.display = 'none';
+            }
         }
 
         function selectAttachmentType(type) {
@@ -5018,14 +5111,14 @@
             // Устанавливаем правильные accept атрибуты
             switch(type) {
                 case 'image':
-                    input.accept = 'image/*';
+                    input.accept = 'image/*,.jpg,.jpeg,.png,.gif,.webp,.bmp';
                     break;
                 case 'gif':
                     input.accept = '.gif,image/gif';
                     break;
                 case 'video':
-                    // Разрешаем основные видеоформаты
-                    input.accept = 'video/*,.mp4,.webm,.avi,.mov,.wmv';
+                    // Разрешаем основные видеоформаты с явным указанием
+                    input.accept = 'video/mp4,video/webm,video/ogg,video/quicktime,.mp4,.webm,.ogg,.mov,.avi,.wmv';
                     break;
                 case 'file':
                     input.accept = '*/*';
@@ -5036,9 +5129,34 @@
         function previewAttachment(file) {
             if (!file) return;
             
-            if (file.size > 5 * 1024 * 1024) {
-                showAlert('Файл слишком большой! Максимум 5MB', 'error');
+            // Разные лимиты для разных типов файлов
+            const maxSizes = {
+                'image': 10 * 1024 * 1024, // 10MB
+                'gif': 5 * 1024 * 1024,    // 5MB
+                'video': 50 * 1024 * 1024, // 50MB для видео
+                'file': 10 * 1024 * 1024   // 10MB
+            };
+            
+            const maxSize = maxSizes[attachmentType] || 5 * 1024 * 1024;
+            
+            if (file.size > maxSize) {
+                showAlert(`Файл слишком большой! Максимум ${Math.round(maxSize/1024/1024)}MB`, 'error');
+                document.getElementById('file-input').value = '';
                 return;
+            }
+            
+            // Проверяем MIME-тип для видео
+            if (attachmentType === 'video') {
+                const videoTypes = [
+                    'video/mp4', 'video/webm', 'video/ogg', 
+                    'video/quicktime', 'video/x-msvideo', 'video/x-ms-wmv'
+                ];
+                
+                if (!videoTypes.includes(file.type) && !file.name.toLowerCase().match(/\.(mp4|webm|ogg|mov|avi|wmv)$/)) {
+                    showAlert('Неподдерживаемый формат видео! Разрешены: MP4, WebM, OGG, MOV, AVI, WMV', 'error');
+                    document.getElementById('file-input').value = '';
+                    return;
+                }
             }
             
             const reader = new FileReader();
@@ -5053,56 +5171,85 @@
                 
                 // Обновляем предпросмотр в модальном окне
                 const previewContainer = document.getElementById('preview-container');
-                if (previewContainer) {
+                const previewSection = document.getElementById('attachment-preview'); // Это для модалки
+                
+                if (previewContainer && previewSection) {
                     previewContainer.innerHTML = '';
                     
                     if (attachmentType === 'image' || attachmentType === 'gif') {
                         const img = document.createElement('img');
                         img.src = e.target.result;
                         img.style.maxWidth = '200px';
+                        img.style.maxHeight = '200px';
                         img.style.borderRadius = '10px';
+                        img.style.objectFit = 'contain';
                         previewContainer.appendChild(img);
-                    } else if (attachmentType === 'video') {
-                        const video = document.createElement('video');
-                        video.controls = true;
-                        video.style.maxWidth = '200px';
-                        video.style.borderRadius = '10px';
+                        previewSection.style.display = 'block';
+                    } 
+                    else if (attachmentType === 'video') {
+                        // Используем временный URL для превью видео
+                        const videoUrl = URL.createObjectURL(file);
                         
-                        const source = document.createElement('source');
-                        source.src = e.target.result;
-                        source.type = file.type; // Важно указать правильный MIME-тип
+                        const videoContainer = document.createElement('div');
+                        videoContainer.style.textAlign = 'center';
+                        videoContainer.style.padding = '10px';
+                        videoContainer.style.background = 'rgba(0,0,0,0.2)';
+                        videoContainer.style.borderRadius = '10px';
                         
-                        video.appendChild(source);
-                        previewContainer.appendChild(video);
+                        const videoIcon = document.createElement('div');
+                        videoIcon.style.fontSize = '48px';
+                        videoIcon.style.color = 'var(--primary)';
+                        videoIcon.style.marginBottom = '10px';
+                        videoIcon.innerHTML = '<i class="fas fa-video"></i>';
                         
-                        // Добавляем обработчик для загрузки метаданных
-                        video.onloadedmetadata = function() {
-                            console.log('Видео загружено:', file.name, 'длительность:', video.duration);
-                        };
-                        
-                        video.onerror = function() {
-                            console.error('Ошибка загрузки видео');
-                            previewContainer.innerHTML = `
-                                <div style="padding: 20px; text-align: center; background: rgba(67, 97, 238, 0.1); border-radius: 10px;">
-                                    <i class="fas fa-video fa-2x"></i>
-                                    <div style="margin-top: 10px;">${file.name}</div>
-                                    <div style="margin-top: 5px; color: var(--warning); font-size: 12px;">
-                                        Предпросмотр видео недоступен
-                                    </div>
-                                </div>
-                            `;
-                        };
-                    } else {
-                        previewContainer.innerHTML = `
-                            <div style="padding: 20px; text-align: center; background: rgba(67, 97, 238, 0.1); border-radius: 10px;">
-                                <i class="fas fa-file fa-2x"></i>
-                                <div style="margin-top: 10px;">${file.name}</div>
+                        const videoInfo = document.createElement('div');
+                        videoInfo.innerHTML = `
+                            <div style="font-weight: 600; margin-bottom: 5px;">${file.name}</div>
+                            <div style="font-size: 12px; color: rgba(255,255,255,0.7);">
+                                ${(file.size / 1024 / 1024).toFixed(2)} MB • ${file.type}
+                            </div>
+                            <div style="font-size: 11px; color: var(--warning); margin-top: 5px;">
+                                <i class="fas fa-info-circle"></i> Видео будет отображаться после отправки
                             </div>
                         `;
+                        
+                        videoContainer.appendChild(videoIcon);
+                        videoContainer.appendChild(videoInfo);
+                        previewContainer.appendChild(videoContainer);
+                        previewSection.style.display = 'block';
+                        
+                        // Сохраняем временный URL для очистки
+                        currentAttachment.tempUrl = videoUrl;
+                    } 
+                    else {
+                        const fileContainer = document.createElement('div');
+                        fileContainer.style.textAlign = 'center';
+                        fileContainer.style.padding = '20px';
+                        fileContainer.style.background = 'rgba(67, 97, 238, 0.1)';
+                        fileContainer.style.borderRadius = '10px';
+                        
+                        // Определяем иконку по типу файла
+                        let iconClass = 'fas fa-file';
+                        const ext = file.name.split('.').pop().toLowerCase();
+                        
+                        if (['pdf'].includes(ext)) iconClass = 'fas fa-file-pdf';
+                        else if (['doc', 'docx'].includes(ext)) iconClass = 'fas fa-file-word';
+                        else if (['xls', 'xlsx'].includes(ext)) iconClass = 'fas fa-file-excel';
+                        else if (['ppt', 'pptx'].includes(ext)) iconClass = 'fas fa-file-powerpoint';
+                        else if (['zip', 'rar', '7z'].includes(ext)) iconClass = 'fas fa-file-archive';
+                        else if (['txt', 'rtf'].includes(ext)) iconClass = 'fas fa-file-alt';
+                        
+                        fileContainer.innerHTML = `
+                            <i class="${iconClass} fa-3x" style="margin-bottom: 10px;"></i>
+                            <div style="font-weight: 600;">${file.name}</div>
+                            <div style="font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 5px;">
+                                ${(file.size / 1024).toFixed(1)} KB
+                            </div>
+                        `;
+                        
+                        previewContainer.appendChild(fileContainer);
+                        previewSection.style.display = 'block';
                     }
-                    
-                    // Показываем блок предпросмотра
-                    document.getElementById('attachment-preview').style.display = 'block';
                 }
             };
             
@@ -5110,6 +5257,7 @@
             reader.onerror = function(error) {
                 console.error('Ошибка чтения файла:', error);
                 showAlert('Ошибка чтения файла', 'error');
+                document.getElementById('file-input').value = '';
             };
             
             reader.readAsDataURL(file);
@@ -5123,6 +5271,12 @@
             
             // Обновляем предпросмотр над полем ввода сообщения
             updateAttachmentPreview();
+            
+            // Очищаем временные URL если есть
+            if (currentAttachment.tempUrl) {
+                URL.revokeObjectURL(currentAttachment.tempUrl);
+                delete currentAttachment.tempUrl;
+            }
             
             closeAttachmentModal();
             showAlert('Файл прикреплен!', 'success');
