@@ -3567,11 +3567,12 @@
                     `;
                 }
                 else if (message.attachment.type === 'video') {
-                    // Добавляем видео-плеер для видеофайлов
+                    // ВАЖНО: Используем правильный MIME-тип для тега video
+                    const mimeType = message.attachment.fileType || 'video/mp4';
                     attachmentHtml = `
                         <div class="message-attachment">
                             <video controls style="max-width: 300px; border-radius: 10px;">
-                                <source src="${message.attachment.data}" type="${message.attachment.fileType || 'video/mp4'}">
+                                <source src="${message.attachment.data}" type="${mimeType}">
                                 Ваш браузер не поддерживает видео.
                             </video>
                             <div style="font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 5px;">
@@ -3676,8 +3677,12 @@
                 return;
             }
 
-            // Проверяем размер видео
-            if (currentAttachment && currentAttachment.type === 'video' && currentAttachment.size > 2 * 1024 * 1024) {
+             // Проверяем размер видео
+            const isLargeVideo = currentAttachment && 
+                                currentAttachment.type === 'video' && 
+                                currentAttachment.size > 2 * 1024 * 1024;
+            
+            if (isLargeVideo) {
                 Swal.fire({
                     title: 'Большое видео',
                     text: 'Видеофайл более 2MB может загружаться медленно. Продолжить?',
@@ -3687,103 +3692,106 @@
                     cancelButtonText: 'Отмена'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        sendMessageWithAttachment();
+                        proceedWithSending(text);
                     }
                 });
-                return;
+            } else {
+                proceedWithSending(text);
             }
             
-            // Скрываем панель эмодзи если открыта
-            if (emojiPickerVisible) {
-                document.getElementById('emoji-picker').style.display = 'none';
-                emojiPickerVisible = false;
-            }
-            
-            // Используем серверное время Firebase
-            const serverTimestamp = firebase.database.ServerValue.TIMESTAMP;
-            
-            const message = {
-                id: generateId(),
-                text: text,
-                userId: currentUser.id,
-                username: currentUser.username,
-                userRole: currentUser.roleText || (currentUser.role === 'mentor' ? 'Наставник' : 'Молодой специалист'),
-                userOrganization: currentUser.organization || '',
-                userAvatar: currentUser.avatar || getDefaultAvatar(currentUser.username),
-                timestamp: serverTimestamp,
-                firebaseTimestamp: serverTimestamp,
-                localTimestamp: Date.now(),
-                attachment: currentAttachment,
-                timezone: 'UTC+4'
-            };
-            
-            // Добавляем информацию об ответе, если есть
-            if (currentReply) {
-                message.replyTo = currentReply.id;
-                message.replyPreview = {
-                    sender: currentReply.sender,
-                    text: currentReply.text
+           function proceedWithSending(text){
+                // Скрываем панель эмодзи если открыта
+                if (emojiPickerVisible) {
+                    document.getElementById('emoji-picker').style.display = 'none';
+                    emojiPickerVisible = false;
+                }
+                
+                // Используем серверное время Firebase
+                const serverTimestamp = firebase.database.ServerValue.TIMESTAMP;
+                
+                const message = {
+                    id: generateId(),
+                    text: text,
+                    userId: currentUser.id,
+                    username: currentUser.username,
+                    userRole: currentUser.roleText || (currentUser.role === 'mentor' ? 'Наставник' : 'Молодой специалист'),
+                    userOrganization: currentUser.organization || '',
+                    userAvatar: currentUser.avatar || getDefaultAvatar(currentUser.username),
+                    timestamp: serverTimestamp,
+                    firebaseTimestamp: serverTimestamp,
+                    localTimestamp: Date.now(),
+                    attachment: currentAttachment,
+                    timezone: 'UTC+4'
                 };
                 
-                // Сбрасываем текущий ответ после отправки
-                setTimeout(() => {
-                    cancelReply();
-                }, 100);
-            }
-            
-            // Немедленно очищаем поле ввода и сбрасываем ответ
-            const originalText = text;
-            input.value = '';
-            currentAttachment = null;
-            updateAttachmentPreview();
-            cancelReply(); // Сбрасываем ответ
-            
-            // Оптимизация: уменьшаем анимацию при отправке
-            input.style.transition = 'none';
-            input.style.height = 'auto';
-            
-            // Добавляем класс для визуальной обратной связи
-            const sendBtn = event.target;
-            const originalHTML = sendBtn.innerHTML;
-            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            sendBtn.disabled = true;
-            
-            // Отправляем сообщение
-            database.ref('messages/' + message.id).set(message)
-                .then(() => {
-                    input.focus();
+                // Добавляем информацию об ответе, если есть
+                if (currentReply) {
+                    message.replyTo = currentReply.id;
+                    message.replyPreview = {
+                        sender: currentReply.sender,
+                        text: currentReply.text
+                    };
                     
-                    // Быстро показываем уведомление
+                    // Сбрасываем текущий ответ после отправки
                     setTimeout(() => {
-                        Swal.fire({
-                            title: '✓',
-                            text: 'Отправлено',
-                            icon: 'success',
-                            toast: true,
-                            position: 'top-end',
-                            showConfirmButton: false,
-                            timer: 1500,
-                            timerProgressBar: true
-                        });
-                    }, 50);
-                })
-                .catch(error => {
-                    console.error('Ошибка отправки сообщения:', error);
-                    
-                    // Восстанавливаем текст при ошибке
-                    input.value = originalText;
-                    currentAttachment = message.attachment;
-                    updateAttachmentPreview();
-                    
-                    showAlert('Ошибка отправки', 'error', 'Попробуйте еще раз');
-                })
-                .finally(() => {
-                    // Восстанавливаем кнопку
-                    setTimeout(() => {
-                        sendBtn.innerHTML = originalHTML;
-                        sendBtn.disabled = false;
-                    }, 500);
-                });
+                        cancelReply();
+                    }, 100);
+                }
+                
+                // Немедленно очищаем поле ввода и сбрасываем ответ
+                const originalText = text;
+                input.value = '';
+                currentAttachment = null;
+                updateAttachmentPreview();
+                cancelReply(); // Сбрасываем ответ
+                
+                // Оптимизация: уменьшаем анимацию при отправке
+                input.style.transition = 'none';
+                input.style.height = 'auto';
+                
+                // Добавляем класс для визуальной обратной связи
+                const sendBtn = event.target;
+                const originalHTML = sendBtn.innerHTML;
+                sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                sendBtn.disabled = true;
+                
+                // Отправляем сообщение
+                database.ref('messages/' + message.id).set(message)
+                    .then(() => {
+                        input.focus();
+                        
+                        // Быстро показываем уведомление
+                        setTimeout(() => {
+                            Swal.fire({
+                                title: '✓',
+                                text: 'Отправлено',
+                                icon: 'success',
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 1500,
+                                timerProgressBar: true
+                            });
+                        }, 50);
+                    })
+                    .catch(error => {
+                        console.error('Ошибка отправки сообщения:', error);
+                        
+                        // Восстанавливаем текст при ошибке
+                        input.value = originalText;
+                        currentAttachment = message.attachment;
+                        updateAttachmentPreview();
+                        
+                        showAlert('Ошибка отправки', 'error', 'Попробуйте еще раз');
+                    })
+                    .finally(() => {
+                        // Восстанавливаем кнопку
+                        setTimeout(() => {
+                            sendBtn.innerHTML = originalHTML;
+                            sendBtn.disabled = false;
+                        }, 500);
+                    });
+           }
         }
 
         function deleteMessage(messageId) {
