@@ -267,7 +267,10 @@
         /* ========== СТИЛИ ДЛЯ ВКЛАДКИ ЧАТА ========== */
         .users-sidebar {
             width: 300px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(26, 26, 46, 0.95) !important; /* Более прозрачный фон */
+            backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3) !important;
             border-radius: 15px;
             padding: 20px;
             display: flex;
@@ -1222,7 +1225,7 @@
 /* Для устройств с шириной до 768px (планшеты в портретной ориентации и телефоны) */
 @media (max-width: 768px) {
     body {
-        font-size: 14px;
+        background: #0a0a1a !important; /* Более темный фон для OLED */
     }
     
     .navbar {
@@ -1306,11 +1309,14 @@
     }
     
     .users-sidebar {
-        width: 100%;
-        height: 200px;
-        border-radius: 10px;
+        width: 100% !important;
+        height: auto !important; /* Автоматическая высота */
+        max-height: 40vh !important; /* Ограничиваем высоту */
+        overflow: hidden !important;
+        position: relative !important;
         margin-bottom: 15px;
-        order: 2;
+        border-radius: 10px;
+        z-index: 5 !important; /* Убедимся, что поверх других элементов */
     }
     
     .users-sidebar.hidden-mobile {
@@ -1324,15 +1330,53 @@
     }
     
     .users-tabs {
-        overflow-x: auto;
-        flex-wrap: nowrap;
+        display: flex;
+        gap: 3px !important; /* Уменьшаем отступы */
+        margin-bottom: 10px;
         padding-bottom: 5px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; /* Скрываем скроллбар для Firefox */
+    }
+
+    .users-tabs::-webkit-scrollbar {
+        display: none; /* Скрываем скроллбар для Chrome/Safari */
+    }
+
+    .users-list {
+        height: calc(40vh - 120px) !important; /* Рассчитываем высоту */
+        max-height: 300px !important;
+        overflow-y: auto !important;
+        background: rgba(26, 26, 46, 0.95) !important;
+        border-radius: 0 0 10px 10px;
+    }
+
+    .user-card {
+        padding: 8px 10px !important;
+        margin-bottom: 5px !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    .user-avatar-sm {
+        width: 32px !important;
+        height: 32px !important;
+    }
+    
+    .user-details-name {
+        font-size: 12px !important;
     }
     
     .tab-btn {
-        min-width: 60px;
-        font-size: 11px;
+        flex: 0 0 auto; /* Не даем кнопкам растягиваться */
+        padding: 6px 8px !important; /* Уменьшаем отступы */
+        font-size: 11px !important; /* Уменьшаем размер шрифта */
+        min-width: 50px !important; /* Минимальная ширина меньше */
         white-space: nowrap;
+    }
+
+    .tab-btn i {
+        font-size: 10px !important; /* Уменьшаем иконки */
+        margin-right: 3px !important;
     }
     
     .chat-main {
@@ -1374,28 +1418,53 @@
     }
     
     .message {
-        max-width: 85%;
+        max-width: 95% !important; /* Увеличиваем ширину сообщения */
+        margin-left: 0 !important;
+        margin-right: 0 !important;
     }
     
     .message-content {
-        padding: 10px 12px;
+        max-width: 100% !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        word-break: break-word !important;
+        background: rgba(67, 97, 238, 0.15) !important;
+        border: 1px solid rgba(67, 97, 238, 0.2) !important;
+    }
+
+    .message.sent .message-content {
+        background: rgba(76, 201, 240, 0.2) !important;
+        border: 1px solid rgba(76, 201, 240, 0.3) !important;
     }
     
     .message-header {
-        flex-wrap: wrap;
-        gap: 5px;
+        flex-wrap: wrap !important;
+        gap: 5px !important;
     }
     
     .message-sender {
-        font-size: 13px;
+        font-size: 12px !important;
+        flex-wrap: wrap !important;
     }
     
     .message-time {
-        font-size: 10px;
+        font-size: 10px !important;
+        margin-left: auto !important;
     }
     
     .message-text {
-        font-size: 13px;
+        font-size: 13px !important;
+        line-height: 1.4 !important;
+        word-wrap: break-word !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        white-space: pre-wrap !important;
+        max-width: 100% !important;
+    }
+
+    .message.sent {
+        margin-left: auto !important;
+        margin-right: 0 !important;
     }
     
     .chat-input {
@@ -1515,6 +1584,12 @@
     
     .reply-text {
         font-size: 11px;
+    }
+
+    .users-sidebar,
+    .chat-main,
+    .message-content {
+        box-shadow: none !important;
     }
 }
 
@@ -1645,6 +1720,56 @@
     .last-seen {
         display: none;
     }
+
+        .users-tabs {
+        gap: 2px !important;
+    }
+    
+    .tab-btn {
+        padding: 5px 6px !important;
+        font-size: 10px !important;
+        min-width: 45px !important;
+    }
+    
+    .tab-btn i {
+        font-size: 9px !important;
+        margin-right: 2px !important;
+    }
+    
+    /* Уменьшаем аватарки в списке пользователей */
+    .user-avatar-sm {
+        width: 28px !important;
+        height: 28px !important;
+    }
+    
+    .user-details {
+        max-width: calc(100% - 40px) !important;
+    }
+    
+    .user-details-name {
+        font-size: 11px !important;
+    }
+    
+    .role-mentor, .role-specialist {
+        font-size: 9px !important;
+        padding: 1px 4px !important;
+    }
+    
+    /* Убираем неважную информацию на мобильных */
+    .user-details-role,
+    .last-seen {
+        display: none !important;
+    }
+    
+    /* Исправляем высоту списка пользователей */
+    .users-sidebar {
+        max-height: 35vh !important;
+    }
+    
+    .users-list {
+        height: calc(35vh - 110px) !important;
+    }
+    
 }
 
 /* Для устройств с очень маленькой высотой */
@@ -5561,6 +5686,26 @@
                     this.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
             });
+
+            window.addEventListener('load', adjustUsersListHeight);
+            window.addEventListener('resize', adjustUsersListHeight);
+
+            setTimeout(adjustUsersListHeight, 500);
+        }
+
+        function adjustUsersListHeight() {
+            if (window.innerWidth <= 768) {
+                const usersSidebar = document.querySelector('.users-sidebar');
+                const usersList = document.getElementById('users-list');
+                const headerHeight = document.querySelector('.users-header').offsetHeight;
+                const tabsHeight = document.querySelector('.users-tabs').offsetHeight;
+                
+                if (usersSidebar && usersList) {
+                    const availableHeight = window.innerHeight * 0.4 - headerHeight - tabsHeight - 30;
+                    usersList.style.maxHeight = Math.max(150, availableHeight) + 'px';
+                    usersList.style.height = Math.max(150, availableHeight) + 'px';
+                }
+            }
         }
 
         // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ВРЕМЕНИ ==========
