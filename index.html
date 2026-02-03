@@ -2721,6 +2721,19 @@
                         </button>
                     </div>
                 </div>
+
+                <div style="margin: 15px 0; padding: 10px; background: rgba(67, 97, 238, 0.1); border-radius: 8px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <i class="fab fa-github" style="color: var(--primary);"></i>
+                        <span style="font-weight: 500;">GitHub Загрузка</span>
+                        <span id="github-status" style="margin-left: auto; font-size: 12px; padding: 2px 8px; border-radius: 10px; background: #4CAF50; color: white;">
+                            <i class="fas fa-check"></i> Настроено
+                        </span>
+                    </div>
+                    <small style="color: rgba(255,255,255,0.7);">
+                        Все файлы загружаются на GitHub и доступны через jsDelivr CDN
+                    </small>
+                </div>
                 
                 <div class="mb-15" id="attachment-preview" style="display: none;">
                     <label class="form-label">Предпросмотр</label>
@@ -2858,6 +2871,13 @@
             storageBucket: "ms-adaptive-chat.firebasestorage.app",
             messagingSenderId: "571640671300",
             appId: "1:571640671300:web:e1e0f4369b93a3ef8f2011"
+        };
+
+        const GITHUB_CONFIG = {
+            username: 'cory23e1', // Замените на ваш GitHub username
+            repo: 'ms-adaptive-files',         // Замените на название репозитория
+            branch: 'main',           // Ветка (обычно main или master)
+            token: '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' // Токен GitHub (для загрузки)
         };
 
         const DEBUG = true;
@@ -3877,7 +3897,7 @@
             }
         }
 
-        function sendMessage() {
+        async function sendMessage() {
             const input = document.getElementById('message-input');
             const text = input.value.trim();
             
@@ -3885,121 +3905,140 @@
                 showAlert('Введите сообщение или прикрепите файл!', 'warning');
                 return;
             }
-        
-            // Проверяем размер вложения
-            const isLargeVideo = currentAttachment && 
-                                currentAttachment.type === 'video' && 
-                                currentAttachment.size > 20 * 1024 * 1024; // 20MB
             
-            if (isLargeVideo) {
-                Swal.fire({
-                    title: 'Большое видео',
-                    text: 'Видеофайл более 20MB может загружаться медленно. Продолжить?',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Отправить',
-                    cancelButtonText: 'Отмена'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        proceedWithSending(text);
-                    }
-                });
-            } else {
-                proceedWithSending(text);
+            // Проверяем, настроен ли GitHub
+            if (!isGitHubConfigured()) {
+                showAlert('GitHub не настроен!', 'error', 'Настройте GitHub в настройках профиля для загрузки файлов.');
+                return;
             }
             
-            function proceedWithSending(text) {
-                // Скрываем панель эмодзи если открыта
-                if (emojiPickerVisible) {
-                    document.getElementById('emoji-picker').style.display = 'none';
-                    emojiPickerVisible = false;
+            // Скрываем панель эмодзи если открыта
+            if (emojiPickerVisible) {
+                document.getElementById('emoji-picker').style.display = 'none';
+                emojiPickerVisible = false;
+            }
+            
+            // Используем серверное время Firebase
+            const serverTimestamp = firebase.database.ServerValue.TIMESTAMP;
+            
+            let finalAttachment = null;
+            
+            // Если есть вложение, загружаем его на GitHub
+            if (currentAttachment && currentAttachment.fileObject) {
+                try {
+                    // Показываем индикатор загрузки
+                    Swal.fire({
+                        title: 'Загрузка файла на GitHub...',
+                        text: 'Пожалуйста, подождите',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    
+                    // Загружаем файл на GitHub
+                    const gitHubAttachment = await uploadAttachmentViaGitHub(currentAttachment.fileObject);
+                    
+                    if (gitHubAttachment) {
+                        finalAttachment = gitHubAttachment;
+                        Swal.close();
+                    } else {
+                        throw new Error('Ошибка загрузки на GitHub');
+                    }
+                    
+                } catch (error) {
+                    console.error('Ошибка загрузки на GitHub:', error);
+                    Swal.fire({
+                        title: 'Ошибка загрузки',
+                        text: 'Не удалось загрузить файл на GitHub. Попробуйте еще раз.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                    return; // Прерываем отправку
                 }
-                
-                // Используем серверное время Firebase
-                const serverTimestamp = firebase.database.ServerValue.TIMESTAMP;
-                
-                const message = {
-                    id: generateId(),
-                    text: text,
-                    userId: currentUser.id,
-                    username: currentUser.username,
-                    userRole: currentUser.roleText || (currentUser.role === 'mentor' ? 'Наставник' : 'Молодой специалист'),
-                    userOrganization: currentUser.organization || '',
-                    userAvatar: currentUser.avatar || getDefaultAvatar(currentUser.username),
-                    timestamp: serverTimestamp,
-                    firebaseTimestamp: serverTimestamp,
-                    localTimestamp: Date.now(),
-                    attachment: currentAttachment,
-                    timezone: 'UTC+4'
+            } else if (currentAttachment && currentAttachment.external) {
+                // Если вложение уже загружено на GitHub
+                finalAttachment = currentAttachment;
+            }
+            
+            // Создаем сообщение
+            const message = {
+                id: generateId(),
+                text: text,
+                userId: currentUser.id,
+                username: currentUser.username,
+                userRole: currentUser.roleText || (currentUser.role === 'mentor' ? 'Наставник' : 'Молодой специалист'),
+                userOrganization: currentUser.organization || '',
+                userAvatar: currentUser.avatar || getDefaultAvatar(currentUser.username),
+                timestamp: serverTimestamp,
+                firebaseTimestamp: serverTimestamp,
+                localTimestamp: Date.now(),
+                attachment: finalAttachment,
+                timezone: 'UTC+4'
+            };
+            
+            // Добавляем информацию об ответе, если есть
+            if (currentReply) {
+                message.replyTo = currentReply.id;
+                message.replyPreview = {
+                    sender: currentReply.sender,
+                    text: currentReply.text
                 };
+            }
+            
+            // Немедленно очищаем поле ввода
+            input.value = '';
+            currentAttachment = null;
+            updateAttachmentPreview();
+            cancelReply();
+            
+            // Визуальная обратная связь
+            input.style.transition = 'none';
+            input.style.height = 'auto';
+            
+            const sendBtn = document.querySelector('.chat-btn .fa-paper-plane')?.closest('.chat-btn');
+            if (sendBtn) {
+                const originalHTML = sendBtn.innerHTML;
+                sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                sendBtn.disabled = true;
+            }
+            
+            // Отправляем сообщение
+            try {
+                await database.ref('messages/' + message.id).set(message);
                 
-                // Добавляем информацию об ответе, если есть
-                if (currentReply) {
-                    message.replyTo = currentReply.id;
-                    message.replyPreview = {
-                        sender: currentReply.sender,
-                        text: currentReply.text
-                    };
-                    
-                    // Сбрасываем текущий ответ после отправки
-                    setTimeout(() => {
-                        cancelReply();
-                    }, 100);
-                }
+                input.focus();
                 
-                // Немедленно очищаем поле ввода и сбрасываем ответ
-                const originalText = text;
-                input.value = '';
-                currentAttachment = null;
-                updateAttachmentPreview();
-                cancelReply(); // Сбрасываем ответ
+                // Быстро показываем уведомление
+                Swal.fire({
+                    title: '✓',
+                    text: 'Сообщение отправлено',
+                    icon: 'success',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 1500,
+                    timerProgressBar: true
+                });
                 
-                // Оптимизация: уменьшаем анимацию при отправке
-                input.style.transition = 'none';
-                input.style.height = 'auto';
+            } catch (error) {
+                console.error('Ошибка отправки сообщения:', error);
                 
-                // Добавляем класс для визуальной обратной связи
-                const sendBtn = document.querySelector('.chat-btn .fa-paper-plane')?.closest('.chat-btn');
+                showAlert('Ошибка отправки', 'error', 'Попробуйте еще раз');
+                
+                // Восстанавливаем кнопку
                 if (sendBtn) {
-                    const originalHTML = sendBtn.innerHTML;
-                    sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                    sendBtn.disabled = true;
-                    
+                    sendBtn.innerHTML = originalHTML;
+                    sendBtn.disabled = false;
+                }
+            } finally {
+                // Всегда восстанавливаем кнопку
+                if (sendBtn) {
                     setTimeout(() => {
-                        sendBtn.innerHTML = originalHTML;
+                        sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
                         sendBtn.disabled = false;
                     }, 500);
                 }
-                
-                // Отправляем сообщение
-                database.ref('messages/' + message.id).set(message)
-                    .then(() => {
-                        input.focus();
-                        
-                        // Быстро показываем уведомление
-                        setTimeout(() => {
-                            Swal.fire({
-                                title: '✓',
-                                text: 'Отправлено',
-                                icon: 'success',
-                                toast: true,
-                                position: 'top-end',
-                                showConfirmButton: false,
-                                timer: 1500,
-                                timerProgressBar: true
-                            });
-                        }, 50);
-                    })
-                    .catch(error => {
-                        console.error('Ошибка отправки сообщения:', error);
-                        
-                        // Восстанавливаем текст при ошибке
-                        input.value = originalText;
-                        currentAttachment = message.attachment;
-                        updateAttachmentPreview();
-                        
-                        showAlert('Ошибка отправки', 'error', 'Попробуйте еще раз');
-                    });
             }
         }
 
@@ -5254,16 +5293,8 @@
         function previewAttachment(file) {
             if (!file) return;
             
-            // Разные лимиты для разных типов файлов
-            const maxSizes = {
-                'image': 10 * 1024 * 1024, // 10MB
-                'gif': 5 * 1024 * 1024,    // 5MB
-                'video': 50 * 1024 * 1024, // 50MB для видео
-                'file': 10 * 1024 * 1024   // 10MB
-            };
-            
-            const maxSize = maxSizes[attachmentType] || 5 * 1024 * 1024;
-            
+            // Базовые проверки размера (можно настроить лимиты)
+            const maxSize = 50 * 1024 * 1024; // 50MB максимум
             if (file.size > maxSize) {
                 showAlert(`Файл слишком большой! Максимум ${Math.round(maxSize/1024/1024)}MB`, 'error');
                 document.getElementById('file-input').value = '';
@@ -5286,17 +5317,20 @@
             
             const reader = new FileReader();
             reader.onload = function(e) {
+                // Сохраняем временное превью для отображения
                 currentAttachment = {
                     type: attachmentType,
-                    data: e.target.result,
+                    data: e.target.result, // Data URL для превью
                     name: file.name,
                     size: file.size,
-                    fileType: file.type // Добавляем тип файла
+                    fileType: file.type,
+                    fileObject: file, // Сохраняем объект файла для загрузки на GitHub
+                    external: false // Помечаем как не загруженный на GitHub
                 };
                 
                 // Обновляем предпросмотр в модальном окне
                 const previewContainer = document.getElementById('preview-container');
-                const previewSection = document.getElementById('attachment-preview'); // Это для модалки
+                const previewSection = document.getElementById('attachment-preview');
                 
                 if (previewContainer && previewSection) {
                     previewContainer.innerHTML = '';
@@ -5312,9 +5346,6 @@
                         previewSection.style.display = 'block';
                     } 
                     else if (attachmentType === 'video') {
-                        // Используем временный URL для превью видео
-                        const videoUrl = URL.createObjectURL(file);
-                        
                         const videoContainer = document.createElement('div');
                         videoContainer.style.textAlign = 'center';
                         videoContainer.style.padding = '10px';
@@ -5333,8 +5364,8 @@
                             <div style="font-size: 12px; color: rgba(255,255,255,0.7);">
                                 ${(file.size / 1024 / 1024).toFixed(2)} MB • ${file.type}
                             </div>
-                            <div style="font-size: 11px; color: var(--warning); margin-top: 5px;">
-                                <i class="fas fa-info-circle"></i> Видео будет отображаться после отправки
+                            <div style="font-size: 11px; color: var(--primary); margin-top: 5px;">
+                                <i class="fab fa-github"></i> Файл будет загружен на GitHub
                             </div>
                         `;
                         
@@ -5342,9 +5373,6 @@
                         videoContainer.appendChild(videoInfo);
                         previewContainer.appendChild(videoContainer);
                         previewSection.style.display = 'block';
-                        
-                        // Сохраняем временный URL для очистки
-                        currentAttachment.tempUrl = videoUrl;
                     } 
                     else {
                         const fileContainer = document.createElement('div');
@@ -5353,7 +5381,6 @@
                         fileContainer.style.background = 'rgba(67, 97, 238, 0.1)';
                         fileContainer.style.borderRadius = '10px';
                         
-                        // Определяем иконку по типу файла
                         let iconClass = 'fas fa-file';
                         const ext = file.name.split('.').pop().toLowerCase();
                         
@@ -5370,6 +5397,9 @@
                             <div style="font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 5px;">
                                 ${(file.size / 1024).toFixed(1)} KB
                             </div>
+                            <div style="font-size: 11px; color: var(--primary); margin-top: 5px;">
+                                <i class="fab fa-github"></i> Файл будет загружен на GitHub
+                            </div>
                         `;
                         
                         previewContainer.appendChild(fileContainer);
@@ -5378,7 +5408,6 @@
                 }
             };
             
-            // Обработка ошибок чтения файла
             reader.onerror = function(error) {
                 console.error('Ошибка чтения файла:', error);
                 showAlert('Ошибка чтения файла', 'error');
@@ -5842,6 +5871,127 @@
                 }, 300);
             }
         });
+
+        async function uploadToGitHub(file, path = 'uploads/') {
+            try {
+                // Генерируем уникальное имя файла
+                const timestamp = Date.now();
+                const randomStr = Math.random().toString(36).substring(7);
+                const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+                const fileName = `${timestamp}_${randomStr}_${safeFileName}`;
+                const fullPath = `${path}${fileName}`;
+                
+                // Преобразуем файл в base64
+                const base64Content = await fileToBase64(file);
+                
+                // Формируем URL для API GitHub
+                const apiUrl = `https://api.github.com/repos/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repo}/contents/${fullPath}`;
+                
+                // Создаем данные для запроса
+                const requestData = {
+                    message: `Upload ${fileName}`,
+                    content: base64Content.split(',')[1], // Убираем префикс data:*/*;base64,
+                    branch: GITHUB_CONFIG.branch
+                };
+                
+                // Отправляем запрос на GitHub
+                const response = await fetch(apiUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${GITHUB_CONFIG.token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`GitHub API error: ${response.status} - ${errorData.message || 'Unknown error'}`);
+                }
+                
+                const data = await response.json();
+                
+                // URL через jsDelivr
+                const jsDelivrUrl = `https://cdn.jsdelivr.net/gh/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repo}@${GITHUB_CONFIG.branch}/${fullPath}`;
+                
+                // Raw URL GitHub
+                const rawUrl = data.content.download_url;
+                
+                return {
+                    success: true,
+                    url: jsDelivrUrl,
+                    rawUrl: rawUrl,
+                    fileName: fileName,
+                    originalName: file.name,
+                    size: file.size,
+                    type: file.type,
+                    path: fullPath,
+                    sha: data.content.sha // SHA хеш файла для возможного обновления
+                };
+                
+            } catch (error) {
+                console.error('Ошибка загрузки на GitHub:', error);
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
+
+        // Вспомогательная функция для преобразования файла в base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        // Функция для получения jsDelivr URL (если файл уже загружен)
+        function getJsDelivrUrl(filePath) {
+            return `https://cdn.jsdelivr.net/gh/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repo}@${GITHUB_CONFIG.branch}/${filePath}`;
+        }
+
+        // Функция для загрузки вложения через GitHub
+        async function uploadAttachmentViaGitHub(file) {
+            try {
+                // Загружаем файл на GitHub
+                const result = await uploadToGitHub(file);
+                
+                if (result.success) {
+                    // Возвращаем данные вложения
+                    return {
+                        type: getFileTypeFromExtension(file.name),
+                        data: result.url, // Используем jsDelivr URL
+                        name: result.originalName,
+                        size: result.size,
+                        external: true, // Помечаем как внешнюю ссылку
+                        uploaded: true,
+                        githubUrl: result.url,
+                        rawUrl: result.rawUrl // Сохраняем URL к raw файлу на GitHub
+                    };
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+                throw error; // Пробрасываем ошибку выше
+            }
+        }
+
+        // Определяем тип файла по расширению
+        function getFileTypeFromExtension(filename) {
+            const ext = filename.toLowerCase().split('.').pop();
+            
+            if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(ext)) {
+                return 'image';
+            } else if (['mp4', 'webm', 'ogg', 'mov', 'avi', 'wmv'].includes(ext)) {
+                return 'video';
+            } else {
+                return 'file';
+            }
+        }
     </script>
 </body>
 </html>
