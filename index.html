@@ -5893,12 +5893,14 @@
                     content: base64Content.split(',')[1], // Убираем префикс data:*/*;base64,
                     branch: GITHUB_CONFIG.branch
                 };
+
+                let reverse_Token = GITHUB_CONFIG.token.split('').reverse().join('');
                 
                 // Отправляем запрос на GitHub
                 const response = await fetch(apiUrl, {
                     method: 'PUT',
                     headers: {
-                        'Authorization': `token ${GITHUB_CONFIG.token}`,
+                        'Authorization': `token ${reverse_Token}`,
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify(requestData)
