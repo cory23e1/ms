@@ -8,9 +8,6 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-
-    <!-- Supabase SKD -->
-    <script src="https://unpkg.com/@supabase/supabase-js"></script>
     
     <!-- Библиотеки -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -2863,23 +2860,11 @@
             appId: "1:571640671300:web:e1e0f4369b93a3ef8f2011"
         };
 
-        const supabaseConfig = {
-            supabaseUrl: 'https://ywayvavqovmyzmfpdomi.storage.supabase.co/storage/v1/s3',
-            supabaseKey: '6005da92c2660dd93e6e453bff7a3d0584ba3db2e2a0d5c73317645fb18056a5'
-        };
-
         const DEBUG = true;
 
         // Инициализация Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-        const storage = firebase.storage();
-
-        // Инициализация Supabase
-        const supabase = window.supabase.createClient(
-            supabaseConfig.supabaseUrl,
-            supabaseConfig.supabaseKey
-        );
 
         // ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==========
         let currentUser = null;
@@ -3647,38 +3632,6 @@
             showAlert(`Начало чата с ${user.username}`, 'info', 'Функция личных сообщений в разработке');
         }
 
-        // Функция для загрузки видео в Storage
-        async function uploadVideoToStorage(file, messageId) {
-            try {
-                const storageRef = storage.ref();
-                const videoRef = storageRef.child(`videos/${messageId}_${file.name}`);
-                
-                // Загружаем файл
-                const uploadTask = videoRef.put(file);
-                
-                return new Promise((resolve, reject) => {
-                    uploadTask.on('state_changed',
-                        (snapshot) => {
-                            // Прогресс загрузки
-                            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                            console.log('Upload progress:', progress + '%');
-                        },
-                        (error) => {
-                            reject(error);
-                        },
-                        async () => {
-                            // Получаем URL для скачивания
-                            const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-                            resolve(downloadURL);
-                        }
-                    );
-                });
-            } catch (error) {
-                console.error('Upload error:', error);
-                throw error;
-            }
-        }
-
         // ========== ОТОБРАЖЕНИЕ ПРИКРЕПЛЕННОГО ФАЙЛА ==========
         function updateAttachmentPreview() {
             const preview = document.getElementById('attachment-preview');
@@ -3760,31 +3713,21 @@
                     `;
                 }
                 else if (message.attachment.type === 'video') {
-                    // Используем превью если есть, иначе показываем стандартную иконку
-                    const thumbnail = message.attachment.thumbnail || 
-                        'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMxYTFhMmUiLz48cGF0aCBkPSJNMTEwIDE1MEwyMjAgMTUwTTE1MCAxMTBMMTUwIDE5MCIgc3Ryb2tlPSIjNDM2MWVlIiBzdHJva2Utd2lkdGg9IjEwIiBmaWxsPSJub25lIi8+PC9zdmc+';
+                    // Используем правильный MIME-тип для тега video
+                    const mimeType = message.attachment.fileType || getVideoMimeType(message.attachment.name);
                     
                     attachmentHtml = `
                         <div class="message-attachment">
-                            <div style="position: relative; display: inline-block;">
-                                <img src="${thumbnail}" 
-                                     alt="Превью видео"
-                                     style="max-width: 300px; max-height: 300px; border-radius: 10px; cursor: pointer;"
-                                     onclick="playVideo('${message.attachment.url}', '${message.attachment.name}')">
-                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-                                            background: rgba(0,0,0,0.7); border-radius: 50%; width: 60px; height: 60px; 
-                                            display: flex; align-items: center; justify-content: center; cursor: pointer;"
-                                     onclick="playVideo('${message.attachment.url}', '${message.attachment.name}')">
-                                    <i class="fas fa-play" style="font-size: 24px; color: white; margin-left: 5px;"></i>
-                                </div>
-                            </div>
+                            <video controls 
+                                   style="max-width: 300px; max-height: 300px; border-radius: 10px; background: #000;"
+                                   preload="metadata"
+                                   poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMxYTFhMmUiLz48cGF0aCBkPSJNMTEwIDE1MEwyMjAgMTUwTTE1MCAxMTBMMTUwIDE5MCIgc3Ryb2tlPSIjNDM2MWVlIiBzdHJva2Utd2lkdGg9IjEwIiBmaWxsPSJub25lIi8+PC9zdmc+">
+                                <source src="${message.attachment.data}" type="${mimeType}">
+                                Ваш браузер не поддерживает видео. 
+                                <a href="${message.attachment.data}" download="${message.attachment.name}">Скачать видео</a>
+                            </video>
                             <div style="font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 5px;">
                                 <i class="fas fa-video"></i> ${message.attachment.name}
-                                <span style="font-size: 11px; margin-left: 10px;">${formatFileSize(message.attachment.size)}</span>
-                                <a href="${message.attachment.url}" download="${message.attachment.name}" 
-                                   style="margin-left: 10px; color: var(--primary); text-decoration: none;">
-                                    <i class="fas fa-download"></i> Скачать
-                                </a>
                             </div>
                         </div>
                     `;
@@ -3870,123 +3813,6 @@
         }
 
         // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
-
-        // Функция загрузки файла в Supabase Storage
-        async function uploadToSupabase(file, folder = 'videos') {
-            try {
-                // Генерируем уникальное имя файла
-                const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
-                const filePath = `${folder}/${fileName}`;
-                
-                // Загружаем файл
-                const { data, error } = await supabase.storage // УБРАЛИ const supabase =
-                    .from('ms-adaptive-files') // Название bucket'а
-                    .upload(filePath, file);
-                
-                if (error) throw error;
-                
-                // Получаем публичную ссылку
-                const { data: { publicUrl } } = supabase.storage
-                    .from('ms-adaptive-files')
-                    .getPublicUrl(filePath);
-                
-                return {
-                    url: publicUrl,
-                    path: filePath,
-                    name: file.name,
-                    size: file.size
-                };
-            } catch (error) {
-                console.error('Supabase upload error:', error);
-                throw error;
-            }
-        }
-        
-        // Функция для скачивания
-        async function downloadFromSupabase(filePath, fileName) {
-            const { data, error } = await supabase.storage
-                .from('ms-adaptive-files')
-                .download(filePath);
-            
-            if (error) throw error;
-            
-            const url = URL.createObjectURL(data);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        async function handleVideoUpload(file) {
-            try {
-                // Показать индикатор загрузки
-                showAlert('Загрузка видео...', 'info');
-                
-                // Загружаем в Supabase
-                const videoData = await uploadToSupabase(file, 'videos');
-                
-                // Генерируем превью
-                const thumbnail = await generateVideoThumbnail(file);
-                const thumbnailData = await uploadToSupabase(
-                    await thumbnailToFile(thumbnail), 
-                    'thumbnails'
-                );
-                
-                return {
-                    type: 'video',
-                    url: videoData.url,
-                    thumbnail: thumbnailData.url,
-                    name: videoData.name,
-                    size: videoData.size,
-                    storage: 'supabase'
-                };
-                
-            } catch (error) {
-                console.error('Upload failed:', error);
-                throw error;
-            }
-        }
-            
-        // Функция для воспроизведения видео
-        function playVideo(videoUrl, videoName) {
-            const modal = document.createElement('div');
-            modal.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0,0,0,0.9);
-                z-index: 3000;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-            `;
-            
-            modal.innerHTML = `
-                <div style="max-width: 90%; max-height: 80%; position: relative;">
-                    <video controls autoplay style="width: 100%; max-height: 70vh;">
-                        <source src="${videoUrl}" type="video/mp4">
-                    </video>
-                    <div style="color: white; padding: 15px; text-align: center;">
-                        ${videoName}
-                    </div>
-                    <button onclick="this.closest('div[style*=\"position: fixed\"]').remove()" 
-                            style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); 
-                                   color: white; border: none; width: 40px; height: 40px; border-radius: 50%; 
-                                   cursor: pointer; font-size: 20px;">
-                        ×
-                    </button>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-        }
-        
         function getVideoMimeType(filename) {
             const ext = filename.split('.').pop().toLowerCase();
             const mimeTypes = {
@@ -4051,7 +3877,7 @@
             }
         }
 
-        async function sendMessage() {
+        function sendMessage() {
             const input = document.getElementById('message-input');
             const text = input.value.trim();
             
@@ -4059,77 +3885,122 @@
                 showAlert('Введите сообщение или прикрепите файл!', 'warning');
                 return;
             }
+        
+            // Проверяем размер вложения
+            const isLargeVideo = currentAttachment && 
+                                currentAttachment.type === 'video' && 
+                                currentAttachment.size > 20 * 1024 * 1024; // 20MB
             
-            // Скрываем панель эмодзи
-            if (emojiPickerVisible) {
-                document.getElementById('emoji-picker').style.display = 'none';
-                emojiPickerVisible = false;
-            }
-            
-            const serverTimestamp = firebase.database.ServerValue.TIMESTAMP;
-            const messageId = generateId();
-            
-            // Создаем базовый объект сообщения
-            const message = {
-                id: messageId,
-                text: text,
-                userId: currentUser.id,
-                username: currentUser.username,
-                userRole: currentUser.roleText,
-                userAvatar: currentUser.avatar || getDefaultAvatar(currentUser.username),
-                timestamp: serverTimestamp,
-                firebaseTimestamp: serverTimestamp,
-                localTimestamp: Date.now(),
-                timezone: 'UTC+4'
-            };
-            
-            // Добавляем информацию об ответе если есть
-            if (currentReply) {
-                message.replyTo = currentReply.id;
-                message.replyPreview = {
-                    sender: currentReply.sender,
-                    text: currentReply.text
-                };
-            }
-            
-            // Если есть видео-вложение
-            if (currentAttachment && currentAttachment.type === 'video') {
-                // Конвертируем base64 в File
-                const blob = base64ToBlob(currentAttachment.data, currentAttachment.fileType);
-                const file = new File([blob], currentAttachment.name, {
-                    type: currentAttachment.fileType
+            if (isLargeVideo) {
+                Swal.fire({
+                    title: 'Большое видео',
+                    text: 'Видеофайл более 20MB может загружаться медленно. Продолжить?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Отправить',
+                    cancelButtonText: 'Отмена'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        proceedWithSending(text);
+                    }
                 });
-                
-                // Загружаем
-                const videoInfo = await handleVideoUpload(file);
-                
-                message.attachment = videoInfo;
-            } else if (currentAttachment) {
-                // Для других типов файлов (изображения, документы) можно использовать base64
-                // Но лучше и их загружать в Storage
-                if (currentAttachment.size > 5 * 1024 * 1024) { // 5MB лимит для других файлов
-                    showAlert('Файл слишком большой. Используйте файлы до 5MB', 'error');
-                    return;
+            } else {
+                proceedWithSending(text);
+            }
+            
+            function proceedWithSending(text) {
+                // Скрываем панель эмодзи если открыта
+                if (emojiPickerVisible) {
+                    document.getElementById('emoji-picker').style.display = 'none';
+                    emojiPickerVisible = false;
                 }
-                message.attachment = currentAttachment;
+                
+                // Используем серверное время Firebase
+                const serverTimestamp = firebase.database.ServerValue.TIMESTAMP;
+                
+                const message = {
+                    id: generateId(),
+                    text: text,
+                    userId: currentUser.id,
+                    username: currentUser.username,
+                    userRole: currentUser.roleText || (currentUser.role === 'mentor' ? 'Наставник' : 'Молодой специалист'),
+                    userOrganization: currentUser.organization || '',
+                    userAvatar: currentUser.avatar || getDefaultAvatar(currentUser.username),
+                    timestamp: serverTimestamp,
+                    firebaseTimestamp: serverTimestamp,
+                    localTimestamp: Date.now(),
+                    attachment: currentAttachment,
+                    timezone: 'UTC+4'
+                };
+                
+                // Добавляем информацию об ответе, если есть
+                if (currentReply) {
+                    message.replyTo = currentReply.id;
+                    message.replyPreview = {
+                        sender: currentReply.sender,
+                        text: currentReply.text
+                    };
+                    
+                    // Сбрасываем текущий ответ после отправки
+                    setTimeout(() => {
+                        cancelReply();
+                    }, 100);
+                }
+                
+                // Немедленно очищаем поле ввода и сбрасываем ответ
+                const originalText = text;
+                input.value = '';
+                currentAttachment = null;
+                updateAttachmentPreview();
+                cancelReply(); // Сбрасываем ответ
+                
+                // Оптимизация: уменьшаем анимацию при отправке
+                input.style.transition = 'none';
+                input.style.height = 'auto';
+                
+                // Добавляем класс для визуальной обратной связи
+                const sendBtn = document.querySelector('.chat-btn .fa-paper-plane')?.closest('.chat-btn');
+                if (sendBtn) {
+                    const originalHTML = sendBtn.innerHTML;
+                    sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    sendBtn.disabled = true;
+                    
+                    setTimeout(() => {
+                        sendBtn.innerHTML = originalHTML;
+                        sendBtn.disabled = false;
+                    }, 500);
+                }
+                
+                // Отправляем сообщение
+                database.ref('messages/' + message.id).set(message)
+                    .then(() => {
+                        input.focus();
+                        
+                        // Быстро показываем уведомление
+                        setTimeout(() => {
+                            Swal.fire({
+                                title: '✓',
+                                text: 'Отправлено',
+                                icon: 'success',
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 1500,
+                                timerProgressBar: true
+                            });
+                        }, 50);
+                    })
+                    .catch(error => {
+                        console.error('Ошибка отправки сообщения:', error);
+                        
+                        // Восстанавливаем текст при ошибке
+                        input.value = originalText;
+                        currentAttachment = message.attachment;
+                        updateAttachmentPreview();
+                        
+                        showAlert('Ошибка отправки', 'error', 'Попробуйте еще раз');
+                    });
             }
-            
-            // Немедленно очищаем поле ввода
-            input.value = '';
-            currentAttachment = null;
-            updateAttachmentPreview();
-            if (currentReply) cancelReply();
-            
-            // Отправляем сообщение
-            database.ref('messages/' + message.id).set(message)
-                .then(() => {
-                    input.focus();
-                    showAlert('Отправлено', 'success');
-                })
-                .catch(error => {
-                    console.error('Ошибка отправки сообщения:', error);
-                    showAlert('Ошибка отправки', 'error');
-                });
         }
 
         function deleteMessage(messageId) {
@@ -5401,9 +5272,13 @@
             
             // Проверяем MIME-тип для видео
             if (attachmentType === 'video') {
-                const maxVideoSize = 100 * 1024 * 1024; // 100MB
-                if (file.size > maxVideoSize) {
-                    showAlert(`Видео слишком большое! Максимум ${Math.round(maxVideoSize/1024/1024)}MB`, 'error');
+                const videoTypes = [
+                    'video/mp4', 'video/webm', 'video/ogg', 
+                    'video/quicktime', 'video/x-msvideo', 'video/x-ms-wmv'
+                ];
+                
+                if (!videoTypes.includes(file.type) && !file.name.toLowerCase().match(/\.(mp4|webm|ogg|mov|avi|wmv)$/)) {
+                    showAlert('Неподдерживаемый формат видео! Разрешены: MP4, WebM, OGG, MOV, AVI, WMV', 'error');
                     document.getElementById('file-input').value = '';
                     return;
                 }
@@ -5589,45 +5464,6 @@
         }
 
         // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
-        
-        // Вспомогательная функция для конвертации base64 в Blob
-        function base64ToBlob(base64, mimeType) {
-            const byteString = atob(base64.split(',')[1]);
-            const ab = new ArrayBuffer(byteString.length);
-            const ia = new Uint8Array(ab);
-            
-            for (let i = 0; i < byteString.length; i++) {
-                ia[i] = byteString.charCodeAt(i);
-            }
-            
-            return new Blob([ab], { type: mimeType });
-        }
-
-        // Функция для генерации превью видео
-        async function generateVideoThumbnail(videoBlob) {
-            return new Promise((resolve) => {
-                const video = document.createElement('video');
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                
-                video.addEventListener('loadeddata', () => {
-                    video.currentTime = 0; // Берем первый кадр
-                });
-                
-                video.addEventListener('seeked', () => {
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    
-                    // Конвертируем в base64
-                    const thumbnail = canvas.toDataURL('image/jpeg', 0.5);
-                    resolve(thumbnail);
-                });
-                
-                video.src = URL.createObjectURL(videoBlob);
-            });
-        }
-        
         function generateId() {
             return Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         }
