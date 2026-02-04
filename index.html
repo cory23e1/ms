@@ -2207,7 +2207,47 @@
         .message:hover .message-actions {
             display: flex;
         }
+
+        /* Стили для профиля пользователя */
+        .profile-info-item {
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            padding: 12px;
+            transition: all 0.3s;
+        }
         
+        .profile-info-item:hover {
+            background: rgba(67, 97, 238, 0.1);
+        }
+        
+        /* Улучшенные стили для карточки пользователя */
+        .user-card {
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        .user-card:hover {
+            background: rgba(67, 97, 238, 0.15) !important;
+            transform: translateX(5px);
+        }
+        
+        .user-card.active {
+            background: rgba(67, 97, 238, 0.25) !important;
+            border-left: 3px solid var(--primary);
+        }
+        
+        /* Индикатор текущего пользователя */
+        .current-user-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--primary);
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
@@ -2700,6 +2740,92 @@
             </div>
         </div>
 
+        <!-- Модальное окно профиля другого пользователя -->
+        <div class="modal" id="user-profile-modal">
+            <div class="modal-content" style="max-width: 500px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2><i class="fas fa-user"></i> Профиль пользователя</h2>
+                    <button class="btn" onclick="closeUserProfileModal()" style="background: rgba(255,255,255,0.1); color: white; padding: 5px 10px;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="user-profile-content">
+                    <!-- Аватар и основная информация -->
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <img id="user-profile-avatar" 
+                             src="" 
+                             alt="Аватар" 
+                             style="width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--primary); object-fit: cover; margin-bottom: 15px;">
+                        
+                        <h3 id="user-profile-name" style="margin: 0 0 5px 0; font-size: 24px;"></h3>
+                        
+                        <div id="user-profile-role" style="margin-bottom: 10px;"></div>
+                        
+                        <div id="user-profile-status" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 15px;">
+                            <span class="user-status-dot" id="user-profile-status-indicator"></span>
+                            <span id="user-profile-status-text"></span>
+                            <span id="user-profile-last-seen" style="color: rgba(255,255,255,0.5); font-size: 12px;"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Детальная информация -->
+                    <div style="background: rgba(255,255,255,0.05); border-radius: 10px; padding: 20px;">
+                        <div class="profile-info-item" style="margin-bottom: 15px;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                                <i class="fas fa-briefcase" style="color: var(--primary);"></i>
+                                <span style="font-weight: 500;">Должность:</span>
+                            </div>
+                            <div id="user-profile-position" style="color: rgba(255,255,255,0.8); padding-left: 25px;">
+                                Не указана
+                            </div>
+                        </div>
+                        
+                        <div class="profile-info-item" style="margin-bottom: 15px;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                                <i class="fas fa-building" style="color: var(--primary);"></i>
+                                <span style="font-weight: 500;">Организация:</span>
+                            </div>
+                            <div id="user-profile-organization" style="color: rgba(255,255,255,0.8); padding-left: 25px;">
+                                Не указана
+                            </div>
+                        </div>
+                        
+                        <div class="profile-info-item" style="margin-bottom: 15px;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                                <i class="fas fa-star" style="color: var(--warning);"></i>
+                                <span style="font-weight: 500;">Очки:</span>
+                            </div>
+                            <div id="user-profile-points" style="color: rgba(255,255,255,0.8); padding-left: 25px;">
+                                0
+                            </div>
+                        </div>
+                        
+                        <div class="profile-info-item">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                                <i class="fas fa-tasks" style="color: var(--success);"></i>
+                                <span style="font-weight: 500;">Выполнено заданий:</span>
+                            </div>
+                            <div id="user-profile-completed-tasks" style="color: rgba(255,255,255,0.8); padding-left: 25px;">
+                                0
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Кнопки действий -->
+                    <div id="user-profile-actions" style="display: flex; gap: 10px; margin-top: 25px;">
+                        <button class="btn btn-primary" onclick="startPrivateChatWithCurrentUser()" style="flex: 1;">
+                            <i class="fas fa-comment"></i> Написать сообщение
+                        </button>
+                        
+                        <button class="btn" onclick="closeUserProfileModal()" style="background: rgba(255,255,255,0.1); color: white;">
+                            <i class="fas fa-times"></i> Закрыть
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Модальное окно вложений -->
         <div class="modal" id="attachment-modal">
             <div class="modal-content">
@@ -2900,6 +3026,7 @@
         let events = {};
         let eventImage = null;
         let currentReply = null;
+        let currentViewedUser = null;
         
         let currentEventId = null;
         let eventMessagesListener = null;
@@ -3584,6 +3711,11 @@
         function createUserCardElement(user) {
             const userCard = document.createElement('div');
             userCard.className = 'user-card';
+
+            userCard.onclick = function(e) {
+                e.stopPropagation(); // Остановить всплытие, чтобы не конфликтовать с другими обработчиками
+                showUserProfile(user.id);
+            };
             
             const roleBadge = user.role === 'mentor' ? 
                 '<span class="role-mentor"><i class="fas fa-user-tie"></i> Наставник</span>' : 
@@ -3612,6 +3744,136 @@
             `;
             
             return userCard;
+        }
+
+        function showUserProfile(userId) {
+            const user = users[userId];
+            if (!user) {
+                console.error('Пользователь не найден:', userId);
+                return;
+            }
+            
+            currentViewedUser = user;
+            
+            // Заполняем данные в модальном окне
+            const modal = document.getElementById('user-profile-modal');
+            
+            // Аватар
+            document.getElementById('user-profile-avatar').src = user.avatar || getDefaultAvatar(user.username);
+            
+            // Имя
+            document.getElementById('user-profile-name').textContent = user.username;
+            
+            // Роль
+            const roleElement = document.getElementById('user-profile-role');
+            if (user.role === 'mentor') {
+                roleElement.innerHTML = '<span class="role-mentor" style="font-size: 14px; padding: 5px 12px;"><i class="fas fa-user-tie"></i> Наставник</span>';
+            } else {
+                roleElement.innerHTML = '<span class="role-specialist" style="font-size: 14px; padding: 5px 12px;"><i class="fas fa-user-graduate"></i> Молодой специалист</span>';
+            }
+            
+            // Статус
+            const statusIndicator = document.getElementById('user-profile-status-indicator');
+            const statusText = document.getElementById('user-profile-status-text');
+            const lastSeenElement = document.getElementById('user-profile-last-seen');
+            
+            if (statusIndicator) {
+                statusIndicator.className = `user-status-dot status-${user.status || 'offline'}`;
+                if (user.status === 'online') {
+                    statusIndicator.classList.add('status-pulse');
+                } else {
+                    statusIndicator.classList.remove('status-pulse');
+                }
+            }
+            
+            if (statusText) {
+                statusText.textContent = user.status === 'online' ? 'В сети' : 'Не в сети';
+                statusText.style.color = user.status === 'online' ? '#4CAF50' : '#757575';
+            }
+            
+            if (lastSeenElement && user.status !== 'online') {
+                lastSeenElement.textContent = `• Был(а) ${formatLastSeen(user.lastSeen)}`;
+            } else {
+                lastSeenElement.textContent = '';
+            }
+            
+            // Должность
+            document.getElementById('user-profile-position').textContent = user.position || 'Не указана';
+            
+            // Организация
+            document.getElementById('user-profile-organization').textContent = user.organization || 'Не указана';
+            
+            // Очки
+            document.getElementById('user-profile-points').textContent = user.points || 0;
+            
+            // Выполненные задания
+            const completedTasks = user.completedTasks ? user.completedTasks.length : 0;
+            document.getElementById('user-profile-completed-tasks').textContent = `${completedTasks} заданий`;
+            
+            // Показываем модальное окно
+            modal.classList.add('active');
+            
+            // Подсвечиваем выбранную карточку пользователя
+            highlightSelectedUserCard(userId);
+        }
+        
+        function closeUserProfileModal() {
+            document.getElementById('user-profile-modal').classList.remove('active');
+            currentViewedUser = null;
+            
+            // Убираем подсветку с карточки пользователя
+            removeUserCardHighlight();
+        }
+        
+        function highlightSelectedUserCard(userId) {
+            // Убираем подсветку со всех карточек
+            removeUserCardHighlight();
+            
+            // Находим карточку пользователя и добавляем класс active
+            const userCards = document.querySelectorAll('.user-card');
+            userCards.forEach(card => {
+                // Проверяем, содержит ли карточка нужного пользователя (по аватару или имени)
+                const img = card.querySelector('img');
+                const username = card.querySelector('.user-details-name')?.textContent || '';
+                
+                if (img && img.src.includes(encodeURIComponent(users[userId]?.username)) || 
+                    username.includes(users[userId]?.username)) {
+                    card.classList.add('active');
+                }
+            });
+        }
+        
+        function removeUserCardHighlight() {
+            document.querySelectorAll('.user-card.active').forEach(card => {
+                card.classList.remove('active');
+            });
+        }
+        
+        function startPrivateChatWithCurrentUser() {
+            if (!currentViewedUser) return;
+            
+            // Закрываем модальное окно
+            closeUserProfileModal();
+            
+            // Если пользователь - это вы сами
+            if (currentViewedUser.id === currentUser.id) {
+                openProfileModal();
+                return;
+            }
+            
+            // Показываем индикатор начала чата в основном чате
+            showAlert(`Чат с ${currentViewedUser.username}`, 'info', 
+                `Теперь вы можете написать сообщение для ${currentViewedUser.username} в основном чате.`);
+            
+            // Можно добавить упоминание в поле ввода
+            const messageInput = document.getElementById('message-input');
+            if (messageInput) {
+                messageInput.value = `${currentViewedUser.username}, `;
+                messageInput.focus();
+                
+                // Прокручиваем к полю ввода
+                messageInput.scrollIntoView({ behavior: 'smooth' });
+            }
         }
 
         function updateOnlineCount() {
@@ -5720,6 +5982,11 @@
             window.addEventListener('resize', adjustUsersListHeight);
 
             setTimeout(adjustUsersListHeight, 500);
+
+            document.getElementById('current-avatar')?.addEventListener('click', function(e) {
+                e.stopPropagation();
+                openProfileModal(); // Открывает профиль текущего пользователя
+            });
         }
 
         function adjustUsersListHeight() {
@@ -5994,6 +6261,12 @@
                 return 'file';
             }
         }
+
+        document.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal') && event.target.id === 'user-profile-modal') {
+                closeUserProfileModal();
+            }
+        });
     </script>
 </body>
 </html>
