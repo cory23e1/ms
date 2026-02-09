@@ -14,73 +14,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     
     <style>
-        /* Дополнительные стили для отображения прикрепленного файла */
-        .attachment-preview {
-            background: rgba(67, 97, 238, 0.1);
-            border: 2px solid var(--primary);
-            border-radius: 10px;
-            padding: 10px;
-            margin-bottom: 10px;
-            display: none;
-        }
-        
-        .attachment-preview.visible {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .attachment-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex: 1;
-        }
-        
-        .attachment-icon {
-            width: 40px;
-            height: 40px;
-            background: rgba(67, 97, 238, 0.2);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-        }
-        
-        .attachment-details {
-            flex: 1;
-        }
-        
-        .attachment-name {
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 2px;
-        }
-        
-        .attachment-size {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.7);
-        }
-        
-        .remove-attachment {
-            background: rgba(230, 57, 70, 0.2);
-            color: var(--danger);
-            border: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .chat-input-wrapper {
-            display: flex;
-            flex-direction: column;
-        }
-        
         /* Основные стили */
         * {
             margin: 0;
@@ -197,14 +130,6 @@
             gap: 5px;
         }
 
-        .status-indicator {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-
-        /* Обновленные стили для статусов */
         .user-status-dot {
             width: 8px;
             height: 8px;
@@ -264,13 +189,13 @@
             height: 75vh;
         }
 
-        /* ========== СТИЛИ ДЛЯ ВКЛАДКИ ЧАТА ========== */
+        /* СТИЛИ ДЛЯ ВКЛАДКИ ЧАТА */
         .users-sidebar {
             width: 300px;
-            background: rgba(26, 26, 46, 0.95) !important; /* Более прозрачный фон */
-            backdrop-filter: blur(10px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3) !important;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             border-radius: 15px;
             padding: 20px;
             display: flex;
@@ -284,7 +209,6 @@
             margin-bottom: 20px;
             padding-bottom: 15px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            flex-wrap:wrap;
         }
 
         .users-title {
@@ -308,7 +232,6 @@
             display: flex;
             gap: 5px;
             margin-bottom: 15px;
-            flex-wrap: wrap;
         }
 
         .tab-btn {
@@ -359,7 +282,6 @@
             position: relative;
         }
 
-        /* Стили для статуса пользователя в карточке */
         .status-badge {
             position: absolute;
             bottom: 2px;
@@ -372,31 +294,6 @@
 
         .status-badge.online { background: var(--online); }
         .status-badge.offline { background: var(--offline); }
-
-        /* Индикатор загрузки статусов */
-        .loading-status {
-            text-align: center;
-            padding: 20px;
-            color: rgba(255, 255, 255, 0.5);
-        }
-        
-        /* Стиль для последнего времени активности */
-        .last-seen {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.5);
-            margin-top: 2px;
-        }
-        
-        /* Анимация появления статуса */
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        
-        .status-pulse {
-            animation: pulse 2s infinite;
-        }
 
         .user-details {
             flex: 1;
@@ -443,7 +340,7 @@
             gap: 15px;
         }
 
-        /* ========== СТИЛИ ДЛЯ ЭМОДЗИ ПИКЕРА ========== */
+        /* СТИЛИ ДЛЯ ЭМОДЗИ ПИКЕРА */
         .emoji-picker {
             background: rgba(26, 26, 46, 0.95);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -594,7 +491,73 @@
             word-wrap: break-word;
         }
 
-        /* Стили для видео в сообщениях */
+        /* Стили для прикрепленных файлов */
+        .attachment-preview {
+            background: rgba(67, 97, 238, 0.1);
+            border: 2px solid var(--primary);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .attachment-preview.visible {
+            display: flex;
+        }
+        
+        .attachment-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+        
+        .attachment-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(67, 97, 238, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .attachment-details {
+            flex: 1;
+        }
+        
+        .attachment-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+        
+        .attachment-size {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .remove-attachment {
+            background: rgba(230, 57, 70, 0.2);
+            color: var(--danger);
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .chat-input-wrapper {
+            display: flex;
+            flex-direction: column;
+        }
+
         .message-attachment video {
             max-width: 300px;
             max-height: 300px;
@@ -603,7 +566,6 @@
             display: block;
         }
 
-        /* Стили для файлов в сообщениях */
         .file-attachment {
             background: rgba(67, 97, 238, 0.1);
             border-radius: 10px;
@@ -684,73 +646,7 @@
             transform: scale(0.95);
         }
 
-        /* ========== СТИЛИ ДЛЯ ВКЛАДКИ ЗАДАНИЙ ========== */
-
-        /* Стили для статусов заданий */
-        .task-card.submitted {
-            border-left: 4px solid var(--warning);
-        }
-        
-        .task-card.completed {
-            border-left: 4px solid var(--success);
-        }
-        
-        /* Стили для кнопок отчетов */
-        .btn-report {
-            background: linear-gradient(135deg, var(--warning), #f8961e);
-            color: white;
-        }
-        
-        .btn-review {
-            background: linear-gradient(135deg, var(--accent), #f72585);
-            color: white;
-        }
-        
-        /* Индикатор привязки */
-        .bind-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-            margin-left: 10px;
-        }
-        
-        .bind-mentor {
-            background: rgba(67, 97, 238, 0.2);
-            color: var(--primary);
-            border: 1px solid var(--primary);
-        }
-        
-        .bind-specialist {
-            background: rgba(247, 37, 133, 0.2);
-            color: var(--accent);
-            border: 1px solid var(--accent);
-        }
-        
-        /* Список специалистов */
-        .mentees-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            max-height: 200px;
-            overflow-y: auto;
-            padding: 10px;
-            background: rgba(255,255,255,0.03);
-            border-radius: 8px;
-        }
-        
-        .mentee-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 6px;
-        }
-        
+        /* СТИЛИ ДЛЯ ВКЛАДКИ ЗАДАНИЙ */
         .tasks-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -764,6 +660,7 @@
             padding: 20px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.3s;
+            border-left: 4px solid var(--primary);
         }
 
         .task-card:hover {
@@ -772,11 +669,15 @@
         }
 
         .task-card.completed {
-            border-left: 4px solid var(--success);
+            border-left-color: var(--success);
         }
 
         .task-card.active {
-            border-left: 4px solid var(--primary);
+            border-left-color: var(--primary);
+        }
+
+        .task-card.submitted {
+            border-left-color: var(--warning);
         }
 
         .task-header {
@@ -837,6 +738,11 @@
             color: white;
         }
 
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
         /* Форма создания задания */
         .create-task-form {
             background: rgba(255, 255, 255, 0.05);
@@ -857,7 +763,6 @@
             color: rgba(255, 255, 255, 0.9);
         }
 
-        /* Стиль для текстовых полей в профиле */
         .form-control {
             width: 100%;
             padding: 12px 15px;
@@ -914,8 +819,14 @@
             cursor: pointer;
         }
 
-        /* ========== СТИЛИ ДЛЯ ВКЛАДКИ МЕРОПРИЯТИЙ ========== */
-        .event-card {
+        /* СТИЛИ ДЛЯ ВКЛАДКИ МЕРОПРИЯТИЙ */
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        
+        .event-card-simple {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
             padding: 0;
@@ -923,137 +834,16 @@
             transition: all 0.3s;
             border: 1px solid rgba(255, 255, 255, 0.1);
             overflow: hidden;
+            margin-bottom: 20px;
         }
         
-        .event-card:hover {
+        .event-card-simple:hover {
             transform: translateY(-5px);
             border-color: var(--primary);
             box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
-        
-        .event-image {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-        }
-        
-        .event-content {
-            padding: 20px;
-        }
-        
-        .event-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        
-        .event-description {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 15px;
-            line-height: 1.5;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        
-        .event-meta {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            color: var(--gray);
-            margin-top: 15px;
-        }
-        
-        .event-date {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            color: var(--success);
-        }
-        
-        .event-location {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .event-participants {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .participant-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: 2px solid var(--dark);
-            object-fit: cover;
-        }
-        
-        .participant-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            width: 60px;
-        }
-        
-        .participant-name {
-            font-size: 11px;
-            margin-top: 5px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 100%;
-        }
-        
-        .participant-checkbox {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 5px;
-            margin-bottom: 5px;
-            cursor: pointer;
-        }
-        
-        .participant-checkbox:hover {
-            background: rgba(67, 97, 238, 0.1);
-        }
-        
-        .participant-checkbox input[type="checkbox"] {
-            cursor: pointer;
-        }
-        
-        .status-badge {
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-        
-        .status-upcoming { background: var(--primary); color: white; }
-        .status-ongoing { background: var(--success); color: white; }
-        .status-completed { background: var(--gray); color: white; }
-        .status-cancelled { background: var(--danger); color: white; }
 
-        /* ========== СТИЛИ ДЛЯ ВКЛАДКИ АДАПТАЦИИ ========== */
+        /* СТИЛИ ДЛЯ ВКЛАДКИ АДАПТАЦИИ */
         .materials-list {
             display: flex;
             flex-direction: column;
@@ -1104,11 +894,11 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.9); /* Более темный фон */
-            z-index: 3000; /* Увеличиваем z-index */
+            background: rgba(0,0,0,0.9);
+            z-index: 3000;
             align-items: center;
             justify-content: center;
-            backdrop-filter: blur(5px); /* Эффект размытия */
+            backdrop-filter: blur(5px);
         }
 
         .modal.active {
@@ -1125,7 +915,7 @@
             overflow-y: auto;
             border: 1px solid rgba(255,255,255,0.1);
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            z-index: 3001; /* Контент выше фона */
+            z-index: 3001;
             position: relative;
         }
 
@@ -1240,10 +1030,6 @@
             text-decoration: none;
         }
         
-        .auth-link:hover {
-            text-decoration: underline;
-        }
-        
         .logout-btn {
             background: rgba(230, 57, 70, 0.2);
             color: var(--danger);
@@ -1255,934 +1041,7 @@
             margin-left: 10px;
         }
 
-        /* Адаптивность */
-        /* ========== МОБИЛЬНАЯ АДАПТАЦИЯ ========== */
-
-/* Для устройств с шириной до 1024px (планшеты и телефоны) */
-@media (max-width: 1024px) {
-    .container {
-        margin-top: 70px;
-        padding: 15px;
-    }
-    
-    .navbar {
-        padding: 12px 15px;
-    }
-    
-    .logo span {
-        font-size: 18px;
-    }
-    
-    .nav-links {
-        gap: 15px;
-    }
-    
-    .nav-link {
-        padding: 8px 15px;
-        font-size: 14px;
-    }
-    
-    .user-avatar {
-        width: 40px;
-        height: 40px;
-    }
-    
-    .user-name {
-        font-size: 14px;
-    }
-}
-
-/* Для устройств с шириной до 768px (планшеты в портретной ориентации и телефоны) */
-@media (max-width: 768px) {
-    body {
-        background: #0a0a1a !important; /* Более темный фон для OLED */
-    }
-    
-    .navbar {
-        padding: 10px 12px;
-        flex-wrap: wrap;
-    }
-    
-    .logo {
-        font-size: 18px;
-        order: 1;
-        flex: 1;
-    }
-    
-    .logo span {
-        display: none;
-    }
-    
-    /* Бургер-меню */
-    .menu-toggle {
-        display: flex !important;
-        order: 2;
-        background: transparent;
-        border: none;
-        color: white;
-        font-size: 20px;
-        cursor: pointer;
-        padding: 5px;
-        margin-left: 10px;
-    }
-    
-    .nav-links {
-        display: none;
-        position: fixed;
-        top: 60px;
-        left: 0;
-        right: 0;
-        background: rgba(26, 26, 46, 0.98);
-        backdrop-filter: blur(20px);
-        flex-direction: column;
-        padding: 20px;
-        gap: 10px;
-        z-index: 999;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    }
-    
-    .nav-links.active {
-        display: flex;
-    }
-    
-    .nav-link {
-        padding: 12px 15px;
-        border-radius: 10px;
-        justify-content: flex-start;
-        font-size: 15px;
-    }
-    
-    .user-menu {
-        order: 3;
-    }
-    
-    .user-info {
-        display: none;
-    }
-    
-    .user-avatar {
-        width: 36px;
-        height: 36px;
-        border-width: 2px;
-    }
-    
-    .container {
-        margin-top: 60px;
-        padding: 12px;
-    }
-    
-    /* Адаптация чата */
-    .chat-container {
-        flex-direction: column;
-        height: calc(100vh - 120px);
-    }
-    
-    .users-sidebar {
-        width: 100% !important;
-        height: auto !important; /* Автоматическая высота */
-        max-height: 40vh !important; /* Ограничиваем высоту */
-        overflow: hidden !important;
-        position: relative !important;
-        margin-bottom: 15px;
-        border-radius: 10px;
-        z-index: 5 !important; /* Убедимся, что поверх других элементов */
-    }
-    
-    .users-sidebar.hidden-mobile {
-        display: none;
-    }
-    
-    .users-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-    
-    .users-tabs {
-        display: flex;
-        gap: 3px !important; /* Уменьшаем отступы */
-        margin-bottom: 10px;
-        padding-bottom: 5px;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none; /* Скрываем скроллбар для Firefox */
-    }
-
-    .users-tabs::-webkit-scrollbar {
-        display: none; /* Скрываем скроллбар для Chrome/Safari */
-    }
-
-    .users-list {
-        height: calc(40vh - 120px) !important; /* Рассчитываем высоту */
-        max-height: 300px !important;
-        overflow-y: auto !important;
-        background: rgba(26, 26, 46, 0.95) !important;
-        border-radius: 0 0 10px 10px;
-    }
-
-    .user-card {
-        padding: 8px 10px !important;
-        margin-bottom: 5px !important;
-        background: rgba(255, 255, 255, 0.05) !important;
-    }
-
-    .user-avatar-sm {
-        width: 32px !important;
-        height: 32px !important;
-    }
-    
-    .user-details-name {
-        font-size: 12px !important;
-    }
-    
-    .tab-btn {
-        flex: 0 0 auto; /* Не даем кнопкам растягиваться */
-        padding: 6px 8px !important; /* Уменьшаем отступы */
-        font-size: 11px !important; /* Уменьшаем размер шрифта */
-        min-width: 50px !important; /* Минимальная ширина меньше */
-        white-space: nowrap;
-    }
-
-    .tab-btn i {
-        font-size: 10px !important; /* Уменьшаем иконки */
-        margin-right: 3px !important;
-    }
-    
-    .chat-main {
-        order: 1;
-        flex: 1;
-        min-height: 300px;
-    }
-    
-    .chat-header {
-        padding: 15px;
-        position: relative;
-    }
-    
-    .mobile-chat-actions {
-        display: flex !important;
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        gap: 5px;
-    }
-    
-    .mobile-chat-btn {
-        width: 30px;
-        height: 30px;
-        border-radius: 8px;
-        background: rgba(255, 255, 255, 0.1);
-        border: none;
-        color: white;
-        font-size: 14px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .chat-messages {
-        padding: 15px;
-        gap: 10px;
-    }
-    
-    .message {
-        max-width: 95% !important; /* Увеличиваем ширину сообщения */
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-    }
-    
-    .message-content {
-        max-width: 100% !important;
-        word-wrap: break-word !important;
-        overflow-wrap: break-word !important;
-        word-break: break-word !important;
-        background: rgba(67, 97, 238, 0.15) !important;
-        border: 1px solid rgba(67, 97, 238, 0.2) !important;
-    }
-
-    .message.sent .message-content {
-        background: rgba(76, 201, 240, 0.2) !important;
-        border: 1px solid rgba(76, 201, 240, 0.3) !important;
-    }
-    
-    .message-header {
-        flex-wrap: wrap !important;
-        gap: 5px !important;
-    }
-    
-    .message-sender {
-        font-size: 12px !important;
-        flex-wrap: wrap !important;
-    }
-    
-    .message-time {
-        font-size: 10px !important;
-        margin-left: auto !important;
-    }
-    
-    .message-text {
-        font-size: 13px !important;
-        line-height: 1.4 !important;
-        word-wrap: break-word !important;
-        word-break: break-word !important;
-        overflow-wrap: break-word !important;
-        white-space: pre-wrap !important;
-        max-width: 100% !important;
-    }
-
-    .message.sent {
-        margin-left: auto !important;
-        margin-right: 0 !important;
-    }
-    
-    .chat-input {
-        padding: 15px;
-        flex-wrap: wrap;
-    }
-    
-    .message-input {
-        font-size: 14px;
-        min-height: 45px;
-        padding: 10px 12px;
-    }
-    
-    .chat-buttons {
-        gap: 5px;
-    }
-    
-    .chat-btn {
-        width: 45px;
-        height: 45px;
-        font-size: 16px;
-    }
-    
-    /* Адаптация эмодзи-пикера */
-    .emoji-picker {
-        position: fixed;
-        bottom: 70px;
-        left: 10px;
-        right: 10px;
-        max-height: 200px;
-        z-index: 1000;
-    }
-    
-    .emoji-grid {
-        grid-template-columns: repeat(6, 1fr);
-    }
-    
-    .emoji-btn {
-        width: 36px;
-        height: 36px;
-        font-size: 20px;
-    }
-    
-    /* Адаптация заданий */
-    .tasks-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-    
-    .task-card {
-        padding: 15px;
-    }
-    
-    .task-title {
-        font-size: 16px;
-    }
-    
-    .task-description {
-        font-size: 13px;
-    }
-    
-    .task-actions {
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    .task-actions .btn {
-        width: 100%;
-        text-align: center;
-    }
-    
-    .create-task-form {
-        padding: 20px;
-    }
-    
-    /* Адаптация мероприятий */
-    .events-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-    
-    .event-card-simple {
-        margin-bottom: 15px;
-    }
-    
-    .event-card-simple > div:first-child {
-        height: 120px;
-    }
-    
-    .event-card-simple > div:last-child {
-        padding: 15px;
-    }
-    
-    /* Адаптация модальных окон */
-    .modal-content {
-        width: 95%;
-        padding: 20px;
-        border-radius: 15px;
-        max-height: 85vh;
-    }
-    
-    /* Формы авторизации */
-    .auth-box {
-        padding: 25px;
-        margin: 15px;
-    }
-    
-    .role-selector {
-        flex-direction: column;
-    }
-    
-    /* Адаптация индикатора ответа */
-    .reply-indicator {
-        padding: 8px 10px;
-        margin: 0 10px 10px;
-    }
-    
-    .reply-text {
-        font-size: 11px;
-    }
-
-    .users-sidebar,
-    .chat-main,
-    .message-content {
-        box-shadow: none !important;
-    }
-}
-
-/* Для устройств с шириной до 480px (мобильные телефоны) */
-@media (max-width: 480px) {
-    .navbar {
-        padding: 8px 10px;
-    }
-    
-    .logo {
-        font-size: 16px;
-    }
-    
-    .menu-toggle {
-        font-size: 18px;
-    }
-    
-    .user-avatar {
-        width: 32px;
-        height: 32px;
-    }
-    
-    .container {
-        margin-top: 55px;
-        padding: 10px;
-    }
-    
-    .users-sidebar {
-        height: 180px;
-        padding: 15px;
-    }
-    
-    .users-tabs .tab-btn {
-        min-width: 50px;
-        font-size: 10px;
-        padding: 6px;
-    }
-    
-    .chat-header {
-        padding: 12px;
-    }
-    
-    .chat-title {
-        font-size: 16px;
-    }
-    
-    .chat-subtitle {
-        font-size: 12px;
-    }
-    
-    .chat-messages {
-        padding: 12px;
-    }
-    
-    .message {
-        max-width: 90%;
-    }
-    
-    .message-avatar {
-        width: 32px;
-        height: 32px;
-    }
-    
-    .message-content {
-        padding: 8px 10px;
-    }
-    
-    .chat-input {
-        padding: 12px;
-    }
-    
-    .message-input {
-        min-height: 40px;
-        padding: 8px 10px;
-        font-size: 13px;
-    }
-    
-    .chat-btn {
-        width: 40px;
-        height: 40px;
-        font-size: 14px;
-    }
-    
-    /* Убираем анимации на мобильных для производительности */
-    .message {
-        animation-duration: 0.1s;
-    }
-    
-    .task-card, .event-card-simple {
-        transition: none;
-    }
-    
-    .task-card:hover, .event-card-simple:hover {
-        transform: none;
-    }
-    
-    /* Адаптация текста */
-    h1 { font-size: 24px; }
-    h2 { font-size: 20px; }
-    h3 { font-size: 18px; }
-    
-    /* Адаптация кнопок */
-    .btn {
-        padding: 8px 12px;
-        font-size: 13px;
-    }
-    
-    /* Адаптация форм */
-    .form-control {
-        padding: 10px 12px;
-        font-size: 14px;
-    }
-    
-    /* Адаптация вкладок мероприятия в модальном окне */
-    .event-tabs {
-        overflow-x: auto;
-        flex-wrap: nowrap;
-    }
-    
-    .event-tab-btn {
-        padding: 6px 10px;
-        font-size: 12px;
-        white-space: nowrap;
-    }
-    
-    /* Скрываем неважные элементы на мобильных */
-    .user-details-role,
-    .last-seen {
-        display: none;
-    }
-
-        .users-tabs {
-        gap: 2px !important;
-    }
-    
-    .tab-btn {
-        padding: 5px 6px !important;
-        font-size: 10px !important;
-        min-width: 45px !important;
-    }
-    
-    .tab-btn i {
-        font-size: 9px !important;
-        margin-right: 2px !important;
-    }
-    
-    /* Уменьшаем аватарки в списке пользователей */
-    .user-avatar-sm {
-        width: 28px !important;
-        height: 28px !important;
-    }
-    
-    .user-details {
-        max-width: calc(100% - 40px) !important;
-    }
-    
-    .user-details-name {
-        font-size: 11px !important;
-    }
-    
-    .role-mentor, .role-specialist {
-        font-size: 9px !important;
-        padding: 1px 4px !important;
-    }
-    
-    /* Убираем неважную информацию на мобильных */
-    .user-details-role,
-    .last-seen {
-        display: none !important;
-    }
-    
-    /* Исправляем высоту списка пользователей */
-    .users-sidebar {
-        max-height: 35vh !important;
-    }
-    
-    .users-list {
-        height: calc(35vh - 110px) !important;
-    }
-    
-}
-
-/* Для устройств с очень маленькой высотой */
-@media (max-height: 600px) {
-    .chat-container {
-        height: calc(100vh - 100px);
-    }
-    
-    .users-sidebar {
-        height: 150px;
-    }
-    
-    .chat-messages {
-        max-height: 40vh;
-    }
-}
-
-/* Для ландшафтной ориентации на мобильных */
-@media (max-width: 768px) and (orientation: landscape) {
-    .chat-container {
-        flex-direction: row;
-        height: calc(100vh - 70px);
-    }
-    
-    .users-sidebar {
-        width: 250px;
-        height: 100%;
-        margin-bottom: 0;
-        margin-right: 15px;
-    }
-    
-    .users-sidebar.hidden-mobile {
-        display: none;
-    }
-    
-    .chat-main {
-        flex: 1;
-    }
-    
-    .nav-links.active {
-        max-height: 80vh;
-        overflow-y: auto;
-    }
-}
-
-/* Специальные классы для мобильной навигации */
-.menu-toggle {
-    display: none;
-}
-
-.mobile-chat-actions {
-    display: none;
-}
-
-.toggle-users-btn {
-    display: none;
-}
-
-/* Показываем кнопку переключения списка пользователей только на мобильных */
-@media (max-width: 768px) {
-    .toggle-users-btn {
-        display: flex;
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        background: rgba(67, 97, 238, 0.3);
-        border: 1px solid var(--primary);
-        color: white;
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        cursor: pointer;
-        align-items: center;
-        justify-content: center;
-        font-size: 14px;
-        z-index: 10;
-    }
-    
-    .mobile-chat-actions {
-        display: none;
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        gap: 5px;
-    }
-}
-
-/* Улучшаем скроллбар для мобильных */
-@media (max-width: 768px) {
-    ::-webkit-scrollbar {
-        width: 4px;
-    }
-    
-    ::-webkit-scrollbar-track {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    
-    ::-webkit-scrollbar-thumb {
-        background: rgba(67, 97, 238, 0.5);
-        border-radius: 2px;
-    }
-}
-
-/* Адаптация прикрепленных файлов на мобильных */
-@media (max-width: 768px) {
-    .attachment-preview {
-        padding: 8px;
-        margin: 0 10px 10px;
-    }
-    
-    .attachment-icon {
-        width: 32px;
-        height: 32px;
-        font-size: 16px;
-    }
-    
-    .attachment-name {
-        font-size: 12px;
-    }
-    
-    .attachment-size {
-        font-size: 11px;
-    }
-    
-    .remove-attachment {
-        width: 26px;
-        height: 26px;
-        font-size: 12px;
-    }
-}
-
-/* Адаптация для темной темы на мобильных с учетом OLED экранов */
-@media (max-width: 768px) {
-    body {
-        background: #0a0a1a;
-    }
-    
-    .navbar {
-        background: rgba(10, 10, 26, 0.98);
-    }
-    
-    .users-sidebar,
-    .chat-main,
-    .task-card,
-    .event-card-simple,
-    .material-item {
-        background: rgba(255, 255, 255, 0.03);
-    }
-}
-
-/* Анимация для мобильного меню */
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.nav-links.active {
-    animation: slideDown 0.3s ease;
-}
-
-/* Оптимизация для производительности на мобильных */
-@media (max-width: 768px) {
-    * {
-        -webkit-tap-highlight-color: transparent;
-    }
-    
-    input, textarea, button {
-        font-size: 16px !important; /* Предотвращает зум в iOS */
-    }
-    
-    .message-input {
-        max-height: 120px;
-    }
-}
-
-        /* Утилиты */
-        .mb-10 { margin-bottom: 10px; }
-        .mb-15 { margin-bottom: 15px; }
-        .mb-20 { margin-bottom: 20px; }
-        .mt-10 { margin-top: 10px; }
-        .mt-15 { margin-top: 15px; }
-        .mt-20 { margin-top: 20px; }
-        .d-flex { display: flex; }
-        .align-center { align-items: center; }
-        .justify-between { justify-content: space-between; }
-        .gap-10 { gap: 10px; }
-        .w-100 { width: 100%; }
-
-        .event-card-simple {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 0;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            overflow: hidden;
-            margin-bottom: 20px;
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-        }
-        
-        .event-card-simple:hover {
-            transform: translateY(-5px);
-            border-color: #4361ee;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        }
-        
-        #events-list {
-            display: block !important;
-            visibility: visible !important;
-        }
-        
-        #events-tab {
-            display: none;
-        }
-        
-        #events-tab.active {
-            display: block !important;
-        }
-
-        /* Отладочные стили - проверка видимости вкладок */
-        .debug {
-            border: 3px solid red !important;
-            background: rgba(255, 0, 0, 0.1) !important;
-        }
-        
-        /* Принудительное отображение активной вкладки */
-        .tab-content {
-            display: none;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease;
-        }
-        
-        .tab-content.active {
-            display: block !important;
-            opacity: 1 !important;
-            visibility: visible !important;
-        }
-        
-        /* Контейнер мероприятий */
-        #events-list {
-            display: grid !important;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)) !important;
-            gap: 20px !important;
-        }
-        
-        /* Проверка, что контейнер видим */
-        .container {
-            display: block !important;
-            visibility: visible !important;
-        }
-
-        .event-tabs {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding-bottom: 10px;
-        }
-        
-        .event-tab-btn {
-            padding: 8px 15px;
-            background: transparent;
-            border: none;
-            color: rgba(255,255,255,0.7);
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-        
-        .event-tab-btn:hover {
-            background: rgba(67, 97, 238, 0.1);
-            color: white;
-        }
-        
-        .event-tab-btn.active {
-            background: rgba(67, 97, 238, 0.3);
-            color: white;
-            border-bottom: 2px solid var(--primary);
-        }
-        
-        .event-tab-content {
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .event-tab-content.active {
-            display: block;
-        }
-        
-        /* Стили для чата мероприятия */
-        .event-chat-message {
-            margin-bottom: 15px;
-            padding: 10px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 10px;
-            border-left: 3px solid var(--primary);
-        }
-        
-        .event-chat-message-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 5px;
-        }
-        
-        .event-chat-avatar {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-        
-        .event-chat-sender {
-            font-weight: 600;
-            font-size: 14px;
-        }
-        
-        .event-chat-time {
-            font-size: 11px;
-            color: rgba(255,255,255,0.5);
-            margin-left: auto;
-        }
-        
-        .event-chat-text {
-            font-size: 14px;
-            line-height: 1.5;
-            word-wrap: break-word;
-        }
-
-        /* Стили для ответов на сообщения */
+        /* Ответы на сообщения */
         .reply-indicator {
             background: rgba(67, 97, 238, 0.2);
             border-left: 3px solid var(--primary);
@@ -2278,50 +1137,237 @@
             display: flex;
         }
 
-        /* Стили для профиля пользователя */
-        .profile-info-item {
-            background: rgba(255,255,255,0.03);
-            border-radius: 8px;
-            padding: 12px;
-            transition: all 0.3s;
+        /* Мобильная адаптация */
+        @media (max-width: 768px) {
+            body {
+                background: #0a0a1a;
+            }
+            
+            .navbar {
+                padding: 10px 12px;
+                flex-wrap: wrap;
+            }
+            
+            .logo span {
+                display: none;
+            }
+            
+            .menu-toggle {
+                display: flex !important;
+                order: 2;
+                background: transparent;
+                border: none;
+                color: white;
+                font-size: 20px;
+                cursor: pointer;
+                padding: 5px;
+                margin-left: 10px;
+            }
+            
+            .nav-links {
+                display: none;
+                position: fixed;
+                top: 60px;
+                left: 0;
+                right: 0;
+                background: rgba(26, 26, 46, 0.98);
+                backdrop-filter: blur(20px);
+                flex-direction: column;
+                padding: 20px;
+                gap: 10px;
+                z-index: 999;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            }
+            
+            .nav-links.active {
+                display: flex;
+            }
+            
+            .user-info {
+                display: none;
+            }
+            
+            .user-avatar {
+                width: 36px;
+                height: 36px;
+                border-width: 2px;
+            }
+            
+            .container {
+                margin-top: 60px;
+                padding: 12px;
+            }
+            
+            .chat-container {
+                flex-direction: column;
+                height: calc(100vh - 120px);
+            }
+            
+            .users-sidebar {
+                width: 100% !important;
+                height: auto !important;
+                max-height: 40vh !important;
+                overflow: hidden !important;
+                position: relative !important;
+                margin-bottom: 15px;
+                border-radius: 10px;
+                z-index: 5 !important;
+            }
+            
+            .users-sidebar.hidden-mobile {
+                display: none;
+            }
+            
+            .chat-main {
+                order: 1;
+                flex: 1;
+                min-height: 300px;
+            }
+            
+            .chat-header {
+                padding: 15px;
+                position: relative;
+            }
+            
+            .chat-messages {
+                padding: 15px;
+                gap: 10px;
+            }
+            
+            .message {
+                max-width: 95% !important;
+            }
+            
+            .message-content {
+                max-width: 100% !important;
+                word-wrap: break-word !important;
+                overflow-wrap: break-word !important;
+                word-break: break-word !important;
+            }
+            
+            .chat-input {
+                padding: 15px;
+                flex-wrap: wrap;
+            }
+            
+            .message-input {
+                font-size: 14px;
+                min-height: 45px;
+                padding: 10px 12px;
+            }
+            
+            .chat-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 16px;
+            }
+            
+            .emoji-picker {
+                position: fixed;
+                bottom: 70px;
+                left: 10px;
+                right: 10px;
+                max-height: 200px;
+                z-index: 1000;
+            }
+            
+            .emoji-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+            
+            .emoji-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 20px;
+            }
+            
+            .tasks-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .task-card {
+                padding: 15px;
+            }
+            
+            .task-title {
+                font-size: 16px;
+            }
+            
+            .task-description {
+                font-size: 13px;
+            }
+            
+            .task-actions {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .create-task-form {
+                padding: 20px;
+            }
+            
+            .events-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .event-card-simple > div:first-child {
+                height: 120px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                padding: 20px;
+                border-radius: 15px;
+                max-height: 85vh;
+            }
+            
+            .auth-box {
+                padding: 25px;
+                margin: 15px;
+            }
+            
+            .role-selector {
+                flex-direction: column;
+            }
+
+            .toggle-users-btn {
+                display: flex;
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                background: rgba(67, 97, 238, 0.3);
+                border: 1px solid var(--primary);
+                color: white;
+                width: 32px;
+                height: 32px;
+                border-radius: 8px;
+                cursor: pointer;
+                align-items: center;
+                justify-content: center;
+                font-size: 14px;
+                z-index: 10;
+            }
         }
-        
-        .profile-info-item:hover {
-            background: rgba(67, 97, 238, 0.1);
-        }
-        
-        /* Улучшенные стили для карточки пользователя */
-        .user-card {
-            cursor: pointer;
-            position: relative;
-            transition: all 0.3s;
-        }
-        
-        .user-card:hover {
-            background: rgba(67, 97, 238, 0.15) !important;
-            transform: translateX(5px);
-        }
-        
-        .user-card.active {
-            background: rgba(67, 97, 238, 0.25) !important;
-            border-left: 3px solid var(--primary);
-        }
-        
-        /* Индикатор текущего пользователя */
-        .current-user-indicator {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: var(--primary);
-            color: white;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 10px;
-        }
+
+        /* Утилиты */
+        .mb-10 { margin-bottom: 10px; }
+        .mb-15 { margin-bottom: 15px; }
+        .mb-20 { margin-bottom: 20px; }
+        .mt-10 { margin-top: 10px; }
+        .mt-15 { margin-top: 15px; }
+        .mt-20 { margin-top: 20px; }
+        .d-flex { display: flex; }
+        .align-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-10 { gap: 10px; }
+        .w-100 { width: 100%; }
     </style>
 </head>
 <body>
-    <!-- Контейнер авторизации (показывается если пользователь не авторизован) -->
+    <!-- Контейнер авторизации -->
     <div id="auth-container" class="auth-container" style="display: none;">
         <div class="auth-box">
             <div class="auth-title">
@@ -2373,7 +1419,7 @@
 
                 <div class="form-group">
                     <label class="form-label">Кодовая фраза *</label>
-                    <input type="password" class="form-control" id="register-secret" placeholder="Введите кодовую фразу для регистрации">
+                    <input type="password" class="form-control" id="register-secret" placeholder="Введите кодовую фразу">
                     <small style="color: rgba(255,255,255,0.5);">Фраза для доступа к регистрации</small>
                 </div>
                 
@@ -2417,7 +1463,7 @@
         </div>
     </div>
 
-    <!-- Основной интерфейс (показывается после авторизации) -->
+    <!-- Основной интерфейс -->
     <div id="main-app" style="display: none;">
         <!-- Навигационная панель -->
         <nav class="navbar">
@@ -2466,7 +1512,7 @@
         
         <!-- Основной контейнер -->
         <div class="container">
-            <!-- ========== ВКЛАДКА ЧАТА ========== -->
+            <!-- ВКЛАДКА ЧАТА -->
             <div class="tab-content active" id="chat-tab">
                 <div class="chat-container">
                     <!-- Боковая панель с пользователями -->
@@ -2508,11 +1554,9 @@
                     <!-- Основная область чата -->
                     <div class="chat-main">
                         <div class="chat-header">
-                            <div class="mobile-chat-actions">
-                                <button class="toggle-users-btn" id="toggle-users-btn" onclick="toggleUsersSidebar()">
-                                    <i class="fas fa-users"></i>
-                                </button>
-                            </div>
+                            <button class="toggle-users-btn" id="toggle-users-btn" onclick="toggleUsersSidebar()">
+                                <i class="fas fa-users"></i>
+                            </button>
                             <div class="chat-title">Переписка</div>
                             <div class="chat-subtitle" id="chat-subtitle">Загрузка...</div>
                         </div>
@@ -2538,18 +1582,18 @@
                             
                             <div class="emoji-picker" id="emoji-picker" style="display: none;">
                                 <div class="emoji-categories">
-                                    <button class="emoji-category-btn active" onclick="showEmojiCategory('smileys', event)">😀</button>
-                                    <button class="emoji-category-btn" onclick="showEmojiCategory('people', event)">👋</button>
-                                    <button class="emoji-category-btn" onclick="showEmojiCategory('animals', event)">🐶</button>
-                                    <button class="emoji-category-btn" onclick="showEmojiCategory('food', event)">🍎</button>
-                                    <button class="emoji-category-btn" onclick="showEmojiCategory('activities', event)">⚽</button>
-                                    <button class="emoji-category-btn" onclick="showEmojiCategory('objects', event)">💡</button>
-                                    <button class="emoji-category-btn" onclick="showEmojiCategory('symbols', event)">❤️</button>
-                                    <button class="emoji-category-btn" onclick="showEmojiCategory('flags', event)">🏁</button>
+                                    <button class="emoji-category-btn active" onclick="showEmojiCategory('smileys')">😀</button>
+                                    <button class="emoji-category-btn" onclick="showEmojiCategory('people')">👋</button>
+                                    <button class="emoji-category-btn" onclick="showEmojiCategory('animals')">🐶</button>
+                                    <button class="emoji-category-btn" onclick="showEmojiCategory('food')">🍎</button>
+                                    <button class="emoji-category-btn" onclick="showEmojiCategory('activities')">⚽</button>
+                                    <button class="emoji-category-btn" onclick="showEmojiCategory('objects')">💡</button>
+                                    <button class="emoji-category-btn" onclick="showEmojiCategory('symbols')">❤️</button>
+                                    <button class="emoji-category-btn" onclick="showEmojiCategory('flags')">🏁</button>
                                 </div>
                                 
                                 <div class="emoji-grid" id="emoji-grid">
-                                    <!-- Эмодзи будут загружены динамически -->
+                                    <!-- Эмодзи загружаются динамически -->
                                 </div>
                             </div>
 
@@ -2596,161 +1640,159 @@
                     </div>
                 </div>
             </div>
-        
 
-            <!-- ========== ВКЛАДКА МЕРОПРИЯТИЙ ========== -->
-        <div class="tab-content" id="events-tab">
-            <!-- Форма создания мероприятия (только для админа) -->
-            <div class="create-task-form" id="create-event-form" style="display: none;">
-                <h2 class="mb-20"><i class="fas fa-calendar-plus"></i> Создать мероприятие</h2>
-                
-                <div class="form-group">
-                    <label class="form-label">Название мероприятия *</label>
-                    <input type="text" class="form-control" id="event-title" placeholder="Введите название мероприятия">
-                </div>
+            <!-- ВКЛАДКА МЕРОПРИЯТИЙ -->
+            <div class="tab-content" id="events-tab">
+                <!-- Форма создания мероприятия -->
+                <div class="create-task-form" id="create-event-form" style="display: none;">
+                    <h2 class="mb-20"><i class="fas fa-calendar-plus"></i> Создать мероприятие</h2>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Название мероприятия *</label>
+                        <input type="text" class="form-control" id="event-title" placeholder="Введите название мероприятия">
+                    </div>
 
-                <div class="form-group">
-                    <label class="form-label">Описание *</label>
-                    <textarea class="form-control" id="event-description" placeholder="Подробное описание мероприятия..." rows="4"></textarea>
-                </div>
+                    <div class="form-group">
+                        <label class="form-label">Описание *</label>
+                        <textarea class="form-control" id="event-description" placeholder="Подробное описание мероприятия..." rows="4"></textarea>
+                    </div>
 
-                <div class="form-group">
-                    <label class="form-label">Дата и время *</label>
-                    <input type="datetime-local" class="form-control" id="event-datetime">
-                </div>
+                    <div class="form-group">
+                        <label class="form-label">Дата и время *</label>
+                        <input type="datetime-local" class="form-control" id="event-datetime">
+                    </div>
 
-                <div class="form-group">
-                    <label class="form-label">Место проведения</label>
-                    <input type="text" class="form-control" id="event-location" placeholder="Например: Онлайн, офис, конференц-зал">
-                </div>
+                    <div class="form-group">
+                        <label class="form-label">Место проведения</label>
+                        <input type="text" class="form-control" id="event-location" placeholder="Например: Онлайн, офис, конференц-зал">
+                    </div>
 
-                <div class="form-group">
-                    <label class="form-label">Обложка мероприятия</label>
-                    <input type="file" class="form-control" id="event-image" accept="image/*">
-                    <small style="color: rgba(255,255,255,0.5);">Рекомендуемый размер: 1200x600px</small>
-                </div>
+                    <div class="form-group">
+                        <label class="form-label">Обложка мероприятия</label>
+                        <input type="file" class="form-control" id="event-image" accept="image/*">
+                        <small style="color: rgba(255,255,255,0.5);">Рекомендуемый размер: 1200x600px</small>
+                    </div>
 
-                <div class="form-group">
-                    <label class="form-label">Выберите участников</label>
-                    <div class="participants-select" id="event-participants" style="max-height: 200px; overflow-y: auto; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
-                        <!-- Участники загружаются динамически -->
+                    <div class="form-group">
+                        <label class="form-label">Выберите участников</label>
+                        <div class="participants-select" id="event-participants" style="max-height: 200px; overflow-y: auto; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                            <!-- Участники загружаются динамически -->
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Предпросмотр обложки:</label>
+                        <div id="event-image-preview" style="margin-top: 10px;">
+                            <img id="event-image-preview-img" style="max-width: 300px; border-radius: 10px; display: none;">
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-10">
+                        <button class="btn btn-primary" onclick="createNewEvent()">
+                            <i class="fas fa-plus"></i> Создать мероприятие
+                        </button>
+                        <button class="btn" onclick="clearEventForm()" style="background: rgba(255,255,255,0.1); color: white;">
+                            <i class="fas fa-times"></i> Очистить
+                        </button>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Предпросмотр обложки:</label>
-                    <div id="event-image-preview" style="margin-top: 10px;">
-                        <img id="event-image-preview-img" style="max-width: 300px; border-radius: 10px; display: none;">
-                    </div>
-                </div>
-
-                <div class="d-flex gap-10">
-                    <button class="btn btn-primary" onclick="createNewEvent()">
+                <!-- Заголовок и кнопка создания -->
+                <div class="d-flex justify-between align-center mb-20">
+                    <h2><i class="fas fa-calendar-alt"></i> Мероприятия</h2>
+                    <button class="btn btn-primary" id="show-create-event-btn" onclick="toggleCreateEventForm()">
                         <i class="fas fa-plus"></i> Создать мероприятие
                     </button>
-                    <button class="btn" onclick="clearEventForm()" style="background: rgba(255,255,255,0.1); color: white;">
-                        <i class="fas fa-times"></i> Очистить
+                </div>
+
+                <!-- Список мероприятий -->
+                <div class="events-grid" id="events-list">
+                    <!-- Мероприятия загружаются динамически -->
+                </div>
+            </div>
+
+            <!-- ВКЛАДКА ЗАДАНИЙ -->
+            <div class="tab-content" id="tasks-tab">
+                <!-- Форма создания задания -->
+                <div class="create-task-form" id="create-task-form" style="display: none;">
+                    <h2 class="mb-20"><i class="fas fa-plus-circle"></i> Создать новое задание</h2>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Тема задания *</label>
+                        <input type="text" class="form-control" id="task-title" placeholder="Введите тему задания">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Описание задания *</label>
+                        <textarea class="form-control" id="task-description" placeholder="Подробное описание задания..." rows="4"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Награда *</label>
+                        <input type="text" class="form-control" id="task-reward" placeholder="Например: 100 очков, Бонус, Сертификат">
+                    </div>
+
+                    <div class="form-group" id="task-assign-group" style="display: none;">
+                        <label class="form-label">Назначить специалисту</label>
+                        <select class="form-control" id="task-specialist">
+                            <option value="">Общее задание (для всех)</option>
+                        </select>
+                        <small style="color: rgba(255,255,255,0.5);">Оставьте пустым, чтобы задание было доступно всем</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Прикрепить файлы (максимум 3 файла, до 5MB каждый)</label>
+                        <input type="file" class="form-control" id="task-files" multiple accept="image/*,video/*,.gif,.pdf,.doc,.docx,.txt">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Предпросмотр файлов:</label>
+                        <div class="file-preview" id="task-file-preview"></div>
+                    </div>
+
+                    <div class="d-flex gap-10">
+                        <button class="btn btn-primary" onclick="createTask()">
+                            <i class="fas fa-plus"></i> Создать задание
+                        </button>
+                        <button class="btn" onclick="clearTaskForm()" style="background: rgba(255,255,255,0.1); color: white;">
+                            <i class="fas fa-times"></i> Очистить
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Кнопка создания задания -->
+                <div class="d-flex justify-between align-center mb-20">
+                    <h2><i class="fas fa-tasks"></i> Задания</h2>
+                    <button class="btn btn-primary" id="show-create-form-btn" onclick="toggleCreateTaskForm()">
+                        <i class="fas fa-plus"></i> Создать задание
                     </button>
                 </div>
-            </div>
 
-            <!-- Заголовок и кнопка создания -->
-            <div class="d-flex justify-between align-center mb-20">
-                <h2><i class="fas fa-calendar-alt"></i> Мероприятия</h2>
-                <button class="btn btn-primary" id="show-create-event-btn" onclick="toggleCreateEventForm()">
-                    <i class="fas fa-plus"></i> Создать мероприятие
-                </button>
-            </div>
-
-            <!-- Список мероприятий -->
-            <div class="events-grid" id="events-list">
-                <!-- Мероприятия загружаются динамически -->
-            </div>
-        </div>
-
-    <!-- ========== ВКЛАДКА ЗАДАНИЙ ========== -->
-    <div class="tab-content" id="tasks-tab">
-        <!-- Форма создания задания (только для админа) -->
-        <div class="create-task-form" id="create-task-form" style="display: none;">
-            <h2 class="mb-20"><i class="fas fa-plus-circle"></i> Создать новое задание</h2>
-            
-            <div class="form-group">
-                <label class="form-label">Тема задания *</label>
-                <input type="text" class="form-control" id="task-title" placeholder="Введите тему задания">
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Описание задания *</label>
-                <textarea class="form-control" id="task-description" placeholder="Подробное описание задания..." rows="4"></textarea>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Награда *</label>
-                <input type="text" class="form-control" id="task-reward" placeholder="Например: 100 очков, Бонус, Сертификат">
-            </div>
-
-            <div class="form-group" id="task-assign-group" style="display: none;">
-                <label class="form-label">Назначить специалисту</label>
-                <select class="form-control" id="task-specialist">
-                    <option value="">Общее задание (для всех)</option>
-                </select>
-                <small style="color: rgba(255,255,255,0.5);">Оставьте пустым, чтобы задание было доступно всем</small>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Прикрепить файлы (максимум 3 файла, до 5MB каждый)</label>
-                <input type="file" class="form-control" id="task-files" multiple accept="image/*,video/*,.gif,.pdf,.doc,.docx,.txt">
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Предпросмотр файлов:</label>
-                <div class="file-preview" id="task-file-preview"></div>
-            </div>
-
-            <div class="d-flex gap-10">
-                <button class="btn btn-primary" onclick="createTask()">
-                    <i class="fas fa-plus"></i> Создать задание
-                </button>
-                <button class="btn" onclick="clearTaskForm()" style="background: rgba(255,255,255,0.1); color: white;">
-                    <i class="fas fa-times"></i> Очистить
-                </button>
-            </div>
-        </div>
-
-        <!-- Кнопка создания задания (только для админа) -->
-        <div class="d-flex justify-between align-center mb-20">
-            <h2><i class="fas fa-tasks"></i> Задания</h2>
-            <button class="btn btn-primary" id="show-create-form-btn" onclick="toggleCreateTaskForm()">
-                <i class="fas fa-plus"></i> Создать задание
-            </button>
-        </div>
-
-        <!-- Список заданий -->
-        <div class="tasks-grid" id="tasks-list">
-            <!-- Задания загружаются динамически -->
-        </div>
-    </div>
-
-    <!-- ========== ВКЛАДКА АДАПТАЦИИ ========== -->
-    <div class="tab-content" id="adaptation-tab">
-        <h2 class="mb-20"><i class="fas fa-graduation-cap"></i> Материалы для адаптации</h2>
-        
-        <div class="materials-list" id="materials-list">
-            <!-- Материалы загружаются динамически -->
-            <div class="material-item">
-                <div class="material-icon">
-                    <i class="fas fa-book"></i>
+                <!-- Список заданий -->
+                <div class="tasks-grid" id="tasks-list">
+                    <!-- Задания загружаются динамически -->
                 </div>
-                <div class="material-content">
-                    <div class="material-title">Добро пожаловать!</div>
-                    <div class="material-description">Здесь будут размещены материалы для адаптации новых сотрудников</div>
+            </div>
+
+            <!-- ВКЛАДКА АДАПТАЦИИ -->
+            <div class="tab-content" id="adaptation-tab">
+                <h2 class="mb-20"><i class="fas fa-graduation-cap"></i> Материалы для адаптации</h2>
+                
+                <div class="materials-list" id="materials-list">
+                    <div class="material-item">
+                        <div class="material-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="material-content">
+                            <div class="material-title">Добро пожаловать!</div>
+                            <div class="material-description">Здесь будут размещены материалы для адаптации новых сотрудников</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
-        <!-- ========== МОДАЛЬНЫЕ ОКНА ========== -->
+        <!-- МОДАЛЬНЫЕ ОКНА -->
         <!-- Модальное окно профиля -->
         <div class="modal" id="profile-modal">
             <div class="modal-content">
@@ -2867,39 +1909,6 @@
                             <div id="user-profile-organization" style="color: rgba(255,255,255,0.8); padding-left: 25px;">
                                 Не указана
                             </div>
-
-                            <div class="profile-info-item" id="mentor-info" style="display: none;">
-                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
-                                    <i class="fas fa-user-tie" style="color: var(--primary);"></i>
-                                    <span style="font-weight: 500;">Наставник:</span>
-                                </div>
-                                <div id="user-mentor-name" style="color: rgba(255,255,255,0.8); padding-left: 25px;">
-                                    Не назначен
-                                </div>
-                            </div>
-                            
-                            <div class="profile-info-item" id="mentees-info" style="display: none;">
-                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
-                                    <i class="fas fa-user-graduate" style="color: var(--accent);"></i>
-                                    <span style="font-weight: 500;">Специалисты:</span>
-                                </div>
-                                <div id="user-mentees-list" style="color: rgba(255,255,255,0.8); padding-left: 25px;">
-                                    Нет привязанных специалистов
-                                </div>
-                            </div>
-                            
-                            <div id="bind-actions" style="margin-top: 20px; display: none;">
-                                <button class="btn btn-primary" onclick="bindMentorAction()" id="bind-mentor-btn">
-                                    <i class="fas fa-link"></i> Сделать наставником
-                                </button>
-                                <button class="btn btn-accent" onclick="bindSpecialistAction()" id="bind-specialist-btn">
-                                    <i class="fas fa-link"></i> Привязать специалиста
-                                </button>
-                                <button class="btn btn-danger" onclick="unbindUserAction()" id="unbind-btn" style="display: none;">
-                                    <i class="fas fa-unlink"></i> Отвязать
-                                </button>
-                            </div>
-                            
                         </div>
                         
                         <div class="profile-info-item" style="margin-bottom: 15px;">
@@ -2957,19 +1966,6 @@
                             <i class="fas fa-file"></i> Файл
                         </button>
                     </div>
-                </div>
-
-                <div style="margin: 15px 0; padding: 10px; background: rgba(67, 97, 238, 0.1); border-radius: 8px;">
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                        <i class="fab fa-github" style="color: var(--primary);"></i>
-                        <span style="font-weight: 500;">GitHub Загрузка</span>
-                        <span id="github-status" style="margin-left: auto; font-size: 12px; padding: 2px 8px; border-radius: 10px; background: #4CAF50; color: white;">
-                            <i class="fas fa-check"></i> Настроено
-                        </span>
-                    </div>
-                    <small style="color: rgba(255,255,255,0.7);">
-                        Все файлы загружаются на GitHub и доступны через jsDelivr CDN
-                    </small>
                 </div>
                 
                 <div class="mb-15" id="attachment-preview" style="display: none;">
@@ -3095,6 +2091,7 @@
             </div>
         </div>
 
+        <!-- Модальное окно отчета -->
         <div class="modal" id="report-modal">
             <div class="modal-content">
                 <h2 class="mb-20"><i class="fas fa-file-upload"></i> Сдать отчет по заданию</h2>
@@ -3113,7 +2110,6 @@
                     <div class="form-group">
                         <label class="form-label">Прикрепите файл отчета</label>
                         <input type="file" class="form-control" id="report-file" accept="*/*">
-                        <small style="color: rgba(255,255,255,0.5);">Можно прикрепить любой файл (PDF, DOCX, ZIP, изображения и др.)</small>
                     </div>
                     
                     <div id="report-file-preview" style="margin-top: 10px; display: none;">
@@ -3165,7 +2161,7 @@
                     <div class="mb-15">
                         <label class="form-label">Прикрепленный файл</label>
                         <div id="review-attachment" style="display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(67,97,238,0.1); border-radius: 8px;">
-                            <!-- Файл будет загружен динамически -->
+                            <!-- Файл загружается динамически -->
                         </div>
                     </div>
                     
@@ -3183,9 +2179,6 @@
                             <button class="btn btn-danger" onclick="rejectReport()" style="flex: 1;">
                                 <i class="fas fa-times"></i> Вернуть на доработку
                             </button>
-                            <button class="btn" onclick="requestChanges()" style="flex: 1; background: rgba(255,193,7,0.2); color: #ffc107;">
-                                <i class="fas fa-edit"></i> Требуются правки
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -3196,11 +2189,11 @@
             </div>
         </div>
     </div>
-    <!-- Scripts -->
+    
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <script>
-        // ========== КОНФИГУРАЦИЯ FIREBASE ==========
+        // КОНФИГУРАЦИЯ FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyB5eIngl-CnWkSuKcNtywID7kdOKKCatXY",
             authDomain: "ms-adaptive-chat.firebaseapp.com",
@@ -3211,20 +2204,11 @@
             appId: "1:571640671300:web:e1e0f4369b93a3ef8f2011"
         };
 
-        const GITHUB_CONFIG = {
-            username: 'cory23e1', // Замените на ваш GitHub username
-            repo: 'ms-adaptive-files',         // Замените на название репозитория
-            branch: 'main',           // Ветка (обычно main или master)
-            token: 'Qpu1x3To0wQ7w78oD7gQJbBRwaVTGtAXV7dn_phg' // Токен GitHub (для загрузки)
-        };
-
-        const DEBUG = true;
-
         // Инициализация Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==========
+        // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
         let currentUser = null;
         let users = {};
         let tasks = {};
@@ -3233,95 +2217,42 @@
         let attachmentType = 'image';
         let taskFiles = [];
         let currentUsersTab = 'all';
-        let statusUpdateInterval = null;
-        let userStatusListeners = [];
         let events = {};
         let eventImage = null;
         let currentReply = null;
         let currentViewedUser = null;
         let currentReportTask = null;
         let reportFile = null;
-        
         let currentEventId = null;
         let eventMessagesListener = null;
         let emojiPickerVisible = false;
-        let selectedRole = 'mentor'; // По умолчанию наставник
+        let selectedRole = 'mentor';
         
         const emojiCategories = {
             smileys: ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🥸', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕'],
             people: ['👋', '🤚', '🖐', '✋', '🖖', '👌', '🤌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '🖕', '👇', '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '✍️', '💅', '🤳', '💪', '🦾', '🦿', '🦵', '🦶', '👂', '🦻', '👃', '🧠', '🦷', '🦴', '👀', '👁️', '👅', '👄', '👶', '🧒', '👦', '👧', '🧑', '👱', '👨', '🧔', '👩', '🧓', '👴', '👵'],
             animals: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐽', '🐸', '🐵', '🙈', '🙉', '🙊', '🐒', '🐔', '🐧', '🐦', '🐤', '🐣', '🐥', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🐛', '🦋', '🐌', '🐞', '🐜', '🦟', '🦗', '🕷️', '🦂', '🐢', '🐍', '🦎', '🦖', '🦕', '🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟', '🐬', '🐳', '🐋', '🦈', '🐊', '🐅', '🐆', '🦓', '🦍', '🦧', '🐘', '🦛', '🦏', '🐪', '🐫', '🦒', '🦘', '🐃', '🐂', '🐄', '🐎', '🐖', '🐏', '🐑', '🦙', '🐐', '🦌', '🐕', '🐩', '🦮', '🐕‍🦺', '🐈', '🐈‍⬛'],
-            food: ['🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🍆', '🥑', '🥦', '🥬', '🥒', '🌶️', '🫑', '🌽', '🥕', '🫒', '🧄', '🧅', '🥔', '🍠', '🥐', '🥯', '🍞', '🥖', '🥨', '🧀', '🥚', '🍳', '🧈', '🥞', '🧇', '🥓', '🥩', '🍗', '🍖', '🦴', '🌭', '🍔', '🍟', '🍕', '🫓', '🥪', '🥙', '🧆', '🌮', '🌯', '🫔', '🥗', '🥘', '🫕', '🥫', '🍝', '🍜', '🍲', '🍛', '🍣', '🍱', '🥟', '🦪', '🍤', '🍙', '🍚', '🍘', '🍥', '🥠', '🥮', '🍢', '🍡', '🍧', '🍨', '🍦', '🥧', '🧁', '🍰', '🎂', '🍮', '🍭', '🍬', '🍫', '🍿', '🍩', '🍪', '🌰', '🥜', '🍯', '🥛', '🍼', '🫖', '☕', '🍵', '🧃', '🥤', '🧋', '🍶', '🍺', '🍻', '🥂', '🍷', '🥃', '🍸', '🍹', '🧉', '🍾'],
-            activities: ['⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🥏', '🎱', '🪀', '🏓', '🏸', '🏒', '🏑', '🥍', '🏏', '🪃', '🥅', '⛳', '🪁', '🏹', '🎣', '🤿', '🥊', '🥋', '🎽', '🛹', '🛼', '🛷', '⛸️', '🥌', '🎿', '⛷️', '🏂', '🪂', '🏋️', '🤼', '🤸', '⛹️', '🤺', '🤾', '🏌️', '🏇', '🧘', '🏄', '🏊', '🤽', '🚣', '🧗', '🚵', '🚴', '🏆', '🥇', '🥈', '🥉', '🏅', '🎖️', '🏵️', '🎗️', '🎫', '🎟️', '🎪', '🤹', '🎭', '🩰', '🎨', '🎬', '🎤', '🎧', '🎼', '🎹', '🥁', '🎷', '🎺', '🎸', '🪕', '🎻', '🎲', '♟️', '🎯', '🎳', '🎮', '🎰'],
-            objects: ['⌚', '📱', '📲', '💻', '⌨️', '🖥️', '🖨️', '🖱️', '🖲️', '🕹️', '🗜️', '💽', '💾', '💿', '📀', '📼', '📷', '📸', '📹', '🎥', '📽️', '🎞️', '📞', '☎️', '📟', '📠', '📺', '📻', '🎙️', '🎚️', '🎛️', '🧭', '⏱️', '⏲️', '⏰', '🕰️', '🌡️', '⛱️', '🧨', '🎈', '🎉', '🎊', '🎎', '🎏', '🎐', '🧧', '🎀', '🎁', '🤿', '🪀', '🧩', '🪅', '🪆', '🧸', '🪆', '🪔', '🧵', '🪡', '🧶', '🪢', '👓', '🕶️', '🥽', '🥼', '🦺', '👔', '👕', '👖', '🧣', '🧤', '🧥', '🧦', '👗', '👘', '🥻', '🩱', '🩲', '🩳', '👙', '👚', '👛', '👜', '👝', '🎒', '🩴', '👞', '👟', '🥾', '🥿', '👠', '👡', '🩰', '👢', '👑', '👒', '🎩', '🎓', '🧢', '🪖', '💄', '💍', '💼'],
-            symbols: ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❤️‍🔥', '❤️‍🩹', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💟', '☮️', '✝️', '☪️', '🕉️', '☸️', '✡️', '🔯', '🕎', '☯️', '☦️', '🛐', '⛎', '♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓', '🆔', '⚛️', '🉑', '☢️', '☣️', '📴', '📳', '🈶', '🈚', '🈸', '🈺', '🈷️', '✴️', '🆚', '💮', '🉐', '㊙️', '㊗️', '🈴', '🈵', '🈹', '🈲', '🅰️', '🅱️', '🆎', '🆑', '🅾️', '🆘', '❌', '⭕', '🛑', '⛔', '📛', '🚫', '💯', '💢', '♨️', '🚷', '🚯', '🚳', '🚱', '🔞', '📵', '🚭'],
-            flags: ['🏁', '🚩', '🎌', '🏴', '🏳️', '🏳️‍🌈', '🏳️‍⚧️', '🏴‍☠️', '🇦🇨', '🇦🇩', '🇦🇪', '🇦🇫', '🇦🇬', '🇦🇮', '🇦🇱', '🇦🇲', '🇦🇴', '🇦🇶', '🇦🇷', '🇦🇸', '🇦🇹', '🇦🇺', '🇦🇼', '🇦🇽', '🇦🇿', '🇧🇦', '🇧🇧', '🇧🇩', '🇧🇪', '🇧🇫', '🇧🇬', '🇧🇭', '🇧🇮', '🇧🇯', '🇧🇱', '🇧🇲', '🇧🇳', '🇧🇴', '🇧🇶', '🇧🇷', '🇧🇸', '🇧🇹', '🇧🇻', '🇧🇼', '🇧🇾', '🇧🇿', '🇨🇦', '🇨🇨', '🇨🇩', '🇨🇫', '🇨🇬', '🇨🇭', '🇨🇮', '🇨🇰', '🇨🇱', '🇨🇲', '🇨🇳', '🇨🇴', '🇨🇷', '🇨🇺', '🇨🇻', '🇨🇼', '🇨🇽', '🇨🇾', '🇨🇿', '🇩🇪', '🇩🇬', '🇩🇯', '🇩🇰', '🇩🇲', '🇩🇴', '🇩🇿', '🇪🇦', '🇪🇨', '🇪🇪', '🇪🇬', '🇪🇭', '🇪🇷', '🇪🇸', '🇪🇹', '🇪🇺', '🇫🇮', '🇫🇯', '🇫🇰', '🇫🇲', '🇫🇴', '🇫🇷', '🇬🇦', '🇬🇧', '🇬🇩', '🇬🇪', '🇬🇫', '🇬🇬', '🇬🇭', '🇬🇮', '🇬🇱', '🇬🇲', '🇬🇳', '🇬🇵', '🇬🇶', '🇬🇷', '🇬🇸', '🇬🇹', '🇬🇺', '🇬🇼', '🇬🇾']
+            food: ['🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🍆', '🥑', '🥦', '🥬', '🥒', '🌶️', '🫑', '🌽', '🥕', '🫒', '🧄', '🧅', '🥔', '🍠', '🥐', '🥯', '🍞', '🥖', '🥨', '🧀', '🥚', '🍳', '🧈', '🥞', '🧇', '🥓', '🥩', '🍗', '🍖', '🦴', '🌭', '🍔', '🍟', '🍕', '🫓', '🥪', '🥙', '🧆', '🌮', '🌯', '🫔', '🥗', '🥘', '🫕', '🥫', '🍝', '🍜', '🍲', '🍛', '🍣', '🍱', '🥟', '🦪', '🍤', '🍙', '🍚', '🍘', '🍥', '🥠', '🥮', '🍢', '🍡', '🍧', '🍨', '🍦', '🥧', '🧁', '🍰', '🎂', '🍮', '🍭', '🍬', '🍫', '🍿', '🍩', '🍪', '🌰', '🥜', '🍯', '🥛', '🍼', '🫖', '☕', '🍵', '🧃', '🥤', '🧋', '🍶', '🍺', '🍻', '🥂', '🍷', '🥃', '🍸', '🍹', '🧉', '🍾']
         };
 
-        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        // ИНИЦИАЛИЗАЦИЯ
         document.addEventListener('DOMContentLoaded', function() {
-            // Проверка конфигурации Firebase
-            if (firebaseConfig.apiKey.includes("ВАШ")) {
-                showAlert('Настройте Firebase!', 'warning', 'Замените конфигурацию Firebase в коде.');
-                return;
-            }
-
-            // Проверяем авторизацию пользователя
             checkAuth();
-            
-            // Настройка навигации
             setupNavigation();
-
             setupReplySystem();
-
-            // Принудительно показываем вкладку чата при загрузке
             showTab('chat');
-            
-            // Инициализация чата
             initChat();
-            
-            // Инициализация заданий
             initTasks();
-
-            // Инициализация мероприятий
             initEventsSystem();
-            
-            // Настройка обработчиков
             setupEventListeners();
-            
-            // Проверка прав администратора
             checkAdminStatus();
-
-            // После инициализации проверяем структуру
-            setTimeout(() => {
-                checkTabsStructure();
-                console.log('Текущий пользователь:', currentUser);
-            }, 1000);
-
-            // Инициализируем панель эмодзи
+            
             setTimeout(() => {
                 showEmojiCategory('smileys');
             }, 1000);
-
-            setTimeout(() => {
-                // Проверяем и инициализируем систему привязок
-                if (currentUser) {
-                    // Проверяем целостность данных привязки
-                    Object.values(users).forEach(user => {
-                        if (user.role === 'specialist' && user.mentorId) {
-                            const mentor = users[user.mentorId];
-                            if (!mentor || mentor.role !== 'mentor') {
-                                // Автоматически отвязываем, если наставник не найден или не является наставником
-                                database.ref(`users/${user.id}`).update({ mentorId: null });
-                            }
-                        }
-                    });
-                }
-            }, 3000);
         });
 
         function setupReplySystem() {
-            // Добавляем обработчики для всех сообщений
             document.addEventListener('click', function(event) {
                 if (event.target.closest('.reply-btn')) {
                     const messageElement = event.target.closest('.message');
@@ -3337,16 +2268,12 @@
         }
         
         function setReplyTo(messageId, senderName, messageText) {
-            // Проверяем, что параметры переданы
-            console.log('setReplyTo вызвана с параметрами:', { messageId, senderName, messageText });
-            
             currentReply = {
                 id: messageId,
                 sender: senderName,
                 text: messageText
             };
             
-            // Показываем индикатор ответа
             const indicator = document.getElementById('reply-indicator');
             const senderElement = document.getElementById('reply-sender');
             const textElement = document.getElementById('reply-text');
@@ -3356,14 +2283,9 @@
                 textElement.textContent = messageText.length > 100 ? messageText.substring(0, 100) + '...' : messageText;
                 indicator.style.display = 'flex';
                 
-                // Фокусируемся на поле ввода
                 const input = document.getElementById('message-input');
                 input.focus();
-                
-                // Прокручиваем к полю ввода
                 input.scrollIntoView({ behavior: 'smooth' });
-            } else {
-                console.error('Элементы индикатора ответа не найдены');
             }
         }
         
@@ -3372,14 +2294,13 @@
             document.getElementById('reply-indicator').style.display = 'none';
         }
 
-        // ========== СИСТЕМА АВТОРИЗАЦИИ И РЕГИСТРАЦИИ ==========
+        // СИСТЕМА АВТОРИЗАЦИИ И РЕГИСТРАЦИИ
         function checkAuth() {
             const savedUser = localStorage.getItem('current_user');
             const authContainer = document.getElementById('auth-container');
             const mainApp = document.getElementById('main-app');
             
             if (savedUser) {
-                // Пользователь уже авторизован
                 currentUser = JSON.parse(savedUser);
                 updateProfileUI();
                 setUserStatus('online');
@@ -3387,17 +2308,14 @@
                 authContainer.style.display = 'none';
                 mainApp.style.display = 'block';
                 
-                // Подписываемся на обновления пользователей
                 setupUsersListener();
             } else {
-                // Показываем форму авторизации
                 authContainer.style.display = 'flex';
                 mainApp.style.display = 'none';
             }
         }
 
         function switchAuthTab(tab) {
-            // Переключение между вкладками входа и регистрации
             document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
             
@@ -3424,13 +2342,11 @@
             const organization = document.getElementById('register-organization').value.trim();
             const secret = document.getElementById('register-secret').value.trim();
             
-            // Валидация
             if (!username || !password || !passwordConfirm || !displayName || !secret) {
                 showAlert('Ошибка', 'warning', 'Заполните все обязательные поля!');
                 return;
             }
         
-            // Проверка кодовой фразы
             if (secret !== "sexing") {
                 showAlert('Ошибка', 'error', 'Неверная кодовая фразе!');
                 return;
@@ -3446,23 +2362,19 @@
                 return;
             }
             
-            // Проверяем, свободен ли логин
             database.ref('auth/' + username).once('value').then(snapshot => {
                 if (snapshot.exists()) {
                     showAlert('Ошибка', 'warning', 'Пользователь с таким логином уже существует!');
                     return;
                 }
                 
-                // Создаем пользователя
                 const userId = generateId();
                 const roleText = selectedRole === 'mentor' ? 'Наставник' : 'Молодой специалист';
                 
-                // Сохраняем данные для авторизации
                 database.ref('auth/' + username).set({
-                    password: password, // В реальном приложении пароль нужно хэшировать!
+                    password: password,
                     userId: userId
                 }).then(() => {
-                    // Создаем профиль пользователя
                     const userData = {
                         id: userId,
                         username: displayName,
@@ -3481,7 +2393,6 @@
                     
                     return database.ref('users/' + userId).set(userData);
                 }).then(() => {
-                    // Авторизуем пользователя
                     currentUser = {
                         id: userId,
                         username: displayName,
@@ -3498,10 +2409,8 @@
                         createdAt: Date.now()
                     };
                     
-                    // Сохраняем в localStorage
                     localStorage.setItem('current_user', JSON.stringify(currentUser));
                     
-                    // Показываем основное приложение
                     document.getElementById('auth-container').style.display = 'none';
                     document.getElementById('main-app').style.display = 'block';
                     
@@ -3526,7 +2435,6 @@
                 return;
             }
             
-            // Проверяем данные авторизации
             database.ref('auth/' + username).once('value').then(snapshot => {
                 if (!snapshot.exists()) {
                     showAlert('Ошибка', 'warning', 'Пользователь не найден!');
@@ -3540,7 +2448,6 @@
                     return;
                 }
                 
-                // Загружаем профиль пользователя
                 return database.ref('users/' + authData.userId).once('value');
             }).then(snapshot => {
                 if (!snapshot.exists()) {
@@ -3552,16 +2459,13 @@
                 currentUser.status = 'online';
                 currentUser.lastSeen = Date.now();
                 
-                // Сохраняем в localStorage
                 localStorage.setItem('current_user', JSON.stringify(currentUser));
                 
-                // Обновляем статус в базе данных
                 database.ref('users/' + currentUser.id).update({
                     status: 'online',
                     lastSeen: Date.now()
                 });
                 
-                // Показываем основное приложение
                 document.getElementById('auth-container').style.display = 'none';
                 document.getElementById('main-app').style.display = 'block';
                 
@@ -3576,7 +2480,6 @@
         }
 
         function logout() {
-            // Устанавливаем статус "не в сети"
             if (currentUser && currentUser.id) {
                 database.ref('users/' + currentUser.id).update({
                     status: 'offline',
@@ -3584,22 +2487,19 @@
                 });
             }
             
-            // Очищаем данные пользователя
             localStorage.removeItem('current_user');
             currentUser = null;
             
-            // Показываем форму авторизации
             document.getElementById('auth-container').style.display = 'flex';
             document.getElementById('main-app').style.display = 'none';
             
-            // Сбрасываем поля формы
             document.getElementById('login-username').value = '';
             document.getElementById('login-password').value = '';
             
             showAlert('Выход', 'info', 'Вы вышли из системы');
         }
 
-        // ========== СИСТЕМА СТАТУСОВ ==========
+        // СИСТЕМА СТАТУСОВ
         function setUserStatus(status) {
             if (!currentUser || !currentUser.id) return;
             
@@ -3608,7 +2508,6 @@
             
             updateCurrentUserStatus();
             
-            // Обновляем в Firebase
             if (currentUser.id) {
                 database.ref('users/' + currentUser.id).update({
                     status: status,
@@ -3618,7 +2517,6 @@
                 });
             }
             
-            // Сохраняем профиль
             saveUserProfile();
         }
 
@@ -3654,12 +2552,12 @@
             const now = Date.now();
             const diff = now - timestamp;
             
-            if (diff < 60000) { // Менее минуты
+            if (diff < 60000) {
                 return 'только что';
-            } else if (diff < 3600000) { // Менее часа
+            } else if (diff < 3600000) {
                 const minutes = Math.floor(diff / 60000);
                 return `${minutes} ${pluralize(minutes, ['минуту', 'минуты', 'минут'])} назад`;
-            } else if (diff < 86400000) { // Менее суток
+            } else if (diff < 86400000) {
                 const hours = Math.floor(diff / 3600000);
                 return `${hours} ${pluralize(hours, ['час', 'часа', 'часов'])} назад`;
             } else {
@@ -3673,10 +2571,9 @@
             return words[(number % 100 > 4 && number % 100 < 20) ? 2 : cases[Math.min(number % 10, 5)]];
         }
 
-        // ========== ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ ==========
+        // ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ
         function saveUserProfile() {
             localStorage.setItem('current_user', JSON.stringify(currentUser));
-            // Сохраняем в Firebase
             saveUserToFirebase();
         }
 
@@ -3704,7 +2601,6 @@
             avatar.src = avatarUrl;
             preview.src = avatarUrl;
             
-            // Заполняем поля в модальном окне
             document.getElementById('profile-username').value = currentUser.username;
             document.getElementById('profile-role').value = currentUser.roleText || 
                 (currentUser.role === 'mentor' ? 'Наставник' : 'Молодой специалист');
@@ -3721,9 +2617,8 @@
             return `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=${color}&color=fff`;
         }
 
-        // ========== НАВИГАЦИЯ ==========
+        // НАВИГАЦИЯ
         function setupNavigation() {
-            // Обработка кликов по навигации
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -3736,170 +2631,85 @@
         }
         
         function showTab(tabName) {
-            console.log('======= ПЕРЕКЛЮЧЕНИЕ ВКЛАДКИ =======');
-            console.log('Показываем вкладку:', tabName);
-
-            // Сбрасываем текущий ответ при смене вкладки
             if (currentReply && tabName !== 'chat') {
                 cancelReply();
             }
             
-            // Получаем все вкладки и навигационные ссылки
             const tabs = document.querySelectorAll('.tab-content');
             const navLinks = document.querySelectorAll('.nav-link');
             
-            // Скрываем все вкладки
             tabs.forEach(tab => {
                 tab.classList.remove('active');
                 tab.style.display = 'none';
-                tab.style.opacity = '0';
-                tab.style.visibility = 'hidden';
-                console.log('Скрыта вкладка:', tab.id);
             });
             
-            // Убираем активный класс у всех кнопок
             navLinks.forEach(link => {
                 link.classList.remove('active');
             });
             
-            // Показываем выбранную вкладку
             const targetTab = document.getElementById(tabName + '-tab');
             if (targetTab) {
                 targetTab.classList.add('active');
                 targetTab.style.display = 'block';
-                targetTab.style.opacity = '1';
-                targetTab.style.visibility = 'visible';
-                console.log('Показана вкладка:', targetTab.id);
-                console.log('Стиль display:', targetTab.style.display);
-                console.log('Стиль visibility:', targetTab.style.visibility);
-            } else {
-                console.error('Вкладка не найдена:', tabName + '-tab');
             }
             
-            // Активируем соответствующую кнопку в навигации
             navLinks.forEach(link => {
                 if (link.getAttribute('onclick') && link.getAttribute('onclick').includes(tabName)) {
                     link.classList.add('active');
-                    console.log('Активирована кнопка:', link.textContent);
                 }
             });
-
             
-            
-            // Загружаем данные для вкладки
-            setTimeout(() => {
-                switch(tabName) {
-                    case 'chat':
-                        console.log('Загружаю чат...');
-                        loadUsers();
-                        loadMessages();
-                        break;
-                    case 'tasks':
-                        console.log('Загружаю задания...');
-                        loadTasksData();
-                        break;
-                    case 'events':
-                        console.log('Загружаю мероприятия...');
-                        loadEvents();
-                        break;
-                    case 'adaptation':
-                        console.log('Загружаю адаптацию...');
-                        loadMaterials();
-                        break;
-                }
-            }, 100);
-
             switch(tabName) {
-                    case 'chat':
-                        console.log('Загружаю чат...');
-                        loadUsers();
-                        loadMessages();
-                        break;
-                    case 'tasks':
-                        console.log('Загружаю задания...');
-                        // Принудительно загружаем задания
-                        if (Object.keys(tasks).length === 0) {
-                            database.ref('tasks').once('value').then(snapshot => {
-                                tasks = snapshot.val() || {};
-                                console.log('Загружены задания:', tasks);
-                                displayTasks();
-                            });
-                        } else {
+                case 'chat':
+                    loadUsers();
+                    loadMessages();
+                    break;
+                case 'tasks':
+                    if (Object.keys(tasks).length === 0) {
+                        database.ref('tasks').once('value').then(snapshot => {
+                            tasks = snapshot.val() || {};
                             displayTasks();
-                        }
-                        break;
-                    case 'events':
-                        console.log('Загружаю мероприятия...');
-                        loadEvents();
-                        break;
-                    case 'adaptation':
-                        console.log('Загружаю адаптацию...');
-                        loadMaterials();
-                        break;
-                }
+                        });
+                    } else {
+                        displayTasks();
+                    }
+                    break;
+                case 'events':
+                    loadEvents();
+                    break;
+                case 'adaptation':
+                    loadMaterials();
+                    break;
+            }
         }
 
-        function checkTabsStructure() {
-            console.log('======= ПРОВЕРКА СТРУКТУРЫ =======');
-            
-            // Проверяем основные элементы
-            const container = document.querySelector('.container');
-            console.log('Контейнер найден:', !!container);
-            
-            // Проверяем все вкладки
-            const tabs = ['chat', 'events', 'tasks', 'adaptation'];
-            tabs.forEach(tab => {
-                const element = document.getElementById(tab + '-tab');
-                console.log(`Вкладка ${tab}:`, element ? 'найдена' : 'НЕ НАЙДЕНА');
-                if (element) {
-                    console.log(`  - display: ${window.getComputedStyle(element).display}`);
-                    console.log(`  - visibility: ${window.getComputedStyle(element).visibility}`);
-                    console.log(`  - opacity: ${window.getComputedStyle(element).opacity}`);
-                    console.log(`  - классы: ${element.className}`);
-                }
-            });
-            
-            // Проверяем навигацию
-            const navLinks = document.querySelectorAll('.nav-link');
-            console.log('Найдено ссылок навигации:', navLinks.length);
-            
-            // Проверяем видимость контента
-            const activeTab = document.querySelector('.tab-content.active');
-            console.log('Активная вкладка:', activeTab ? activeTab.id : 'нет');
-        }
-        
-        // ========== АДМИН ПАНЕЛЬ ==========
+        // АДМИН ПАНЕЛЬ
         function checkAdminStatus() {
-            // Проверяем по username или по специальному полю isAdmin
             isAdmin = currentUser.username === 'admin' || currentUser.isAdmin === true;
             
             const adminPanel = document.getElementById('admin-panel');
             const createFormBtn = document.getElementById('show-create-form-btn');
             const createEventBtn = document.getElementById('show-create-event-btn');
+            const createEventForm = document.getElementById('create-event-form');
             
-            // Админ-панель чата
             if (adminPanel) {
                 adminPanel.style.display = isAdmin ? 'block' : 'none';
             }
             
-            // Кнопка создания задания
             if (createFormBtn) {
                 createFormBtn.style.display = (isAdmin || currentUser.role === 'mentor') ? 'block' : 'none';
             }
             
-            // Кнопка создания мероприятия
             if (createEventBtn) {
                 createEventBtn.style.display = isAdmin ? 'block' : 'none';
             }
             
-            // Форма создания мероприятия
-            const createEventForm = document.getElementById('create-event-form');
             if (createEventForm) {
                 createEventForm.style.display = isAdmin ? 'block' : 'none';
             }
         }
 
-        // ========== ЧАТ ==========
+        // ЧАТ
         function initChat() {
             loadUsers();
             loadMessages();
@@ -3911,7 +2721,6 @@
                 updateUsersList();
                 updateOnlineCount();
                 
-                // После загрузки пользователей обновляем форму заданий
                 if (document.getElementById('create-task-form')?.style.display === 'block') {
                     updateTaskFormForMentor();
                 }
@@ -3921,9 +2730,8 @@
         }
 
         function setupUsersListener() {
-            // Используем throttle для уменьшения частоты обновлений
             let lastUpdate = 0;
-            const UPDATE_DELAY = 2000; // 2 секунды
+            const UPDATE_DELAY = 2000;
             
             database.ref('users').on('value', (snapshot) => {
                 const now = Date.now();
@@ -3938,51 +2746,47 @@
 
         function updateUsersList() {
             const usersList = document.getElementById('users-list');
-                if (!usersList) return;
+            if (!usersList) return;
                 
-                usersList.innerHTML = '';
-                
-                let filteredUsers = Object.values(users);
-                
-                // Фильтрация по ролям и статусу
-                if (currentUsersTab === 'online') {
-                    filteredUsers = filteredUsers.filter(user => user.status === 'online');
-                } else if (currentUsersTab === 'mentors') {
-                    filteredUsers = filteredUsers.filter(user => user.role === 'mentor');
-                } else if (currentUsersTab === 'specialists') {
-                    filteredUsers = filteredUsers.filter(user => user.role === 'specialist');
-                }
-                // 'all' - показываем всех
-                
-                if (filteredUsers.length === 0) {
-                    usersList.innerHTML = `
-                        <div class="loading-status">
-                            <i class="fas fa-user-slash"></i> Нет пользователей
-                        </div>
-                    `;
-                    return;
-                }
-                
-                // Создаем только видимые элементы
-                const fragment = document.createDocumentFragment();
-                const maxUsers = 50; // Ограничиваем количество отображаемых пользователей
-                
-                filteredUsers.slice(0, maxUsers).forEach(user => {
-                    const userCard = createUserCardElement(user);
-                    fragment.appendChild(userCard);
-                });
-                
-                usersList.appendChild(fragment);
-                
-                // Если пользователей больше максимума, показываем уведомление
-                if (filteredUsers.length > maxUsers) {
-                    const moreCard = document.createElement('div');
-                    moreCard.className = 'user-card';
-                    moreCard.style.textAlign = 'center';
-                    moreCard.style.color = 'rgba(255,255,255,0.5)';
-                    moreCard.innerHTML = `<i class="fas fa-ellipsis-h"></i> Еще ${filteredUsers.length - maxUsers} пользователей`;
-                    usersList.appendChild(moreCard);
-                }
+            usersList.innerHTML = '';
+            
+            let filteredUsers = Object.values(users);
+            
+            if (currentUsersTab === 'online') {
+                filteredUsers = filteredUsers.filter(user => user.status === 'online');
+            } else if (currentUsersTab === 'mentors') {
+                filteredUsers = filteredUsers.filter(user => user.role === 'mentor');
+            } else if (currentUsersTab === 'specialists') {
+                filteredUsers = filteredUsers.filter(user => user.role === 'specialist');
+            }
+            
+            if (filteredUsers.length === 0) {
+                usersList.innerHTML = `
+                    <div class="loading-status">
+                        <i class="fas fa-user-slash"></i> Нет пользователей
+                    </div>
+                `;
+                return;
+            }
+            
+            const fragment = document.createDocumentFragment();
+            const maxUsers = 50;
+            
+            filteredUsers.slice(0, maxUsers).forEach(user => {
+                const userCard = createUserCardElement(user);
+                fragment.appendChild(userCard);
+            });
+            
+            usersList.appendChild(fragment);
+            
+            if (filteredUsers.length > maxUsers) {
+                const moreCard = document.createElement('div');
+                moreCard.className = 'user-card';
+                moreCard.style.textAlign = 'center';
+                moreCard.style.color = 'rgba(255,255,255,0.5)';
+                moreCard.innerHTML = `<i class="fas fa-ellipsis-h"></i> Еще ${filteredUsers.length - maxUsers} пользователей`;
+                usersList.appendChild(moreCard);
+            }
         }
 
         function createUserCardElement(user) {
@@ -3990,7 +2794,7 @@
             userCard.className = 'user-card';
 
             userCard.onclick = function(e) {
-                e.stopPropagation(); // Остановить всплытие, чтобы не конфликтовать с другими обработчиками
+                e.stopPropagation();
                 showUserProfile(user.id);
             };
             
@@ -4026,23 +2830,15 @@
         function showUserProfile(userId) {
             closeAllModals();
             const user = users[userId];
-            if (!user) {
-                console.error('Пользователь не найден:', userId);
-                return;
-            }
+            if (!user) return;
             
             currentViewedUser = user;
             
-            // Заполняем данные в модальном окне
             const modal = document.getElementById('user-profile-modal');
             
-            // Аватар
             document.getElementById('user-profile-avatar').src = user.avatar || getDefaultAvatar(user.username);
-            
-            // Имя
             document.getElementById('user-profile-name').textContent = user.username;
             
-            // Роль
             const roleElement = document.getElementById('user-profile-role');
             if (user.role === 'mentor') {
                 roleElement.innerHTML = '<span class="role-mentor" style="font-size: 14px; padding: 5px 12px;"><i class="fas fa-user-tie"></i> Наставник</span>';
@@ -4050,7 +2846,6 @@
                 roleElement.innerHTML = '<span class="role-specialist" style="font-size: 14px; padding: 5px 12px;"><i class="fas fa-user-graduate"></i> Молодой специалист</span>';
             }
             
-            // Статус
             const statusIndicator = document.getElementById('user-profile-status-indicator');
             const statusText = document.getElementById('user-profile-status-text');
             const lastSeenElement = document.getElementById('user-profile-last-seen');
@@ -4075,268 +2870,38 @@
                 lastSeenElement.textContent = '';
             }
             
-            // Должность
             document.getElementById('user-profile-position').textContent = user.position || 'Не указана';
-            
-            // Организация
             document.getElementById('user-profile-organization').textContent = user.organization || 'Не указана';
-            
-            // Очки
             document.getElementById('user-profile-points').textContent = user.points || 0;
             
-            // Выполненные задания
             const completedTasks = user.completedTasks ? user.completedTasks.length : 0;
             document.getElementById('user-profile-completed-tasks').textContent = `${completedTasks} заданий`;
             
-            // Показываем модальное окно
             modal.classList.add('active');
-            
-            // Подсвечиваем выбранную карточку пользователя
-            highlightSelectedUserCard(userId);
-
-            // Добавляем информацию о привязках
-            const mentorInfo = document.getElementById('mentor-info');
-            const menteesInfo = document.getElementById('mentees-info');
-            const bindActions = document.getElementById('bind-actions');
-            
-            if (mentorInfo && menteesInfo && bindActions) {
-                mentorInfo.style.display = 'none';
-                menteesInfo.style.display = 'none';
-                bindActions.style.display = 'none';
-                
-                // Для специалистов показываем наставника
-                if (user.role === 'specialist') {
-                    mentorInfo.style.display = 'block';
-                    if (user.mentorId) {
-                        const mentor = users[user.mentorId];
-                        document.getElementById('user-mentor-name').innerHTML = `
-                            ${mentor ? mentor.username : 'Неизвестный наставник'}
-                            <button class="btn btn-danger btn-sm" onclick="unbindFromMentor('${userId}')" style="margin-left: 10px; padding: 2px 8px; font-size: 11px;">
-                                <i class="fas fa-unlink"></i>
-                            </button>
-                        `;
-                    } else {
-                        document.getElementById('user-mentor-name').innerHTML = `
-                            Не назначен
-                            ${currentUser.role === 'mentor' ? `
-                                <button class="btn btn-primary btn-sm" onclick="bindAsMentor('${userId}')" style="margin-left: 10px; padding: 2px 8px; font-size: 11px;">
-                                    <i class="fas fa-link"></i> Стать наставником
-                                </button>
-                            ` : ''}
-                        `;
-                    }
-                }
-                
-                // Для наставников показываем специалистов
-                if (user.role === 'mentor') {
-                    menteesInfo.style.display = 'block';
-                    
-                    // Находим всех специалистов этого наставника
-                    const mentees = Object.values(users).filter(u => 
-                        u.role === 'specialist' && u.mentorId === user.id
-                    );
-                    
-                    if (mentees.length > 0) {
-                        const menteesList = mentees.map(mentee => `
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
-                                <span>${mentee.username}</span>
-                                <button class="btn btn-danger btn-sm" onclick="unbindMentee('${mentee.id}')">
-                                    <i class="fas fa-unlink"></i>
-                                </button>
-                            </div>
-                        `).join('');
-                        document.getElementById('user-mentees-list').innerHTML = menteesList;
-                    } else {
-                        document.getElementById('user-mentees-list').innerHTML = 'Нет привязанных специалистов';
-                    }
-                }
-                
-                // Показываем кнопки действий для текущего пользователя
-                if (currentUser.id !== user.id) {
-                    bindActions.style.display = 'block';
-                    
-                    // Скрываем кнопки в зависимости от ролей
-                    document.getElementById('bind-mentor-btn').style.display = 
-                        (currentUser.role === 'mentor' && user.role === 'specialist' && !user.mentorId) ? 'block' : 'none';
-                    
-                    document.getElementById('bind-specialist-btn').style.display = 
-                        (currentUser.role === 'specialist' && user.role === 'mentor') ? 'block' : 'none';
-                    
-                    document.getElementById('unbind-btn').style.display = 
-                        ((currentUser.role === 'mentor' && user.role === 'specialist' && user.mentorId === currentUser.id) ||
-                         (currentUser.role === 'specialist' && user.role === 'mentor' && currentUser.mentorId === user.id)) ? 'block' : 'none';
-                }
-            }
-        }
-
-        function bindAsMentor(specialistId) {
-            if (currentUser.role !== 'mentor') {
-                showAlert('Ошибка', 'error', 'Только наставники могут привязывать специалистов');
-                return;
-            }
-            
-            Swal.fire({
-                title: 'Привязать специалиста?',
-                text: 'Вы станете наставником для этого специалиста',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Привязать',
-                cancelButtonText: 'Отмена'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    database.ref(`users/${specialistId}`).update({
-                        mentorId: currentUser.id
-                    }).then(() => {
-                        // Обновляем локальные данные
-                        if (users[specialistId]) {
-                            users[specialistId].mentorId = currentUser.id;
-                        }
-                        
-                        showAlert('Успех!', 'success', 'Специалист привязан к вам');
-                        closeUserProfileModal();
-                    }).catch(error => {
-                        console.error('Ошибка привязки:', error);
-                        showAlert('Ошибка', 'error', 'Не удалось привязать специалиста');
-                    });
-                }
-            });
-        }
-
-        function bindMentorAction() {
-            if (currentUser.role !== 'mentor') {
-                showAlert('Ошибка', 'error', 'Только наставники могут привязывать специалистов');
-                return;
-            }
-            
-            if (!currentViewedUser) return;
-            
-            bindAsMentor(currentViewedUser.id);
-        }
-        
-        function bindSpecialistAction() {
-            // Специалист привязывается к наставнику
-            if (currentUser.role !== 'specialist') return;
-            
-            Swal.fire({
-                title: 'Привязаться к наставнику?',
-                text: `Вы привяжетесь к наставнику ${currentViewedUser.username}`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Привязаться',
-                cancelButtonText: 'Отмена'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    database.ref(`users/${currentUser.id}`).update({
-                        mentorId: currentViewedUser.id
-                    }).then(() => {
-                        currentUser.mentorId = currentViewedUser.id;
-                        saveUserProfile();
-                        showAlert('Успех!', 'success', 'Вы привязаны к наставнику');
-                        closeUserProfileModal();
-                    });
-                }
-            });
-        }
-        
-        function unbindFromMentor(specialistId) {
-            Swal.fire({
-                title: 'Отвязать специалиста?',
-                text: 'Вы больше не будете его наставником',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Отвязать',
-                cancelButtonText: 'Отмена'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    database.ref(`users/${specialistId}`).update({
-                        mentorId: null
-                    }).then(() => {
-                        if (users[specialistId]) {
-                            users[specialistId].mentorId = null;
-                        }
-                        showAlert('Успех!', 'success', 'Специалист отвязан');
-                        closeUserProfileModal();
-                    });
-                }
-            });
-        }
-        
-        function unbindMentee(menteeId) {
-            unbindFromMentor(menteeId);
-        }
-        
-        function unbindUserAction() {
-            if (currentUser.role === 'specialist' && currentUser.mentorId === currentViewedUser.id) {
-                // Специалист отвязывается от наставника
-                database.ref(`users/${currentUser.id}`).update({
-                    mentorId: null
-                }).then(() => {
-                    currentUser.mentorId = null;
-                    saveUserProfile();
-                    showAlert('Успех!', 'success', 'Вы отвязаны от наставника');
-                    closeUserProfileModal();
-                });
-            } else if (currentUser.role === 'mentor' && currentViewedUser.role === 'specialist') {
-                // Наставник отвязывает специалиста
-                unbindFromMentor(currentViewedUser.id);
-            }
         }
         
         function closeUserProfileModal() {
             document.getElementById('user-profile-modal').classList.remove('active');
             currentViewedUser = null;
-            
-            // Убираем подсветку с карточки пользователя
-            removeUserCardHighlight();
-        }
-        
-        function highlightSelectedUserCard(userId) {
-            // Убираем подсветку со всех карточек
-            removeUserCardHighlight();
-            
-            // Находим карточку пользователя и добавляем класс active
-            const userCards = document.querySelectorAll('.user-card');
-            userCards.forEach(card => {
-                // Проверяем, содержит ли карточка нужного пользователя (по аватару или имени)
-                const img = card.querySelector('img');
-                const username = card.querySelector('.user-details-name')?.textContent || '';
-                
-                if (img && img.src.includes(encodeURIComponent(users[userId]?.username)) || 
-                    username.includes(users[userId]?.username)) {
-                    card.classList.add('active');
-                }
-            });
-        }
-        
-        function removeUserCardHighlight() {
-            document.querySelectorAll('.user-card.active').forEach(card => {
-                card.classList.remove('active');
-            });
         }
         
         function startPrivateChatWithCurrentUser() {
             if (!currentViewedUser) return;
             
-            // Закрываем модальное окно
-            closeUserProfileModal();
-            
-            // Если пользователь - это вы сами
             if (currentViewedUser.id === currentUser.id) {
                 openProfileModal();
                 return;
             }
             
-            // Показываем индикатор начала чата в основном чате
+            closeUserProfileModal();
+            
             showAlert(`Чат с ${currentViewedUser.username}`, 'info', 
                 `Теперь вы можете написать сообщение для ${currentViewedUser.username} в основном чате.`);
             
-            // Можно добавить упоминание в поле ввода
             const messageInput = document.getElementById('message-input');
             if (messageInput) {
                 messageInput.value = `${currentViewedUser.username}, `;
                 messageInput.focus();
-                
-                // Прокручиваем к полю ввода
                 messageInput.scrollIntoView({ behavior: 'smooth' });
             }
         }
@@ -4363,7 +2928,6 @@
         function showUsersTab(tab) {
             currentUsersTab = tab;
             
-            // Обновляем активные кнопки
             document.querySelectorAll('.users-tabs .tab-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
@@ -4372,14 +2936,6 @@
             updateUsersList();
         }
 
-        function startPrivateChat(userId) {
-            const user = users[userId];
-            if (!user) return;
-            
-            showAlert(`Начало чата с ${user.username}`, 'info', 'Функция личных сообщений в разработке');
-        }
-
-        // ========== ОТОБРАЖЕНИЕ ПРИКРЕПЛЕННОГО ФАЙЛА ==========
         function updateAttachmentPreview() {
             const preview = document.getElementById('attachment-preview');
             const icon = document.getElementById('attachment-icon');
@@ -4389,13 +2945,9 @@
             if (currentAttachment) {
                 preview.classList.add('visible');
                 
-                // Устанавливаем иконку в зависимости от типа файла
                 let iconClass = getFileIcon(currentAttachment.name);
-                
                 icon.innerHTML = `<i class="${iconClass}"></i>`;
                 filename.textContent = currentAttachment.name;
-                
-                // Форматируем размер файла
                 filesize.textContent = formatFileSize(currentAttachment.size);
             } else {
                 preview.classList.remove('visible');
@@ -4403,7 +2955,6 @@
         }
 
         function removeAttachment() {
-            // Очищаем временные URL если есть
             if (currentAttachment && currentAttachment.tempUrl) {
                 URL.revokeObjectURL(currentAttachment.tempUrl);
             }
@@ -4412,7 +2963,6 @@
             updateAttachmentPreview();
             showAlert('Вложение удалено', 'info');
         }
-
 
         function loadMessages() {
             database.ref('messages').limitToLast(50).on('value', snapshot => {
@@ -4436,15 +2986,13 @@
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
 
-        // ========== ОБНОВЛЕННАЯ ФУНКЦИЯ СОЗДАНИЯ ЭЛЕМЕНТА СООБЩЕНИЯ ==========
         function createMessageElement(message, isCurrentUser) {
             const div = document.createElement('div');
             div.className = `message ${isCurrentUser ? 'sent' : ''}`;
             div.dataset.messageId = message.id;
             
-            // Определяем timestamp
             const timestamp = message.firebaseTimestamp || message.timestamp || message.localTimestamp || Date.now();
-            const displayTime = getSamaraTime(timestamp);
+            const displayTime = formatTime(timestamp);
             
             let attachmentHtml = '';
             if (message.attachment) {
@@ -4460,18 +3008,15 @@
                     `;
                 }
                 else if (message.attachment.type === 'video') {
-                    // Используем правильный MIME-тип для тега video
                     const mimeType = message.attachment.fileType || getVideoMimeType(message.attachment.name);
                     
                     attachmentHtml = `
                         <div class="message-attachment">
                             <video controls 
                                    style="max-width: 300px; max-height: 300px; border-radius: 10px; background: #000;"
-                                   preload="metadata"
-                                   poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMxYTFhMmUiLz48cGF0aCBkPSJNMTEwIDE1MEwyMjAgMTUwTTE1MCAxMTBMMTUwIDE5MCIgc3Ryb2tlPSIjNDM2MWVlIiBzdHJva2Utd2lkdGg9IjEwIiBmaWxsPSJub25lIi8+PC9zdmc+">
+                                   preload="metadata">
                                 <source src="${message.attachment.data}" type="${mimeType}">
-                                Ваш браузер не поддерживает видео. 
-                                <a href="${message.attachment.data}" download="${message.attachment.name}">Скачать видео</a>
+                                Ваш браузер не поддерживает видео.
                             </video>
                             <div style="font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 5px;">
                                 <i class="fas fa-video"></i> ${message.attachment.name}
@@ -4502,7 +3047,6 @@
                 }
             }
             
-            // Добавляем превью ответа, если есть
             let replyPreviewHtml = '';
             if (message.replyTo) {
                 const reply = message.replyPreview || {};
@@ -4517,7 +3061,6 @@
                 `;
             }
             
-            // Определяем роль для отображения
             let roleBadge = '';
             const user = users[message.userId];
             if (user) {
@@ -4559,7 +3102,6 @@
             return div;
         }
 
-        // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
         function getVideoMimeType(filename) {
             const ext = filename.split('.').pop().toLowerCase();
             const mimeTypes = {
@@ -4596,16 +3138,14 @@
             return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
         }
 
-        // Добавьте вспомогательную функцию для экранирования HTML
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
 
-        // Добавьте функцию обработки клика на кнопку "Ответить"
         function handleReplyClick(event, messageId, senderName, messageText) {
-            event.stopPropagation(); // Останавливаем всплытие события
+            event.stopPropagation();
             setReplyTo(messageId, senderName, messageText);
         }
 
@@ -4614,7 +3154,6 @@
             if (messageElement) {
                 messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 
-                // Добавляем подсветку на несколько секунд
                 messageElement.style.backgroundColor = 'rgba(67, 97, 238, 0.2)';
                 messageElement.style.transition = 'background-color 0.3s';
                 
@@ -4633,29 +3172,19 @@
                 return;
             }
             
-            // Проверяем, настроен ли GitHub
-            // if (!isGitHubConfigured()) {
-            //     showAlert('GitHub не настроен!', 'error', 'Настройте GitHub в настройках профиля для загрузки файлов.');
-            //     return;
-            // }
-            
-            // Скрываем панель эмодзи если открыта
             if (emojiPickerVisible) {
                 document.getElementById('emoji-picker').style.display = 'none';
                 emojiPickerVisible = false;
             }
             
-            // Используем серверное время Firebase
             const serverTimestamp = firebase.database.ServerValue.TIMESTAMP;
             
             let finalAttachment = null;
             
-            // Если есть вложение, загружаем его на GitHub
             if (currentAttachment && currentAttachment.fileObject) {
                 try {
-                    // Показываем индикатор загрузки
                     Swal.fire({
-                        title: 'Загрузка файла на GitHub...',
+                        title: 'Загрузка файла...',
                         text: 'Пожалуйста, подождите',
                         allowOutsideClick: false,
                         didOpen: () => {
@@ -4663,32 +3192,23 @@
                         }
                     });
                     
-                    // Загружаем файл на GitHub
-                    const gitHubAttachment = await uploadAttachmentViaGitHub(currentAttachment.fileObject);
-                    
-                    if (gitHubAttachment) {
-                        finalAttachment = gitHubAttachment;
-                        Swal.close();
-                    } else {
-                        throw new Error('Ошибка загрузки на GitHub');
-                    }
+                    finalAttachment = currentAttachment;
+                    Swal.close();
                     
                 } catch (error) {
-                    console.error('Ошибка загрузки на GitHub:', error);
+                    console.error('Ошибка загрузки:', error);
                     Swal.fire({
                         title: 'Ошибка загрузки',
-                        text: 'Не удалось загрузить файл на GitHub. Попробуйте еще раз.',
+                        text: 'Не удалось загрузить файл.',
                         icon: 'error',
                         confirmButtonText: 'OK'
                     });
-                    return; // Прерываем отправку
+                    return;
                 }
             } else if (currentAttachment && currentAttachment.external) {
-                // Если вложение уже загружено на GitHub
                 finalAttachment = currentAttachment;
             }
             
-            // Создаем сообщение
             const message = {
                 id: generateId(),
                 text: text,
@@ -4704,7 +3224,6 @@
                 timezone: 'UTC+4'
             };
             
-            // Добавляем информацию об ответе, если есть
             if (currentReply) {
                 message.replyTo = currentReply.id;
                 message.replyPreview = {
@@ -4713,13 +3232,11 @@
                 };
             }
             
-            // Немедленно очищаем поле ввода
             input.value = '';
             currentAttachment = null;
             updateAttachmentPreview();
             cancelReply();
             
-            // Визуальная обратная связь
             input.style.transition = 'none';
             input.style.height = 'auto';
             
@@ -4730,13 +3247,11 @@
                 sendBtn.disabled = true;
             }
             
-            // Отправляем сообщение
             try {
                 await database.ref('messages/' + message.id).set(message);
                 
                 input.focus();
                 
-                // Быстро показываем уведомление
                 Swal.fire({
                     title: '✓',
                     text: 'Сообщение отправлено',
@@ -4750,16 +3265,13 @@
                 
             } catch (error) {
                 console.error('Ошибка отправки сообщения:', error);
-                
                 showAlert('Ошибка отправки', 'error', 'Попробуйте еще раз');
                 
-                // Восстанавливаем кнопку
                 if (sendBtn) {
                     sendBtn.innerHTML = originalHTML;
                     sendBtn.disabled = false;
                 }
             } finally {
-                // Всегда восстанавливаем кнопку
                 if (sendBtn) {
                     setTimeout(() => {
                         sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
@@ -4822,14 +3334,11 @@
             });
         }
 
-        // ========== ЗАДАНИЯ ==========
+        // ЗАДАНИЯ
         function initTasks() {
-            // Слушатель для обновлений заданий
             database.ref('tasks').on('value', snapshot => {
                 tasks = snapshot.val() || {};
-                console.log('Обновлены задания:', tasks);
                 
-                // Обновляем список заданий, если вкладка активна
                 const tasksTab = document.getElementById('tasks-tab');
                 if (tasksTab && tasksTab.classList.contains('active')) {
                     displayTasks();
@@ -4838,7 +3347,6 @@
             
             setupTaskFileUpload();
             
-            // Добавляем обработчик для формы создания задания
             const createFormBtn = document.getElementById('show-create-form-btn');
             if (createFormBtn) {
                 createFormBtn.addEventListener('click', function() {
@@ -4846,78 +3354,37 @@
                 });
             }
             
-            // Загружаем начальные данные
             database.ref('tasks').once('value').then(snapshot => {
                 tasks = snapshot.val() || {};
-                console.log('Начальная загрузка заданий:', tasks);
             });
-        }
-
-        function loadTasksData() {
-            database.ref('tasks').on('value', snapshot => {
-                tasks = snapshot.val() || {};
-                displayTasks();
-            });
-        }
-
-        function initEvents() {
-            loadEvents();
         }
 
         function displayTasks() {
             const tasksList = document.getElementById('tasks-list');
-            if (!tasksList) {
-                console.error('Элемент tasks-list не найден!');
-                return;
-            }
+            if (!tasksList) return;
             
             tasksList.innerHTML = '';
             
             const tasksArray = Object.entries(tasks).map(([id, task]) => ({ id, ...task }));
             
-            console.log('Все задания в базе:', tasksArray);
-            console.log('Текущий пользователь:', currentUser);
-            
-            // Фильтрация заданий в зависимости от роли
             let filteredTasks = tasksArray;
             
             if (currentUser.role === 'specialist') {
-                // Специалист видит: общие задания + задания назначенные ему
                 filteredTasks = tasksArray.filter(task => {
                     const isAssignedToMe = task.assignedTo === currentUser.id;
                     const isGeneralTask = !task.assignedTo || task.assignedTo === 'all';
                     const isMentorTask = task.createdBy === currentUser.mentorId;
                     
-                    console.log(`Задание "${task.title}":`, {
-                        assignedTo: task.assignedTo,
-                        isAssignedToMe,
-                        isGeneralTask,
-                        createdBy: task.createdBy,
-                        myMentorId: currentUser.mentorId,
-                        isMentorTask
-                    });
-                    
                     return isAssignedToMe || isGeneralTask || isMentorTask;
                 });
             } else if (currentUser.role === 'mentor') {
-                // Наставник видит: все задания, которые он создал + задания для его специалистов
                 filteredTasks = tasksArray.filter(task => {
                     const isCreatedByMe = task.createdBy === currentUser.id;
                     const isForMySpecialist = task.assignedTo && getMenteeIds().includes(task.assignedTo);
                     
-                    console.log(`Задание "${task.title}":`, {
-                        createdBy: task.createdBy,
-                        isCreatedByMe,
-                        assignedTo: task.assignedTo,
-                        isForMySpecialist,
-                        myMentees: getMenteeIds()
-                    });
-                    
                     return isCreatedByMe || isForMySpecialist;
                 });
             }
-            
-            console.log('Отфильтрованные задания:', filteredTasks);
             
             if (filteredTasks.length === 0) {
                 tasksList.innerHTML = `
@@ -4930,14 +3397,12 @@
                 return;
             }
             
-            // Сортируем: активные сверху, затем по дате создания
             filteredTasks.sort((a, b) => {
                 if (a.status === 'active' && b.status !== 'active') return -1;
                 if (a.status !== 'active' && b.status === 'active') return 1;
                 return (b.createdAt || 0) - (a.createdAt || 0);
             });
             
-            // Создаем карточки заданий
             filteredTasks.forEach(task => {
                 try {
                     const taskCard = createTaskCard(task);
@@ -4952,8 +3417,6 @@
 
         function createTaskCard(task) {
             try {
-                console.log('Создание карточки для задания:', task.id, task.title);
-                
                 const card = document.createElement('div');
                 
                 let statusClass = 'active';
@@ -4981,7 +3444,6 @@
                 card.className = `task-card ${statusClass}`;
                 card.style.borderLeft = `4px solid ${statusColor}`;
                 
-                // Определяем, для кого задание
                 let assignedInfo = '';
                 if (task.assignedTo && task.assignedTo !== 'all') {
                     const user = users[task.assignedTo];
@@ -5058,11 +3520,10 @@
                     ${attachmentsHtml}
                     
                     <div class="task-actions" id="task-actions-${task.id}">
-                        <!-- Кнопки будут добавлены динамически -->
+                        <!-- Кнопки добавляются динамически -->
                     </div>
                 `;
                 
-                // Добавляем кнопки действий
                 updateTaskActions(task.id, task);
                 
                 return card;
@@ -5083,25 +3544,21 @@
             const isMyTask = task.createdBy === currentUser.id;
             const isCompleted = currentUser.completedTasks?.includes(taskId);
             
-            // Проверяем, может ли текущий пользователь сдать отчет
             const canSubmitReport = currentUser.role === 'specialist' && 
                 (isAssignedToMe || isGeneralTask) && 
                 task.status === 'active' && 
                 !isCompleted;
             
-            // Проверяем, может ли текущий пользователь проверить отчет
             const canReviewReport = currentUser.role === 'mentor' && 
                 (task.createdBy === currentUser.id || getMenteeIds().includes(task.assignedTo)) &&
                 task.report?.status === 'submitted';
             
-            // Всегда показываем кнопку "Подробнее"
             actionsDiv.innerHTML += `
                 <button class="btn btn-primary" onclick="viewTask('${taskId}')">
                     <i class="fas fa-eye"></i> Подробнее
                 </button>
             `;
             
-            // Для специалиста: сдать отчет
             if (canSubmitReport) {
                 actionsDiv.innerHTML += `
                     <button class="btn btn-success" onclick="openReportModal('${taskId}')">
@@ -5110,7 +3567,6 @@
                 `;
             }
             
-            // Для специалиста: отметить выполненным (для простых заданий без отчета)
             if (currentUser.role === 'specialist' && !task.report && !isCompleted) {
                 actionsDiv.innerHTML += `
                     <button class="btn btn-success" onclick="completeTask('${taskId}')">
@@ -5119,7 +3575,6 @@
                 `;
             }
             
-            // Для наставника: проверить отчет
             if (canReviewReport) {
                 actionsDiv.innerHTML += `
                     <button class="btn btn-warning" onclick="reviewReport('${taskId}')">
@@ -5128,7 +3583,6 @@
                 `;
             }
             
-            // Для создателя задания или админа: удалить
             if (isMyTask || isAdmin) {
                 actionsDiv.innerHTML += `
                     <button class="btn btn-danger" onclick="deleteTask('${taskId}')">
@@ -5136,16 +3590,6 @@
                     </button>
                 `;
             }
-        }
-
-        function getReportStatusText(status) {
-            const statusMap = {
-                'pending': 'Ожидает отчета',
-                'submitted': 'Отчет сдан',
-                'approved': 'Принято',
-                'rejected': 'Возвращено на доработку'
-            };
-            return statusMap[status] || status;
         }
         
         function getMenteeIds() {
@@ -5155,7 +3599,6 @@
                 .filter(u => u.role === 'specialist' && u.mentorId === currentUser.id)
                 .map(u => u.id);
             
-            console.log('ID специалистов наставника:', mentees);
             return mentees;
         }
 
@@ -5171,8 +3614,6 @@
             if (form.style.display === 'none' || form.style.display === '') {
                 form.style.display = 'block';
                 btn.innerHTML = '<i class="fas fa-times"></i> Отмена';
-                
-                // Обновляем список специалистов для наставника
                 updateTaskFormForMentor();
             } else {
                 form.style.display = 'none';
@@ -5283,7 +3724,6 @@
                 return;
             }
 
-            // Для наставников: выбор специалиста
             let assignedTo = null;
             if (currentUser.role === 'mentor') {
                 const specialistSelect = document.getElementById('task-specialist');
@@ -5300,7 +3740,7 @@
                 reward: reward,
                 attachments: taskFiles,
                 createdBy: currentUser.id,
-                assignedTo: assignedTo, // Новое поле
+                assignedTo: assignedTo,
                 assignedBy: currentUser.id,
                 createdAt: Date.now(),
                 status: 'active',
@@ -5326,7 +3766,6 @@
                 });
         }
 
-        // Обновляем форму создания задания для наставников
         function updateTaskFormForMentor() {
             const assignGroup = document.getElementById('task-assign-group');
             if (!assignGroup) return;
@@ -5334,7 +3773,6 @@
             if (currentUser.role === 'mentor') {
                 assignGroup.style.display = 'block';
                 
-                // Загружаем список специалистов наставника
                 const mentees = Object.values(users).filter(u => 
                     u.role === 'specialist' && u.mentorId === currentUser.id
                 );
@@ -5375,7 +3813,6 @@
             
             const modal = document.getElementById('task-modal');
             
-            // Заполняем информацию о задании
             document.getElementById('task-modal-title').textContent = task.title || 'Без названия';
             
             const rewardElement = document.getElementById('task-modal-reward');
@@ -5384,7 +3821,6 @@
             
             document.getElementById('task-modal-description').textContent = task.description || 'Нет описания';
             
-            // Отображаем вложения
             const attachmentsDiv = document.getElementById('task-modal-attachments');
             attachmentsDiv.innerHTML = '';
             
@@ -5409,11 +3845,9 @@
                 `;
             }
             
-            // Кнопки действий
             const actionsDiv = document.getElementById('task-modal-actions');
             actionsDiv.innerHTML = '';
             
-            // Добавляем информацию о создателе
             const creator = users[task.createdBy];
             if (creator) {
                 actionsDiv.innerHTML += `
@@ -5471,7 +3905,6 @@
                 if (result.isConfirmed) {
                     currentUser.completedTasks.push(taskId);
                     
-                    // Начисляем очки
                     const task = tasks[taskId];
                     const pointsMatch = task.reward.match(/\d+/);
                     if (pointsMatch) {
@@ -5523,7 +3956,6 @@
             reportFile = null;
         }
         
-        // Обработка выбора файла отчета
         document.getElementById('report-file')?.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -5564,18 +3996,15 @@
                         let fileUrl = '';
                         let fileName = '';
                         
-                        // Если есть файл, загружаем его на GitHub
                         if (reportFile) {
-                            const result = await uploadAttachmentViaGitHub(reportFile);
-                            if (result && result.success) {
-                                fileUrl = result.url;
-                                fileName = result.originalName;
-                            } else {
-                                throw new Error('Ошибка загрузки файла');
-                            }
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                fileUrl = e.target.result;
+                                fileName = reportFile.name;
+                            };
+                            reader.readAsDataURL(reportFile);
                         }
                         
-                        // Обновляем задание в базе данных
                         const updateData = {
                             'report': {
                                 fileUrl: fileUrl,
@@ -5589,7 +4018,6 @@
                         
                         await database.ref(`tasks/${currentReportTask.id}`).update(updateData);
                         
-                        // Обновляем локальные данные
                         if (tasks[currentReportTask.id]) {
                             tasks[currentReportTask.id].report = {
                                 ...tasks[currentReportTask.id].report,
@@ -5607,7 +4035,7 @@
                 if (result.isConfirmed) {
                     showAlert('Успех!', 'success', 'Отчет отправлен на проверку');
                     closeReportModal();
-                    displayTasks(); // Обновляем список заданий
+                    displayTasks();
                 }
             });
         }
@@ -5625,7 +4053,6 @@
             document.getElementById('review-comment').textContent = report.comment || 'Нет комментария';
             document.getElementById('mentor-feedback').value = report.mentorFeedback || '';
             
-            // Отображаем прикрепленный файл
             const attachmentDiv = document.getElementById('review-attachment');
             if (report.fileUrl && report.fileName) {
                 attachmentDiv.innerHTML = `
@@ -5664,14 +4091,12 @@
                     'status': 'completed'
                 });
                 
-                // Обновляем локальные данные
                 if (tasks[taskId]) {
                     tasks[taskId].report.status = 'approved';
                     tasks[taskId].report.mentorFeedback = feedback;
                     tasks[taskId].status = 'completed';
                 }
                 
-                // Начисляем очки специалисту
                 const task = tasks[taskId];
                 const specialistId = task.assignedTo;
                 if (specialistId && users[specialistId]) {
@@ -5724,70 +4149,34 @@
                 showAlert('Ошибка', 'error', 'Не удалось обновить статус отчета');
             }
         }
-        
-        function requestChanges() {
-            // Аналогично rejectReport, но с другим статусом
-            rejectReport();
-        }
 
-        // ========== МЕРОПРИЯТИЯ ==========
-        function loadEvents() {
-             if (DEBUG) console.log('loadEvents() вызвана');
-    
-            // Сначала отписываемся от предыдущих слушателей
-            if (database.ref('events').off) {
-                database.ref('events').off();
-            }
-            
-            // Затем подписываемся заново
-            database.ref('events').on('value', snapshot => {
-                events = snapshot.val() || {};
-                
-                if (DEBUG) {
-                    console.log('Данные мероприятий получены:', events);
-                    console.log('Количество мероприятий:', Object.keys(events).length);
-                }
-                
-                // Обновляем список мероприятий только если вкладка видима
-                const eventsTab = document.getElementById('events-tab');
-                if (eventsTab && eventsTab.classList.contains('active')) {
-                    displayEvents();
-                }
-                console.log('eventsTab display:', window.getComputedStyle(eventsTab).display);
-                console.log('eventsTab visibility:', window.getComputedStyle(eventsTab).visibility);
-                console.log('eventsTab opacity:', window.getComputedStyle(eventsTab).opacity);
-                
-                // Всегда загружаем участников для формы создания
-                if (document.getElementById('create-event-form') && 
-                    document.getElementById('create-event-form').style.display !== 'none') {
-                    loadEventParticipants();
-                }
-            }, error => {
-                console.error('Ошибка загрузки мероприятий:', error);
-            });
-        }
-
+        // МЕРОПРИЯТИЯ
         function initEventsSystem() {
             loadEvents();
         }
 
+        function loadEvents() {
+            database.ref('events').on('value', snapshot => {
+                events = snapshot.val() || {};
+                
+                const eventsTab = document.getElementById('events-tab');
+                if (eventsTab && eventsTab.classList.contains('active')) {
+                    displayEvents();
+                }
+                
+                if (document.getElementById('create-event-form') && 
+                    document.getElementById('create-event-form').style.display !== 'none') {
+                    loadEventParticipants();
+                }
+            });
+        }
+
         function displayEvents() {
-            console.log('displayEvents вызвана, events:', events);
-    
             const eventsList = document.getElementById('events-list');
-            
-            if (!eventsList) {
-                console.error('Элемент events-list не найден! Проверьте HTML структуру.');
-                return;
-            }
-            console.log('eventsList display:', window.getComputedStyle(eventsList).display);
-            console.log('eventsList visibility:', window.getComputedStyle(eventsList).visibility);
-            
-            console.log('eventsList найден:', eventsList);
+            if (!eventsList) return;
             
             eventsList.innerHTML = '';
             
-            // Преобразуем объект в массив
             const eventsArray = [];
             for (const id in events) {
                 if (events.hasOwnProperty(id)) {
@@ -5798,13 +4187,9 @@
                 }
             }
             
-            console.log('eventsArray:', eventsArray);
-            
-            // Сортируем по дате (ближайшие сверху)
             eventsArray.sort((a, b) => (a.datetime || 0) - (b.datetime || 0));
             
             if (eventsArray.length === 0) {
-                console.log('Нет мероприятий для отображения');
                 eventsList.innerHTML = `
                     <div class="event-card" style="text-align: center; padding: 40px; grid-column: 1 / -1;">
                         <div style="font-size: 48px; color: rgba(255,255,255,0.2); margin-bottom: 20px;">
@@ -5819,20 +4204,13 @@
                 return;
             }
             
-            console.log('Создаю карточки для', eventsArray.length, 'мероприятий');
-            
-            eventsArray.forEach((event, index) => {
-                console.log('Создаю карточку для мероприятия', index + 1, ':', event.title);
+            eventsArray.forEach((event) => {
                 const eventCard = createEventCard(event);
                 eventsList.appendChild(eventCard);
             });
-            
-            console.log('Отображение мероприятий завершено');
         }
 
         function createEventCard(event) {
-            console.log('createEventCard для:', event.title);
-            
             const now = Date.now();
             const eventTime = event.datetime || 0;
             
@@ -5855,9 +4233,8 @@
             
             const participantsCount = event.participants ? Object.keys(event.participants).length : 0;
             
-            // Создаем простую карточку БЕЗ сложных стилей
             const card = document.createElement('div');
-            card.className = 'event-card-simple'; // Используем новый класс
+            card.className = 'event-card-simple';
             card.setAttribute('data-event-id', event.id);
             card.style.cssText = `
                 background: rgba(255, 255, 255, 0.05);
@@ -5909,32 +4286,7 @@
                     </div>
                 </div>
             `;
-
-            // Добавляем счетчик сообщений если они есть
-            database.ref('eventMessages/' + event.id).once('value').then(snapshot => {
-                const messages = snapshot.val() || {};
-                const count = Object.keys(messages).length;
-                
-                if (count > 0) {
-                    const badge = document.createElement('span');
-                    badge.className = 'event-chat-badge';
-                    badge.style.cssText = `
-                        position: absolute;
-                        top: 10px;
-                        left: 10px;
-                        background: var(--accent);
-                        color: white;
-                        padding: 2px 6px;
-                        border-radius: 10px;
-                        font-size: 11px;
-                        z-index: 10;
-                    `;
-                    badge.textContent = count;
-                    card.querySelector('div:first-child').appendChild(badge);
-                }
-            });
                             
-            console.log('Карточка создана:', card);
             return card;
         }
 
@@ -5945,7 +4297,7 @@
             participantsDiv.innerHTML = '';
             
             Object.values(users).forEach(user => {
-                if (user.id === currentUser.id) return; // Не показываем себя
+                if (user.id === currentUser.id) return;
                 
                 const participantDiv = document.createElement('div');
                 participantDiv.className = 'participant-checkbox';
@@ -5983,17 +4335,14 @@
                 form.style.display = 'block';
                 btn.innerHTML = '<i class="fas fa-times"></i> Отмена';
                 
-                // Загружаем участников только когда форма видима
                 loadEventParticipants();
                 
-                // Устанавливаем минимальную дату (сегодня)
                 const now = new Date();
                 const minDate = now.toISOString().slice(0, 16);
                 const datetimeInput = document.getElementById('event-datetime');
                 if (datetimeInput) {
                     datetimeInput.min = minDate;
                     
-                    // Предустанавливаем дату (через 2 часа)
                     const futureDate = new Date(now.getTime() + 2 * 60 * 60 * 1000);
                     datetimeInput.value = futureDate.toISOString().slice(0, 16);
                 }
@@ -6014,13 +4363,11 @@
             document.getElementById('event-image-preview-img').style.display = 'none';
             eventImage = null;
             
-            // Сбрасываем чекбоксы участников
             document.querySelectorAll('#event-participants input[type="checkbox"]').forEach(cb => {
                 cb.checked = false;
             });
         }
 
-        // Обработка загрузки изображения мероприятия
         document.getElementById('event-image')?.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -6063,18 +4410,15 @@
                 return;
             }
             
-            // Собираем выбранных участников
             const selectedParticipants = [];
             document.querySelectorAll('#event-participants input[type="checkbox"]:checked').forEach(cb => {
                 selectedParticipants.push(cb.value);
             });
             
-            // Добавляем создателя автоматически
             if (!selectedParticipants.includes(currentUser.id)) {
                 selectedParticipants.push(currentUser.id);
             }
             
-            // Преобразуем в объект для Firebase
             const participantsObj = {};
             selectedParticipants.forEach(id => {
                 participantsObj[id] = true;
@@ -6117,7 +4461,6 @@
             const now = Date.now();
             const isParticipant = event.participants && event.participants[currentUser.id];
             
-            // Обложка
             const image = document.getElementById('event-modal-image');
             if (event.image) {
                 image.src = event.image;
@@ -6126,7 +4469,6 @@
                 image.style.display = 'none';
             }
             
-            // Статус
             const status = document.getElementById('event-modal-status');
             let statusText = 'Предстоящее';
             let statusClass = 'status-upcoming';
@@ -6142,7 +4484,6 @@
             status.textContent = statusText;
             status.className = statusClass;
             
-            // Основная информация
             document.getElementById('event-modal-title').textContent = event.title;
             
             const eventDate = new Date(event.datetime);
@@ -6158,7 +4499,6 @@
             document.getElementById('event-modal-location').textContent = event.location || 'Место не указано';
             document.getElementById('event-modal-description').textContent = event.description || 'Нет описания';
             
-            // Участники
             const participantsDiv = document.getElementById('event-modal-participants');
             participantsDiv.innerHTML = '';
             
@@ -6166,7 +4506,6 @@
             document.getElementById('event-modal-participants-count').textContent = `${participantsCount} участников`;
             document.getElementById('event-modal-participants-count-2').textContent = participantsCount;
             
-            // Показываем аватары участников
             if (event.participants) {
                 Object.keys(event.participants).forEach(userId => {
                     const user = users[userId];
@@ -6191,13 +4530,11 @@
                 });
             }
             
-            // Загружаем количество сообщений
             database.ref('eventMessages/' + eventId).once('value').then(snapshot => {
                 const messages = snapshot.val() || {};
                 updateEventChatCounter(eventId, Object.keys(messages).length);
             });
             
-            // Кнопки действий
             const actionsDiv = document.getElementById('event-modal-actions');
             actionsDiv.innerHTML = '';
             
@@ -6223,7 +4560,6 @@
                 `;
             }
             
-            // Сбрасываем вкладки к информации
             switchEventTab('info');
             
             modal.classList.add('active');
@@ -6292,7 +4628,6 @@
         }
 
         function switchEventTab(tabName) {
-            // Убираем активный класс у всех вкладок и кнопок
             document.querySelectorAll('.event-tab-content').forEach(tab => {
                 tab.style.display = 'none';
                 tab.classList.remove('active');
@@ -6302,7 +4637,6 @@
                 btn.classList.remove('active');
             });
             
-            // Активируем выбранную вкладку и кнопку
             const tabContent = document.getElementById('event-tab-' + tabName);
             const tabBtn = document.querySelector(`.event-tab-btn[data-tab="${tabName}"]`);
             
@@ -6315,7 +4649,6 @@
                 tabBtn.classList.add('active');
             }
             
-            // Если открыли вкладку чата, загружаем сообщения
             if (tabName === 'chat' && currentEventId) {
                 loadEventMessages(currentEventId);
             }
@@ -6323,7 +4656,6 @@
         
         function loadEventMessages(eventId) {
             if (eventMessagesListener) {
-                // Отписываемся от предыдущего слушателя
                 database.ref('eventMessages/' + eventId).off();
             }
             
@@ -6332,7 +4664,6 @@
             
             messagesContainer.innerHTML = '<div class="loading-status"><i class="fas fa-spinner fa-spin"></i> Загрузка сообщений...</div>';
             
-            // Подписываемся на сообщения мероприятия
             eventMessagesListener = database.ref('eventMessages/' + eventId)
                 .limitToLast(50)
                 .on('value', snapshot => {
@@ -6366,7 +4697,6 @@
                 messagesContainer.appendChild(messageElement);
             });
             
-            // Прокручиваем вниз
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
         
@@ -6376,13 +4706,9 @@
             
             const isCurrentUser = message.userId === currentUser?.id;
             
-            // Определяем timestamp
             const timestamp = message.firebaseTimestamp || message.timestamp || message.localTimestamp || Date.now();
+            const displayTime = formatTime(timestamp);
             
-            // Форматируем время для отображения (Самара UTC+4)
-            const displayTime = formatSamaraDateTime(timestamp);
-            
-            // Определяем роль для отображения
             let roleBadge = '';
             const user = users[message.userId];
             if (user) {
@@ -6449,11 +4775,9 @@
                 timezone: 'UTC+4'
             };
             
-            // Немедленно очищаем поле ввода
             input.value = '';
             input.style.height = 'auto';
             
-            // Визуальная обратная связь
             const sendBtn = document.querySelector('#event-tab-chat .btn-primary');
             if (sendBtn) {
                 const originalHTML = sendBtn.innerHTML;
@@ -6472,7 +4796,6 @@
                 })
                 .catch(error => {
                     console.error('Ошибка отправки сообщения:', error);
-                    // Восстанавливаем текст при ошибке
                     input.value = text;
                     showAlert('Ошибка отправки', 'error', 'Попробуйте еще раз');
                 });
@@ -6483,35 +4806,10 @@
             if (counter) {
                 counter.textContent = count;
             }
-            
-            // Также обновляем счетчик на карточке мероприятия
-            const eventCard = document.querySelector(`.event-card-simple[data-event-id="${eventId}"]`);
-            if (eventCard) {
-                const existingBadge = eventCard.querySelector('.event-chat-badge');
-                if (existingBadge) {
-                    existingBadge.textContent = count;
-                } else if (count > 0) {
-                    const badge = document.createElement('span');
-                    badge.className = 'event-chat-badge';
-                    badge.style.cssText = `
-                        position: absolute;
-                        top: 10px;
-                        left: 10px;
-                        background: var(--accent);
-                        color: white;
-                        padding: 2px 6px;
-                        border-radius: 10px;
-                        font-size: 11px;
-                    `;
-                    badge.textContent = count;
-                    eventCard.querySelector('div:first-child').appendChild(badge);
-                }
-            }
         }
         
-        // ========== АДАПТАЦИЯ ==========
+        // АДАПТАЦИЯ
         function loadMaterials() {
-            // Заглушка - можно расширить функционал
             const materialsList = document.getElementById('materials-list');
             materialsList.innerHTML = `
                 <div class="material-item">
@@ -6544,16 +4842,14 @@
             `;
         }
 
-        // ========== ВЛОЖЕНИЯ ==========
+        // ВЛОЖЕНИЯ
         function openAttachmentModal() {
             document.getElementById('attachment-modal').classList.add('active');
-            // Сбрасываем тип вложения при открытии
             attachmentType = 'image';
             document.getElementById('file-input').accept = 'image/*';
         }
 
         function closeAttachmentModal() {
-            // Очищаем временные URL если есть
             if (currentAttachment && currentAttachment.tempUrl) {
                 URL.revokeObjectURL(currentAttachment.tempUrl);
             }
@@ -6562,7 +4858,6 @@
             document.getElementById('preview-container').innerHTML = '';
             document.getElementById('file-input').value = '';
             
-            // Скрываем секцию предпросмотра в модалке
             const previewSection = document.getElementById('attachment-preview');
             if (previewSection) {
                 previewSection.style.display = 'none';
@@ -6573,7 +4868,6 @@
             attachmentType = type;
             const input = document.getElementById('file-input');
             
-            // Устанавливаем правильные accept атрибуты
             switch(type) {
                 case 'image':
                     input.accept = 'image/*,.jpg,.jpeg,.png,.gif,.webp,.bmp';
@@ -6582,7 +4876,6 @@
                     input.accept = '.gif,image/gif';
                     break;
                 case 'video':
-                    // Разрешаем основные видеоформаты с явным указанием
                     input.accept = 'video/mp4,video/webm,video/ogg,video/quicktime,.mp4,.webm,.ogg,.mov,.avi,.wmv';
                     break;
                 case 'file':
@@ -6594,15 +4887,13 @@
         function previewAttachment(file) {
             if (!file) return;
             
-            // Базовые проверки размера (можно настроить лимиты)
-            const maxSize = 50 * 1024 * 1024; // 50MB максимум
+            const maxSize = 50 * 1024 * 1024;
             if (file.size > maxSize) {
                 showAlert(`Файл слишком большой! Максимум ${Math.round(maxSize/1024/1024)}MB`, 'error');
                 document.getElementById('file-input').value = '';
                 return;
             }
             
-            // Проверяем MIME-тип для видео
             if (attachmentType === 'video') {
                 const videoTypes = [
                     'video/mp4', 'video/webm', 'video/ogg', 
@@ -6618,18 +4909,16 @@
             
             const reader = new FileReader();
             reader.onload = function(e) {
-                // Сохраняем временное превью для отображения
                 currentAttachment = {
                     type: attachmentType,
-                    data: e.target.result, // Data URL для превью
+                    data: e.target.result,
                     name: file.name,
                     size: file.size,
                     fileType: file.type,
-                    fileObject: file, // Сохраняем объект файла для загрузки на GitHub
-                    external: false // Помечаем как не загруженный на GitHub
+                    fileObject: file,
+                    external: false
                 };
                 
-                // Обновляем предпросмотр в модальном окне
                 const previewContainer = document.getElementById('preview-container');
                 const previewSection = document.getElementById('attachment-preview');
                 
@@ -6665,9 +4954,6 @@
                             <div style="font-size: 12px; color: rgba(255,255,255,0.7);">
                                 ${(file.size / 1024 / 1024).toFixed(2)} MB • ${file.type}
                             </div>
-                            <div style="font-size: 11px; color: var(--primary); margin-top: 5px;">
-                                <i class="fab fa-github"></i> Файл будет загружен на GitHub
-                            </div>
                         `;
                         
                         videoContainer.appendChild(videoIcon);
@@ -6698,9 +4984,6 @@
                             <div style="font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 5px;">
                                 ${(file.size / 1024).toFixed(1)} KB
                             </div>
-                            <div style="font-size: 11px; color: var(--primary); margin-top: 5px;">
-                                <i class="fab fa-github"></i> Файл будет загружен на GitHub
-                            </div>
                         `;
                         
                         previewContainer.appendChild(fileContainer);
@@ -6724,10 +5007,8 @@
                 return;
             }
             
-            // Обновляем предпросмотр над полем ввода сообщения
             updateAttachmentPreview();
             
-            // Очищаем временные URL если есть
             if (currentAttachment.tempUrl) {
                 URL.revokeObjectURL(currentAttachment.tempUrl);
                 delete currentAttachment.tempUrl;
@@ -6736,11 +5017,10 @@
             closeAttachmentModal();
             showAlert('Файл прикреплен!', 'success');
             
-            // Фокусируемся на поле ввода сообщения
             document.getElementById('message-input').focus();
         }
 
-        // ========== ПРОФИЛЬ ==========
+        // ПРОФИЛЬ
         function openProfileModal() {
             closeAllModals();
             document.getElementById('profile-modal').classList.add('active');
@@ -6794,7 +5074,7 @@
             showAlert('Профиль сохранен!', 'success');
         }
 
-        // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
+        // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
         function generateId() {
             return Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         }
@@ -6842,9 +5122,12 @@
             document.getElementById('task-modal').classList.remove('active');
         }
 
-        function setupEventListeners() {
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        }
 
-            // Мобильное меню
+        function setupEventListeners() {
             const menuToggle = document.getElementById('menu-toggle');
             const navLinks = document.querySelector('.nav-links');
             
@@ -6853,7 +5136,6 @@
                     e.stopPropagation();
                     navLinks.classList.toggle('active');
                     
-                    // Закрываем другие открытые меню
                     const usersSidebar = document.querySelector('.users-sidebar');
                     if (usersSidebar && usersSidebar.classList.contains('active')) {
                         usersSidebar.classList.remove('active');
@@ -6866,14 +5148,12 @@
                     }
                 });
                 
-                // Закрытие меню при клике на ссылку
                 document.querySelectorAll('.nav-link').forEach(link => {
                     link.addEventListener('click', () => {
                         navLinks.classList.remove('active');
                     });
                 });
                 
-                // Закрытие меню при клике вне его
                 document.addEventListener('click', function(event) {
                     if (!event.target.closest('.nav-links') && !event.target.closest('#menu-toggle')) {
                         navLinks.classList.remove('active');
@@ -6881,7 +5161,6 @@
                 });
             }
             
-            // Переключение боковой панели пользователей на мобильных
             const toggleUsersBtn = document.getElementById('toggle-users-btn');
             if (toggleUsersBtn) {
                 toggleUsersBtn.addEventListener('click', function(e) {
@@ -6892,14 +5171,12 @@
                         usersSidebar.classList.toggle('hidden-mobile');
                     }
                     
-                    // Закрываем меню навигации если открыто
                     if (navLinks && navLinks.classList.contains('active')) {
                         navLinks.classList.remove('active');
                     }
                 });
             }
             
-            // Отправка сообщения по Enter (с улучшенной обработкой)
             document.getElementById('message-input').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
@@ -6907,419 +5184,99 @@
                 }
             });
             
-            // Авторазмер textarea с оптимизацией
             document.getElementById('message-input').addEventListener('input', function() {
                 this.style.height = 'auto';
                 this.style.height = Math.min(this.scrollHeight, 150) + 'px';
             });
 
-            // Закрытие панели эмодзи при клике вне её
             document.addEventListener('click', function(event) {
-                const picker = document.getElementById('emoji-picker');
-                const emojiBtn = document.querySelector('.chat-btn .fa-smile')?.closest('.chat-btn');
-                
-                if (picker && emojiPickerVisible && 
-                    !picker.contains(event.target) && 
-                    !emojiBtn?.contains(event.target)) {
-                    picker.style.display = 'none';
+                const emojiPicker = document.getElementById('emoji-picker');
+                if (emojiPicker && emojiPicker.style.display === 'block' && 
+                    !event.target.closest('#emoji-picker') && 
+                    !event.target.closest('.chat-btn[onclick*="toggleEmojiPicker"]')) {
+                    emojiPicker.style.display = 'none';
                     emojiPickerVisible = false;
                 }
             });
-
-            // Оптимизация для быстрой отправки
-            const messageInput = document.getElementById('message-input');
-            let lastSendTime = 0;
-            const SEND_COOLDOWN = 500; // 500ms cooldown
-
-            messageInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    const now = Date.now();
-                    if (now - lastSendTime < SEND_COOLDOWN) {
-                        e.preventDefault();
-                        return;
+            
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    const navLinks = document.querySelector('.nav-links');
+                    if (navLinks) {
+                        navLinks.classList.remove('active');
+                        navLinks.style.display = 'flex';
                     }
-                    lastSendTime = now;
-                }
-            });
-            
-            // Обработка выбора файла в модалке
-            document.getElementById('file-input').addEventListener('change', function(e) {
-                if (e.target.files && e.target.files[0]) {
-                    previewAttachment(e.target.files[0]);
-                }
-            });
-            
-            // Закрытие модальных окон при клике вне их
-            document.addEventListener('click', function(event) {
-                if (event.target.classList.contains('modal')) {
-                    event.target.classList.remove('active');
-                }
-            });
-
-            // Очистка статусов при закрытии страницы
-            window.addEventListener('unload', function() {
-                if (currentUser && currentUser.id) {
-                    setUserStatus('offline');
-                }
-            });
-
-            // Отправка сообщения в чате мероприятия по Enter
-            document.getElementById('event-chat-input')?.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendEventMessage();
-                }
-            });
-            
-            // Авторазмер textarea в чате мероприятия
-            document.getElementById('event-chat-input')?.addEventListener('input', function() {
-                this.style.height = 'auto';
-                this.style.height = Math.min(this.scrollHeight, 100) + 'px';
-            });
-
-            // Делегирование событий для кнопок "Ответить" (обработка динамически созданных элементов)
-            document.addEventListener('click', function(event) {
-                // Проверяем, была ли нажата кнопка "Ответить"
-                const replyBtn = event.target.closest('.reply-btn');
-                if (replyBtn) {
-                    // Предотвращаем всплытие, чтобы не конфликтовать с другими обработчиками
-                    event.preventDefault();
-                    event.stopPropagation();
                     
-                    // Находим ближайшее сообщение
-                    const messageElement = replyBtn.closest('.message');
-                    if (messageElement) {
-                        const messageId = messageElement.dataset.messageId;
-                        const messageText = messageElement.querySelector('.message-text')?.textContent || '';
-                        const senderName = messageElement.querySelector('.message-sender')?.textContent || 'Пользователь';
-                        
-                        // Убираем роль из имени отправителя
-                        const cleanSenderName = senderName.replace(/<span[^>]*>.*?<\/span>/g, '').trim();
-                        
-                        setReplyTo(messageId, cleanSenderName, messageText);
+                    const usersSidebar = document.querySelector('.users-sidebar');
+                    if (usersSidebar) {
+                        usersSidebar.classList.remove('hidden-mobile');
+                        usersSidebar.classList.remove('active');
                     }
                 }
             });
-
-            // Отмена ответа по Escape
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && currentReply) {
-                    cancelReply();
-                }
-            });
-
-            document.getElementById('message-input').addEventListener('input', function() {
-                this.style.height = 'auto';
-                this.style.height = Math.min(this.scrollHeight, 150) + 'px';
-                
-                // Прокручиваем к полю ввода на мобильных
-                if (window.innerWidth <= 768) {
-                    this.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            });
-
-            window.addEventListener('load', adjustUsersListHeight);
-            window.addEventListener('resize', adjustUsersListHeight);
-
-            setTimeout(adjustUsersListHeight, 500);
-
-            document.getElementById('current-avatar')?.addEventListener('click', function(e) {
-                e.stopPropagation();
-                openProfileModal(); // Открывает профиль текущего пользователя
-            });
-
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    closeAllModals();
-                }
-            });
         }
 
-        function adjustUsersListHeight() {
-            if (window.innerWidth <= 768) {
-                const usersSidebar = document.querySelector('.users-sidebar');
-                const usersList = document.getElementById('users-list');
-                const headerHeight = document.querySelector('.users-header').offsetHeight;
-                const tabsHeight = document.querySelector('.users-tabs').offsetHeight;
-                
-                if (usersSidebar && usersList) {
-                    const availableHeight = window.innerHeight * 0.4 - headerHeight - tabsHeight - 30;
-                    usersList.style.maxHeight = Math.max(150, availableHeight) + 'px';
-                    usersList.style.height = Math.max(150, availableHeight) + 'px';
-                }
+        function toggleUsersSidebar() {
+            const usersSidebar = document.querySelector('.users-sidebar');
+            if (usersSidebar) {
+                usersSidebar.classList.toggle('hidden-mobile');
             }
         }
 
-        // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ВРЕМЕНИ ==========
-        function getSamaraTime(timestamp) {
-            // Преобразуем timestamp в объект Date
-            const date = new Date(timestamp);
-            
-            // Получаем время в UTC
-            const utcHours = date.getUTCHours();
-            const utcMinutes = date.getUTCMinutes();
-            const utcSeconds = date.getUTCSeconds();
-            
-            // Добавляем 4 часа для Самары (UTC+4)
-            const samaraHours = (utcHours + 4) % 24;
-            
-            // Форматируем время для отображения
-            const hours = samaraHours.toString().padStart(2, '0');
-            const minutes = utcMinutes.toString().padStart(2, '0');
-            
-            return `${hours}:${minutes}`;
-        }
-        
-        function formatSamaraDateTime(timestamp) {
-            const date = new Date(timestamp);
-            
-            // Добавляем 4 часа для Самары
-            const samaraTime = new Date(date.getTime() + (4 * 60 * 60 * 1000));
-            
-            const today = new Date();
-            const isToday = samaraTime.toDateString() === today.toDateString();
-            
-            const hours = samaraTime.getUTCHours().toString().padStart(2, '0');
-            const minutes = samaraTime.getUTCMinutes().toString().padStart(2, '0');
-            
-            if (isToday) {
-                return `${hours}:${minutes}`;
-            } else {
-                const day = samaraTime.getUTCDate();
-                const month = samaraTime.toLocaleDateString('ru-RU', { month: 'short' });
-                return `${hours}:${minutes} • ${day} ${month}`;
-            }
+        function closeAllModals() {
+            document.querySelectorAll('.modal.active').forEach(modal => {
+                modal.classList.remove('active');
+            });
         }
 
-        // ========== ФУНКЦИИ ДЛЯ ЭМОДЗИ ==========
         function toggleEmojiPicker() {
             const picker = document.getElementById('emoji-picker');
-            if (picker.style.display === 'none') {
+            if (picker.style.display === 'none' || picker.style.display === '') {
                 picker.style.display = 'block';
                 emojiPickerVisible = true;
-                showEmojiCategory('smileys');
             } else {
                 picker.style.display = 'none';
                 emojiPickerVisible = false;
             }
         }
-        
-        function showEmojiCategory(category, eventParam = null) {
-            const grid = document.getElementById('emoji-grid');
-            const emojis = emojiCategories[category] || [];
+
+        function showEmojiCategory(category) {
+            const emojiGrid = document.getElementById('emoji-grid');
+            if (!emojiGrid) return;
             
-            grid.innerHTML = '';
+            emojiGrid.innerHTML = '';
             
-            // Обновляем активную категорию
             document.querySelectorAll('.emoji-category-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             
-            // Используем eventParam если он передан, иначе ищем кнопку по категории
-            let targetButton = eventParam ? eventParam.currentTarget || eventParam.target : 
-                document.querySelector(`.emoji-category-btn[onclick*="${category}"]`);
+            event.target.classList.add('active');
             
-            if (targetButton) {
-                targetButton.classList.add('active');
-            }
-            
-            // Добавляем эмодзи в сетку
+            const emojis = emojiCategories[category] || [];
             emojis.forEach(emoji => {
                 const btn = document.createElement('button');
                 btn.className = 'emoji-btn';
                 btn.textContent = emoji;
-                btn.onclick = () => insertEmoji(emoji);
-                grid.appendChild(btn);
+                btn.onclick = function() {
+                    insertEmoji(emoji);
+                };
+                emojiGrid.appendChild(btn);
             });
         }
-        
+
         function insertEmoji(emoji) {
             const input = document.getElementById('message-input');
-            const cursorPos = input.selectionStart;
-            const textBefore = input.value.substring(0, cursorPos);
-            const textAfter = input.value.substring(cursorPos);
+            const start = input.selectionStart;
+            const end = input.selectionEnd;
+            const text = input.value;
             
-            input.value = textBefore + emoji + textAfter;
+            input.value = text.substring(0, start) + emoji + text.substring(end);
             input.focus();
-            input.selectionStart = input.selectionEnd = cursorPos + emoji.length;
+            input.selectionStart = input.selectionEnd = start + emoji.length;
             
-            // Автоматически скрываем панель эмодзи после выбора
-            document.getElementById('emoji-picker').style.display = 'none';
-            emojiPickerVisible = false;
+            input.style.height = 'auto';
+            input.style.height = Math.min(input.scrollHeight, 150) + 'px';
         }
-        // Функция для переключения боковой панели:
-        function toggleUsersSidebar() {
-            const usersSidebar = document.querySelector('.users-sidebar');
-            if (usersSidebar) {
-                usersSidebar.classList.toggle('active');
-                usersSidebar.classList.toggle('hidden-mobile');
-            }
-        }
-        
-        // обработка изменения ориентации экрана:
-        window.addEventListener('orientationchange', function() {
-            // Принудительный пересчет layout
-            setTimeout(function() {
-                window.dispatchEvent(new Event('resize'));
-                
-                // Закрываем все открытые меню
-                document.querySelector('.nav-links')?.classList.remove('active');
-                document.querySelector('.users-sidebar')?.classList.remove('active');
-                document.getElementById('emoji-picker').style.display = 'none';
-                emojiPickerVisible = false;
-            }, 300);
-        });
-        
-        // Оптимизация для мобильных устройств - предотвращаем скролл страницы при открытой клавиатуре
-        let viewport = document.querySelector("meta[name=viewport]");
-        if (viewport) {
-            viewport.setAttribute("content", viewport.content + ", height=" + window.innerHeight);
-        }
-        
-        // виртуальная клавиатура
-        window.addEventListener('resize', function() {
-            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
-                window.setTimeout(function() {
-                    document.activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 300);
-            }
-        });
-
-        async function uploadToGitHub(file, path = 'uploads/') {
-            try {
-                // Генерируем уникальное имя файла
-                const timestamp = Date.now();
-                const randomStr = Math.random().toString(36).substring(7);
-                const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-                const fileName = `${timestamp}_${randomStr}_${safeFileName}`;
-                const fullPath = `${path}${fileName}`;
-                
-                // Преобразуем файл в base64
-                const base64Content = await fileToBase64(file);
-                
-                // Формируем URL для API GitHub
-                const apiUrl = `https://api.github.com/repos/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repo}/contents/${fullPath}`;
-                
-                // Создаем данные для запроса
-                const requestData = {
-                    message: `Upload ${fileName}`,
-                    content: base64Content.split(',')[1], // Убираем префикс data:*/*;base64,
-                    branch: GITHUB_CONFIG.branch
-                };
-
-                let reverse_Token = GITHUB_CONFIG.token.split('').reverse().join('');
-                
-                // Отправляем запрос на GitHub
-                const response = await fetch(apiUrl, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `token ${reverse_Token}`,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(requestData)
-                });
-                
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(`GitHub API error: ${response.status} - ${errorData.message || 'Unknown error'}`);
-                }
-                
-                const data = await response.json();
-                
-                // URL через jsDelivr
-                const jsDelivrUrl = `https://cdn.jsdelivr.net/gh/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repo}@${GITHUB_CONFIG.branch}/${fullPath}`;
-                
-                // Raw URL GitHub
-                const rawUrl = data.content.download_url;
-                
-                return {
-                    success: true,
-                    url: jsDelivrUrl,
-                    rawUrl: rawUrl,
-                    fileName: fileName,
-                    originalName: file.name,
-                    size: file.size,
-                    type: file.type,
-                    path: fullPath,
-                    sha: data.content.sha // SHA хеш файла для возможного обновления
-                };
-                
-            } catch (error) {
-                console.error('Ошибка загрузки на GitHub:', error);
-                return {
-                    success: false,
-                    error: error.message
-                };
-            }
-        }
-
-        // Вспомогательная функция для преобразования файла в base64
-        function fileToBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
-            });
-        }
-
-        // Функция для получения jsDelivr URL (если файл уже загружен)
-        function getJsDelivrUrl(filePath) {
-            return `https://cdn.jsdelivr.net/gh/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repo}@${GITHUB_CONFIG.branch}/${filePath}`;
-        }
-
-        // Функция для загрузки вложения через GitHub
-        async function uploadAttachmentViaGitHub(file) {
-            try {
-                // Загружаем файл на GitHub
-                const result = await uploadToGitHub(file);
-                
-                if (result.success) {
-                    // Возвращаем данные вложения
-                    return {
-                        type: getFileTypeFromExtension(file.name),
-                        data: result.url, // Используем jsDelivr URL
-                        name: result.originalName,
-                        size: result.size,
-                        external: true, // Помечаем как внешнюю ссылку
-                        uploaded: true,
-                        githubUrl: result.url,
-                        rawUrl: result.rawUrl // Сохраняем URL к raw файлу на GitHub
-                    };
-                } else {
-                    throw new Error(result.error);
-                }
-            } catch (error) {
-                console.error('Ошибка загрузки:', error);
-                throw error; // Пробрасываем ошибку выше
-            }
-        }
-
-        // Определяем тип файла по расширению
-        function getFileTypeFromExtension(filename) {
-            const ext = filename.toLowerCase().split('.').pop();
-            
-            if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(ext)) {
-                return 'image';
-            } else if (['mp4', 'webm', 'ogg', 'mov', 'avi', 'wmv'].includes(ext)) {
-                return 'video';
-            } else {
-                return 'file';
-            }
-        }
-
-        function closeAllModals() {
-            const modals = document.querySelectorAll('.modal.active');
-            modals.forEach(modal => {
-                modal.classList.remove('active');
-            });
-        }
-
-        document.addEventListener('click', function(event) {
-            if (event.target.classList.contains('modal') && event.target.id === 'user-profile-modal') {
-                closeUserProfileModal();
-            }
-        });
     </script>
 </body>
 </html>
