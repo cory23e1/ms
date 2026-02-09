@@ -3783,6 +3783,8 @@
                     console.log('Активирована кнопка:', link.textContent);
                 }
             });
+
+            
             
             // Загружаем данные для вкладки
             setTimeout(() => {
@@ -3806,6 +3808,35 @@
                         break;
                 }
             }, 100);
+
+            switch(tabName) {
+                    case 'chat':
+                        console.log('Загружаю чат...');
+                        loadUsers();
+                        loadMessages();
+                        break;
+                    case 'tasks':
+                        console.log('Загружаю задания...');
+                        // Принудительно загружаем задания
+                        if (Object.keys(tasks).length === 0) {
+                            database.ref('tasks').once('value').then(snapshot => {
+                                tasks = snapshot.val() || {};
+                                console.log('Загружены задания:', tasks);
+                                displayTasks();
+                            });
+                        } else {
+                            displayTasks();
+                        }
+                        break;
+                    case 'events':
+                        console.log('Загружаю мероприятия...');
+                        loadEvents();
+                        break;
+                    case 'adaptation':
+                        console.log('Загружаю адаптацию...');
+                        loadMaterials();
+                        break;
+                }
         }
 
         function checkTabsStructure() {
@@ -4793,9 +4824,20 @@
 
         // ========== ЗАДАНИЯ ==========
         function initTasks() {
-            loadTasksData();
+            // Слушатель для обновлений заданий
+            database.ref('tasks').on('value', snapshot => {
+                tasks = snapshot.val() || {};
+                console.log('Обновлены задания:', tasks);
+                
+                // Обновляем список заданий, если вкладка активна
+                const tasksTab = document.getElementById('tasks-tab');
+                if (tasksTab && tasksTab.classList.contains('active')) {
+                    displayTasks();
+                }
+            });
+            
             setupTaskFileUpload();
-
+            
             // Добавляем обработчик для формы создания задания
             const createFormBtn = document.getElementById('show-create-form-btn');
             if (createFormBtn) {
@@ -4803,9 +4845,13 @@
                     setTimeout(updateTaskFormForMentor, 100);
                 });
             }
+            
+            // Загружаем начальные данные
+            database.ref('tasks').once('value').then(snapshot => {
+                tasks = snapshot.val() || {};
+                console.log('Начальная загрузка заданий:', tasks);
+            });
         }
-
-        
 
         function loadTasksData() {
             database.ref('tasks').on('value', snapshot => {
@@ -4820,125 +4866,210 @@
 
         function displayTasks() {
             const tasksList = document.getElementById('tasks-list');
-            if (!tasksList) return;
+            if (!tasksList) {
+                console.error('Элемент tasks-list не найден!');
+                return;
+            }
             
             tasksList.innerHTML = '';
             
             const tasksArray = Object.entries(tasks).map(([id, task]) => ({ id, ...task }));
             
-            // Фильтруем задания в зависимости от роли
+            console.log('Все задания в базе:', tasksArray);
+            console.log('Текущий пользователь:', currentUser);
+            
+            // Фильтрация заданий в зависимости от роли
             let filteredTasks = tasksArray;
             
             if (currentUser.role === 'specialist') {
                 // Специалист видит: общие задания + задания назначенные ему
-                filteredTasks = tasksArray.filter(task => 
-                    !task.assignedTo || 
-                    task.assignedTo === currentUser.id ||
-                    task.assignedTo === 'all'
-                );
+                filteredTasks = tasksArray.filter(task => {
+                    const isAssignedToMe = task.assignedTo === currentUser.id;
+                    const isGeneralTask = !task.assignedTo || task.assignedTo === 'all';
+                    const isMentorTask = task.createdBy === currentUser.mentorId;
+                    
+                    console.log(`Задание "${task.title}":`, {
+                        assignedTo: task.assignedTo,
+                        isAssignedToMe,
+                        isGeneralTask,
+                        createdBy: task.createdBy,
+                        myMentorId: currentUser.mentorId,
+                        isMentorTask
+                    });
+                    
+                    return isAssignedToMe || isGeneralTask || isMentorTask;
+                });
             } else if (currentUser.role === 'mentor') {
                 // Наставник видит: все задания, которые он создал + задания для его специалистов
-                filteredTasks = tasksArray.filter(task => 
-                    task.createdBy === currentUser.id ||
-                    (task.assignedTo && getMenteeIds().includes(task.assignedTo))
-                );
+                filteredTasks = tasksArray.filter(task => {
+                    const isCreatedByMe = task.createdBy === currentUser.id;
+                    const isForMySpecialist = task.assignedTo && getMenteeIds().includes(task.assignedTo);
+                    
+                    console.log(`Задание "${task.title}":`, {
+                        createdBy: task.createdBy,
+                        isCreatedByMe,
+                        assignedTo: task.assignedTo,
+                        isForMySpecialist,
+                        myMentees: getMenteeIds()
+                    });
+                    
+                    return isCreatedByMe || isForMySpecialist;
+                });
             }
             
-            // Сортируем: активные сверху
+            console.log('Отфильтрованные задания:', filteredTasks);
+            
+            if (filteredTasks.length === 0) {
+                tasksList.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
+                        <i class="fas fa-tasks fa-3x" style="margin-bottom: 20px;"></i>
+                        <h3>Нет доступных заданий</h3>
+                        <p>Создайте задание или дождитесь назначения</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Сортируем: активные сверху, затем по дате создания
             filteredTasks.sort((a, b) => {
                 if (a.status === 'active' && b.status !== 'active') return -1;
                 if (a.status !== 'active' && b.status === 'active') return 1;
                 return (b.createdAt || 0) - (a.createdAt || 0);
             });
             
+            // Создаем карточки заданий
             filteredTasks.forEach(task => {
-                const taskCard = createTaskCard(task);
-                tasksList.appendChild(taskCard);
+                try {
+                    const taskCard = createTaskCard(task);
+                    if (taskCard) {
+                        tasksList.appendChild(taskCard);
+                    }
+                } catch (error) {
+                    console.error('Ошибка создания карточки задания:', error, task);
+                }
             });
         }
 
         function createTaskCard(task) {
-            const isCompleted = currentUser.completedTasks?.includes(task.id);
-            const card = document.createElement('div');
-
-            let statusClass = 'active';
-            let statusText = 'Активно';
-            
-            if (task.status === 'completed') {
-                statusClass = 'completed';
-                statusText = 'Завершено';
-            } else if (task.report?.status === 'submitted') {
-                statusClass = 'submitted';
-                statusText = 'Ожидает проверки';
-            }
-
-            card.className = `task-card ${statusClass}`;
-
-             // Определяем, для кого задание
-            let assignedInfo = '';
-            if (task.assignedTo) {
-                const user = users[task.assignedTo];
-                if (user) {
-                    assignedInfo = `<small style="color: var(--primary); display: block; margin-top: 5px;">
-                        <i class="fas fa-user"></i> Для: ${user.username}
-                    </small>`;
+            try {
+                console.log('Создание карточки для задания:', task.id, task.title);
+                
+                const card = document.createElement('div');
+                
+                let statusClass = 'active';
+                let statusText = 'Активно';
+                let statusColor = '#4361ee';
+                
+                if (task.status === 'completed') {
+                    statusClass = 'completed';
+                    statusText = 'Завершено';
+                    statusColor = '#4cc9f0';
+                } else if (task.report?.status === 'submitted') {
+                    statusClass = 'submitted';
+                    statusText = 'Ожидает проверки';
+                    statusColor = '#f8961e';
+                } else if (task.report?.status === 'rejected') {
+                    statusClass = 'submitted';
+                    statusText = 'Возвращено на доработку';
+                    statusColor = '#e63946';
+                } else if (task.report?.status === 'approved') {
+                    statusClass = 'completed';
+                    statusText = 'Проверено';
+                    statusColor = '#4cc9f0';
                 }
-            }
-            
-            let attachmentsHtml = '';
-            if (task.attachments && task.attachments.length > 0) {
-                attachmentsHtml = `
-                    <div class="mb-10">
-                        <small style="color: rgba(255,255,255,0.5);">
-                            <i class="fas fa-paperclip"></i> ${task.attachments.length} файлов
-                        </small>
-                    </div>
-                `;
-            }
-            
-            let reportStatus = '';
-            if (task.report) {
-                const statusColors = {
-                    'pending': 'rgba(255,255,255,0.3)',
-                    'submitted': 'var(--warning)',
-                    'approved': 'var(--success)',
-                    'rejected': 'var(--danger)'
-                };
                 
-                reportStatus = `
-                    <div style="margin-top: 10px;">
-                        <span style="background: ${statusColors[task.report.status] || 'rgba(255,255,255,0.3)'}; 
-                              color: white; padding: 3px 8px; border-radius: 10px; font-size: 11px;">
-                            ${getReportStatusText(task.report.status)}
+                card.className = `task-card ${statusClass}`;
+                card.style.borderLeft = `4px solid ${statusColor}`;
+                
+                // Определяем, для кого задание
+                let assignedInfo = '';
+                if (task.assignedTo && task.assignedTo !== 'all') {
+                    const user = users[task.assignedTo];
+                    if (user) {
+                        const roleBadge = user.role === 'mentor' ? 
+                            '<span class="role-mentor" style="margin-left: 5px;"><i class="fas fa-user-tie"></i> Наставник</span>' : 
+                            '<span class="role-specialist" style="margin-left: 5px;"><i class="fas fa-user-graduate"></i> Специалист</span>';
+                        
+                        assignedInfo = `<div style="margin-top: 5px; font-size: 12px; color: rgba(255,255,255,0.7);">
+                            <i class="fas fa-user"></i> Для: ${user.username} ${roleBadge}
+                        </div>`;
+                    }
+                } else if (task.assignedTo === 'all') {
+                    assignedInfo = `<div style="margin-top: 5px; font-size: 12px; color: rgba(255,255,255,0.7);">
+                        <i class="fas fa-users"></i> Для: Все специалисты
+                    </div>`;
+                }
+                
+                let attachmentsHtml = '';
+                if (task.attachments && task.attachments.length > 0) {
+                    attachmentsHtml = `
+                        <div style="margin: 10px 0;">
+                            <small style="color: rgba(255,255,255,0.5);">
+                                <i class="fas fa-paperclip"></i> ${task.attachments.length} файлов
+                            </small>
+                        </div>
+                    `;
+                }
+                
+                let reportStatus = '';
+                if (task.report && task.report.status !== 'pending') {
+                    const statusColors = {
+                        'submitted': 'var(--warning)',
+                        'approved': 'var(--success)',
+                        'rejected': 'var(--danger)'
+                    };
+                    
+                    const statusTexts = {
+                        'submitted': 'Ожидает проверки',
+                        'approved': 'Принято',
+                        'rejected': 'Возвращено на доработку'
+                    };
+                    
+                    reportStatus = `
+                        <div style="margin-top: 10px;">
+                            <span style="background: ${statusColors[task.report.status] || 'rgba(255,255,255,0.3)'}; 
+                                  color: white; padding: 3px 8px; border-radius: 10px; font-size: 11px;">
+                                ${statusTexts[task.report.status] || task.report.status}
+                            </span>
+                        </div>
+                    `;
+                }
+                
+                card.innerHTML = `
+                    <div class="task-header">
+                        <h3 class="task-title">${task.title || 'Без названия'}</h3>
+                        <span class="task-reward" style="background: ${statusColor}">${task.reward || 'Нет награды'}</span>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; margin: 5px 0;">
+                        <span style="background: ${statusColor}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">
+                            ${statusText}
                         </span>
+                        ${assignedInfo ? '' : '<div style="flex: 1;"></div>'}
+                    </div>
+                    
+                    ${assignedInfo}
+                    ${reportStatus}
+                    
+                    <div class="task-description">
+                        ${(task.description || 'Нет описания').substring(0, 150)}${task.description && task.description.length > 150 ? '...' : ''}
+                    </div>
+                    
+                    ${attachmentsHtml}
+                    
+                    <div class="task-actions" id="task-actions-${task.id}">
+                        <!-- Кнопки будут добавлены динамически -->
                     </div>
                 `;
+                
+                // Добавляем кнопки действий
+                updateTaskActions(task.id, task);
+                
+                return card;
+            } catch (error) {
+                console.error('Ошибка в createTaskCard:', error);
+                return null;
             }
-            
-            card.innerHTML = `
-                <div class="task-header">
-                    <h3 class="task-title">${task.title}</h3>
-                    <span class="task-reward">${task.reward}</span>
-                </div>
-                
-                ${assignedInfo}
-                ${reportStatus}
-                
-                <div class="task-description">
-                    ${task.description.substring(0, 150)}${task.description.length > 150 ? '...' : ''}
-                </div>
-                
-                ${attachmentsHtml}
-                
-                <div class="task-actions" id="task-actions-${task.id}">
-                    <!-- Кнопки будут добавлены динамически -->
-                </div>
-            `;
-            
-            // Добавляем кнопки действий
-            updateTaskActions(task.id, task);
-            
-            return card;
         }
 
         function updateTaskActions(taskId, task) {
@@ -4948,16 +5079,27 @@
             actionsDiv.innerHTML = '';
             
             const isAssignedToMe = task.assignedTo === currentUser.id;
+            const isGeneralTask = !task.assignedTo || task.assignedTo === 'all';
             const isMyTask = task.createdBy === currentUser.id;
-            const canSubmitReport = currentUser.role === 'specialist' && isAssignedToMe && task.status === 'active';
-            const canReviewReport = currentUser.role === 'mentor' && task.report?.status === 'submitted';
+            const isCompleted = currentUser.completedTasks?.includes(taskId);
             
-            // Общие кнопки
-            const viewBtn = `<button class="btn btn-primary" onclick="viewTask('${taskId}')">
-                <i class="fas fa-eye"></i> Подробнее
-            </button>`;
+            // Проверяем, может ли текущий пользователь сдать отчет
+            const canSubmitReport = currentUser.role === 'specialist' && 
+                (isAssignedToMe || isGeneralTask) && 
+                task.status === 'active' && 
+                !isCompleted;
             
-            actionsDiv.innerHTML += viewBtn;
+            // Проверяем, может ли текущий пользователь проверить отчет
+            const canReviewReport = currentUser.role === 'mentor' && 
+                (task.createdBy === currentUser.id || getMenteeIds().includes(task.assignedTo)) &&
+                task.report?.status === 'submitted';
+            
+            // Всегда показываем кнопку "Подробнее"
+            actionsDiv.innerHTML += `
+                <button class="btn btn-primary" onclick="viewTask('${taskId}')">
+                    <i class="fas fa-eye"></i> Подробнее
+                </button>
+            `;
             
             // Для специалиста: сдать отчет
             if (canSubmitReport) {
@@ -4968,16 +5110,25 @@
                 `;
             }
             
-            // Для наставника: проверить отчет
-            if (canReviewReport) {
+            // Для специалиста: отметить выполненным (для простых заданий без отчета)
+            if (currentUser.role === 'specialist' && !task.report && !isCompleted) {
                 actionsDiv.innerHTML += `
-                    <button class="btn btn-warning" onclick="reviewReport('${taskId}')">
-                        <i class="fas fa-check-circle"></i> Проверить отчет
+                    <button class="btn btn-success" onclick="completeTask('${taskId}')">
+                        <i class="fas fa-check"></i> Выполнено
                     </button>
                 `;
             }
             
-            // Для создателя задания: удалить
+            // Для наставника: проверить отчет
+            if (canReviewReport) {
+                actionsDiv.innerHTML += `
+                    <button class="btn btn-warning" onclick="reviewReport('${taskId}')">
+                        <i class="fas fa-check-circle"></i> Проверить
+                    </button>
+                `;
+            }
+            
+            // Для создателя задания или админа: удалить
             if (isMyTask || isAdmin) {
                 actionsDiv.innerHTML += `
                     <button class="btn btn-danger" onclick="deleteTask('${taskId}')">
@@ -4998,9 +5149,14 @@
         }
         
         function getMenteeIds() {
-            return Object.values(users)
+            if (!users) return [];
+            
+            const mentees = Object.values(users)
                 .filter(u => u.role === 'specialist' && u.mentorId === currentUser.id)
                 .map(u => u.id);
+            
+            console.log('ID специалистов наставника:', mentees);
+            return mentees;
         }
 
         function toggleCreateTaskForm() {
@@ -5212,14 +5368,21 @@
 
         function viewTask(taskId) {
             const task = tasks[taskId];
-            if (!task) return;
+            if (!task) {
+                showAlert('Ошибка', 'error', 'Задание не найдено');
+                return;
+            }
             
             const modal = document.getElementById('task-modal');
-            const isCompleted = currentUser.completedTasks?.includes(taskId);
             
-            document.getElementById('task-modal-title').textContent = task.title;
-            document.getElementById('task-modal-reward').textContent = task.reward;
-            document.getElementById('task-modal-description').textContent = task.description;
+            // Заполняем информацию о задании
+            document.getElementById('task-modal-title').textContent = task.title || 'Без названия';
+            
+            const rewardElement = document.getElementById('task-modal-reward');
+            rewardElement.textContent = task.reward || 'Нет награды';
+            rewardElement.style.background = task.status === 'completed' ? 'var(--success)' : 'var(--warning)';
+            
+            document.getElementById('task-modal-description').textContent = task.description || 'Нет описания';
             
             // Отображаем вложения
             const attachmentsDiv = document.getElementById('task-modal-attachments');
@@ -5249,27 +5412,28 @@
             // Кнопки действий
             const actionsDiv = document.getElementById('task-modal-actions');
             actionsDiv.innerHTML = '';
-
-            if (task.report) {
-                let reportHtml = '';
-                if (task.report.status !== 'pending') {
-                    reportHtml = `
-                        <div style="margin-top: 20px; padding: 15px; background: rgba(67,97,238,0.1); border-radius: 10px;">
-                            <h4><i class="fas fa-file-alt"></i> Отчет по заданию</h4>
-                            <div style="margin-top: 10px;">
-                                <strong>Статус:</strong> ${getReportStatusText(task.report.status)}<br>
-                                ${task.report.comment ? `<strong>Комментарий:</strong> ${task.report.comment}<br>` : ''}
-                                ${task.report.mentorFeedback ? `<strong>Обратная связь:</strong> ${task.report.mentorFeedback}<br>` : ''}
-                                ${task.report.submittedAt ? `<strong>Дата сдачи:</strong> ${new Date(task.report.submittedAt).toLocaleString('ru-RU')}<br>` : ''}
+            
+            // Добавляем информацию о создателе
+            const creator = users[task.createdBy];
+            if (creator) {
+                actionsDiv.innerHTML += `
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                        <img src="${creator.avatar || getDefaultAvatar(creator.username)}" 
+                             alt="${creator.username}" 
+                             style="width: 30px; height: 30px; border-radius: 50%;">
+                        <div>
+                            <div style="font-weight: 600;">Создатель: ${creator.username}</div>
+                            <div style="font-size: 12px; color: rgba(255,255,255,0.7);">
+                                ${new Date(task.createdAt || Date.now()).toLocaleDateString('ru-RU')}
                             </div>
                         </div>
-                    `;
-                }
-                
-                // Добавьте reportHtml в модальное окно
+                    </div>
+                `;
             }
             
-            if (!isCompleted) {
+            const isCompleted = currentUser.completedTasks?.includes(taskId);
+            
+            if (!isCompleted && currentUser.role === 'specialist' && !task.report) {
                 actionsDiv.innerHTML += `
                     <button class="btn btn-success" onclick="completeTask('${taskId}'); closeTaskModal();">
                         <i class="fas fa-check"></i> Отметить выполненным
@@ -5277,7 +5441,7 @@
                 `;
             }
             
-            if (isAdmin) {
+            if (isAdmin || task.createdBy === currentUser.id) {
                 actionsDiv.innerHTML += `
                     <button class="btn btn-danger" onclick="deleteTask('${taskId}'); closeTaskModal();">
                         <i class="fas fa-trash"></i> Удалить
