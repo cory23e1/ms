@@ -1104,16 +1104,17 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.8);
-            z-index: 2000;
+            background: rgba(0,0,0,0.9); /* Более темный фон */
+            z-index: 3000; /* Увеличиваем z-index */
             align-items: center;
             justify-content: center;
+            backdrop-filter: blur(5px); /* Эффект размытия */
         }
 
         .modal.active {
             display: flex;
         }
-
+        
         .modal-content {
             background: var(--dark);
             border-radius: 20px;
@@ -1123,6 +1124,9 @@
             max-height: 90vh;
             overflow-y: auto;
             border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            z-index: 3001; /* Контент выше фона */
+            position: relative;
         }
 
         /* Админ панель */
@@ -3835,17 +3839,32 @@
         
         // ========== АДМИН ПАНЕЛЬ ==========
         function checkAdminStatus() {
-            isAdmin = currentUser.username === 'admin' || currentUser.role === 'Администратор';
+            // Проверяем по username или по специальному полю isAdmin
+            isAdmin = currentUser.username === 'admin' || currentUser.isAdmin === true;
             
             const adminPanel = document.getElementById('admin-panel');
             const createFormBtn = document.getElementById('show-create-form-btn');
+            const createEventBtn = document.getElementById('show-create-event-btn');
             
-            if (isAdmin) {
-                adminPanel.style.display = 'block';
-                createFormBtn.style.display = 'block';
-            } else {
-                adminPanel.style.display = 'none';
-                createFormBtn.style.display = 'none';
+            // Админ-панель чата
+            if (adminPanel) {
+                adminPanel.style.display = isAdmin ? 'block' : 'none';
+            }
+            
+            // Кнопка создания задания
+            if (createFormBtn) {
+                createFormBtn.style.display = (isAdmin || currentUser.role === 'mentor') ? 'block' : 'none';
+            }
+            
+            // Кнопка создания мероприятия
+            if (createEventBtn) {
+                createEventBtn.style.display = isAdmin ? 'block' : 'none';
+            }
+            
+            // Форма создания мероприятия
+            const createEventForm = document.getElementById('create-event-form');
+            if (createEventForm) {
+                createEventForm.style.display = isAdmin ? 'block' : 'none';
             }
         }
 
@@ -3974,6 +3993,7 @@
         }
 
         function showUserProfile(userId) {
+            closeAllModals();
             const user = users[userId];
             if (!user) {
                 console.error('Пользователь не найден:', userId);
@@ -4149,6 +4169,17 @@
                     });
                 }
             });
+        }
+
+        function bindMentorAction() {
+            if (currentUser.role !== 'mentor') {
+                showAlert('Ошибка', 'error', 'Только наставники могут привязывать специалистов');
+                return;
+            }
+            
+            if (!currentViewedUser) return;
+            
+            bindAsMentor(currentViewedUser.id);
         }
         
         function bindSpecialistAction() {
@@ -4974,18 +5005,26 @@
 
         function toggleCreateTaskForm() {
             const form = document.getElementById('create-task-form');
-            if (form.style.display === 'none') {
+            const btn = document.getElementById('show-create-form-btn');
+            
+            if (!isAdmin && currentUser.role !== 'mentor') {
+                showAlert('Ошибка доступа', 'error', 'Только наставники и администраторы могут создавать задания!');
+                return;
+            }
+            
+            if (form.style.display === 'none' || form.style.display === '') {
                 form.style.display = 'block';
-                document.getElementById('show-create-form-btn').innerHTML = '<i class="fas fa-times"></i> Отмена';
-                document.getElementById('show-create-form-btn').onclick = toggleCreateTaskForm;
+                btn.innerHTML = '<i class="fas fa-times"></i> Отмена';
+                
+                // Обновляем список специалистов для наставника
+                updateTaskFormForMentor();
             } else {
                 form.style.display = 'none';
-                document.getElementById('show-create-form-btn').innerHTML = '<i class="fas fa-plus"></i> Создать задание';
-                document.getElementById('show-create-form-btn').onclick = toggleCreateTaskForm;
+                btn.innerHTML = '<i class="fas fa-plus"></i> Создать задание';
                 clearTaskForm();
             }
         }
-
+        
         function setupTaskFileUpload() {
             document.getElementById('task-files').addEventListener('change', function(e) {
                 const files = Array.from(e.target.files);
@@ -5768,6 +5807,11 @@
         }
         
         function toggleCreateEventForm() {
+            if (!isAdmin) {
+                showAlert('Ошибка доступа', 'error', 'Только администратор может создавать мероприятия!');
+                return;
+            }
+            
             const form = document.getElementById('create-event-form');
             const btn = document.getElementById('show-create-event-btn');
             
@@ -6534,6 +6578,7 @@
 
         // ========== ПРОФИЛЬ ==========
         function openProfileModal() {
+            closeAllModals();
             document.getElementById('profile-modal').classList.add('active');
             document.getElementById('profile-username').value = currentUser.username;
             document.getElementById('profile-role').value = currentUser.roleText || 
@@ -6818,6 +6863,12 @@
                 e.stopPropagation();
                 openProfileModal(); // Открывает профиль текущего пользователя
             });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeAllModals();
+                }
+            });
         }
 
         function adjustUsersListHeight() {
@@ -7091,6 +7142,13 @@
             } else {
                 return 'file';
             }
+        }
+
+        function closeAllModals() {
+            const modals = document.querySelectorAll('.modal.active');
+            modals.forEach(modal => {
+                modal.classList.remove('active');
+            });
         }
 
         document.addEventListener('click', function(event) {
