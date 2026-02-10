@@ -182,6 +182,183 @@
             to { opacity: 1; }
         }
 
+        /* СТИЛИ ДЛЯ ВКЛАДКИ ДАШБОРДА */
+        .dashboard-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .dashboard-welcome {
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.2), rgba(58, 12, 163, 0.2));
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .dashboard-welcome h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #4361ee, #f72585);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .dashboard-welcome p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 16px;
+            max-width: 600px;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+        }
+        
+        .dashboard-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .dashboard-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .dashboard-card-title {
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .dashboard-card-title i {
+            color: var(--primary);
+            background: rgba(67, 97, 238, 0.2);
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .dashboard-card-more {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+        
+        .dashboard-card-more:hover {
+            gap: 10px;
+        }
+        
+        .dashboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .dashboard-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .dashboard-item:hover {
+            background: rgba(67, 97, 238, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .dashboard-item-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .event-icon {
+            background: rgba(67, 97, 238, 0.2);
+            color: var(--primary);
+        }
+        
+        .task-icon {
+            background: rgba(76, 201, 240, 0.2);
+            color: var(--success);
+        }
+        
+        .material-icon {
+            background: rgba(247, 37, 133, 0.2);
+            color: var(--accent);
+        }
+        
+        .user-icon {
+            background: rgba(248, 150, 30, 0.2);
+            color: var(--warning);
+        }
+        
+        .dashboard-item-content {
+            flex: 1;
+        }
+        
+        .dashboard-item-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        
+        .dashboard-item-description {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .dashboard-item-meta {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .dashboard-empty-state {
+            text-align: center;
+            padding: 30px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .dashboard-empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.3;
+        }
+
         /* Чат контейнер */
         .chat-container {
             display: flex;
@@ -1199,6 +1376,15 @@
                 padding: 12px;
             }
             
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .dashboard-card {
+                padding: 20px;
+            }
+            
             .chat-container {
                 flex-direction: column;
                 height: calc(100vh - 120px);
@@ -1409,7 +1595,7 @@
                 
                 <div class="form-group">
                     <label class="form-label">Пароль *</label>
-                    <input type="password" class="form-control" id="register-password" placeholder="Придумайте пароль">
+                    input type="password" class="form-control" id="register-password" placeholder="Придумайте пароль">
                 </div>
                 
                 <div class="form-group">
@@ -1477,7 +1663,10 @@
             </button>
             
             <ul class="nav-links">
-                <li><a href="#" class="nav-link active" data-tab="chat" onclick="showTab('chat')">
+                <li><a href="#" class="nav-link active" data-tab="dashboard" onclick="showTab('dashboard')">
+                    <i class="fas fa-tachometer-alt"></i> Дашборд
+                </a></li>
+                <li><a href="#" class="nav-link" data-tab="chat" onclick="showTab('chat')">
                     <i class="fas fa-comments"></i> Мессенджер
                 </a></li>
                 <li><a href="#" class="nav-link" data-tab="events" onclick="showTab('events')">
@@ -1512,8 +1701,92 @@
         
         <!-- Основной контейнер -->
         <div class="container">
+            <!-- ВКЛАДКА ДАШБОРДА -->
+            <div class="tab-content active" id="dashboard-tab">
+                <div class="dashboard-container">
+                    <div class="dashboard-welcome">
+                        <h1>Добро пожаловать, <span id="dashboard-username"></span>!</h1>
+                        <p id="dashboard-greeting"></p>
+                    </div>
+                    
+                    <div class="dashboard-grid">
+                        <!-- Карточка мероприятий -->
+                        <div class="dashboard-card">
+                            <div class="dashboard-card-header">
+                                <div class="dashboard-card-title">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <span>Ближайшие мероприятия</span>
+                                </div>
+                                <a href="#" class="dashboard-card-more" onclick="showTab('events')">
+                                    Все мероприятия <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+                            <div class="dashboard-list" id="dashboard-events">
+                                <div class="loading-status">
+                                    <i class="fas fa-spinner fa-spin"></i> Загрузка мероприятий...
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Карточка заданий -->
+                        <div class="dashboard-card">
+                            <div class="dashboard-card-header">
+                                <div class="dashboard-card-title">
+                                    <i class="fas fa-tasks"></i>
+                                    <span>Активные задания</span>
+                                </div>
+                                <a href="#" class="dashboard-card-more" onclick="showTab('tasks')">
+                                    Все задания <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+                            <div class="dashboard-list" id="dashboard-tasks">
+                                <div class="loading-status">
+                                    <i class="fas fa-spinner fa-spin"></i> Загрузка заданий...
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Карточка материалов -->
+                        <div class="dashboard-card">
+                            <div class="dashboard-card-header">
+                                <div class="dashboard-card-title">
+                                    <i class="fas fa-graduation-cap"></i>
+                                    <span>Материалы адаптации</span>
+                                </div>
+                                <a href="#" class="dashboard-card-more" onclick="showTab('adaptation')">
+                                    Все материалы <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+                            <div class="dashboard-list" id="dashboard-materials">
+                                <div class="loading-status">
+                                    <i class="fas fa-spinner fa-spin"></i> Загрузка материалов...
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Карточка пользователей -->
+                        <div class="dashboard-card">
+                            <div class="dashboard-card-header">
+                                <div class="dashboard-card-title">
+                                    <i class="fas fa-users"></i>
+                                    <span>Команда</span>
+                                </div>
+                                <a href="#" class="dashboard-card-more" onclick="showTab('chat')">
+                                    Все пользователи <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+                            <div class="dashboard-list" id="dashboard-users">
+                                <div class="loading-status">
+                                    <i class="fas fa-spinner fa-spin"></i> Загрузка пользователей...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- ВКЛАДКА ЧАТА -->
-            <div class="tab-content active" id="chat-tab">
+            <div class="tab-content" id="chat-tab">
                 <div class="chat-container">
                     <!-- Боковая панель с пользователями -->
                     <div class="users-sidebar">
@@ -2240,7 +2513,7 @@
             checkAuth();
             setupNavigation();
             setupReplySystem();
-            showTab('chat');
+            showTab('dashboard'); // По умолчанию показываем дашборд
             initChat();
             initTasks();
             initEventsSystem();
@@ -2251,6 +2524,354 @@
                 showEmojiCategory('smileys');
             }, 1000);
         });
+
+        // ДАШБОРД ФУНКЦИИ
+        function updateDashboard() {
+            if (!currentUser) return;
+            
+            // Обновляем приветствие
+            document.getElementById('dashboard-username').textContent = currentUser.username;
+            const hour = new Date().getHours();
+            let greeting = '';
+            if (hour < 6) greeting = 'Доброй ночи!';
+            else if (hour < 12) greeting = 'Доброе утро!';
+            else if (hour < 18) greeting = 'Добрый день!';
+            else greeting = 'Добрый вечер!';
+            
+            const roleText = currentUser.role === 'mentor' ? 'Наставник' : 'Молодой специалист';
+            document.getElementById('dashboard-greeting').textContent = 
+                `${greeting} Вы вошли как ${roleText}. Здесь вы найдете всю важную информацию.`;
+            
+            // Загружаем данные для дашборда
+            loadDashboardEvents();
+            loadDashboardTasks();
+            loadDashboardMaterials();
+            loadDashboardUsers();
+        }
+        
+        function loadDashboardEvents() {
+            const eventsContainer = document.getElementById('dashboard-events');
+            if (!eventsContainer) return;
+            
+            if (Object.keys(events).length === 0) {
+                database.ref('events').once('value').then(snapshot => {
+                    events = snapshot.val() || {};
+                    displayDashboardEvents();
+                });
+            } else {
+                displayDashboardEvents();
+            }
+        }
+        
+        function displayDashboardEvents() {
+            const container = document.getElementById('dashboard-events');
+            if (!container) return;
+            
+            const eventsArray = [];
+            for (const id in events) {
+                if (events.hasOwnProperty(id)) {
+                    eventsArray.push({
+                        id: id,
+                        ...events[id]
+                    });
+                }
+            }
+            
+            // Сортируем по дате (ближайшие сначала)
+            eventsArray.sort((a, b) => (a.datetime || 0) - (b.datetime || 0));
+            
+            // Берем только 5 ближайших
+            const upcomingEvents = eventsArray.filter(event => event.datetime > Date.now()).slice(0, 5);
+            
+            if (upcomingEvents.length === 0) {
+                container.innerHTML = `
+                    <div class="dashboard-empty-state">
+                        <i class="fas fa-calendar-times"></i>
+                        <div>Нет предстоящих мероприятий</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            upcomingEvents.forEach(event => {
+                const eventDate = new Date(event.datetime);
+                const formattedDate = eventDate.toLocaleDateString('ru-RU', {
+                    day: 'numeric',
+                    month: 'short'
+                }) + ' ' + eventDate.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
+                
+                const item = document.createElement('div');
+                item.className = 'dashboard-item';
+                item.onclick = function() {
+                    viewEvent(event.id);
+                };
+                
+                item.innerHTML = `
+                    <div class="dashboard-item-icon event-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="dashboard-item-content">
+                        <div class="dashboard-item-title">${event.title || 'Без названия'}</div>
+                        <div class="dashboard-item-description">${(event.description || '').substring(0, 60)}${(event.description || '').length > 60 ? '...' : ''}</div>
+                        <div class="dashboard-item-meta">
+                            <span><i class="far fa-clock"></i> ${formattedDate}</span>
+                            <span><i class="fas fa-map-marker-alt"></i> ${event.location || 'Онлайн'}</span>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(item);
+            });
+        }
+        
+        function loadDashboardTasks() {
+            const tasksContainer = document.getElementById('dashboard-tasks');
+            if (!tasksContainer) return;
+            
+            if (Object.keys(tasks).length === 0) {
+                database.ref('tasks').once('value').then(snapshot => {
+                    tasks = snapshot.val() || {};
+                    displayDashboardTasks();
+                });
+            } else {
+                displayDashboardTasks();
+            }
+        }
+        
+        function displayDashboardTasks() {
+            const container = document.getElementById('dashboard-tasks');
+            if (!container) return;
+            
+            const tasksArray = Object.entries(tasks).map(([id, task]) => ({ id, ...task }));
+            
+            // Фильтруем задачи в зависимости от роли пользователя
+            let filteredTasks = tasksArray;
+            
+            if (currentUser.role === 'specialist') {
+                filteredTasks = tasksArray.filter(task => {
+                    const isAssignedToMe = task.assignedTo === currentUser.id;
+                    const isGeneralTask = !task.assignedTo || task.assignedTo === 'all';
+                    const isMentorTask = task.createdBy === currentUser.mentorId;
+                    
+                    return isAssignedToMe || isGeneralTask || isMentorTask;
+                });
+            } else if (currentUser.role === 'mentor') {
+                filteredTasks = tasksArray.filter(task => {
+                    const isCreatedByMe = task.createdBy === currentUser.id;
+                    const isForMySpecialist = task.assignedTo && getMenteeIds().includes(task.assignedTo);
+                    
+                    return isCreatedByMe || isForMySpecialist;
+                });
+            }
+            
+            // Сортируем по статусу и дате создания
+            filteredTasks.sort((a, b) => {
+                if (a.status === 'active' && b.status !== 'active') return -1;
+                if (a.status !== 'active' && b.status === 'active') return 1;
+                return (b.createdAt || 0) - (a.createdAt || 0);
+            });
+            
+            // Берем только 5 задач
+            const activeTasks = filteredTasks.slice(0, 5);
+            
+            if (activeTasks.length === 0) {
+                container.innerHTML = `
+                    <div class="dashboard-empty-state">
+                        <i class="fas fa-tasks"></i>
+                        <div>Нет активных заданий</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            activeTasks.forEach(task => {
+                const status = task.status === 'completed' ? 'Завершено' : 
+                              task.report?.status === 'submitted' ? 'На проверке' : 
+                              'Активно';
+                
+                const statusColor = task.status === 'completed' ? 'var(--success)' : 
+                                   task.report?.status === 'submitted' ? 'var(--warning)' : 
+                                   'var(--primary)';
+                
+                const item = document.createElement('div');
+                item.className = 'dashboard-item';
+                item.onclick = function() {
+                    viewTask(task.id);
+                };
+                
+                item.innerHTML = `
+                    <div class="dashboard-item-icon task-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="dashboard-item-content">
+                        <div class="dashboard-item-title">${task.title || 'Без названия'}</div>
+                        <div class="dashboard-item-description">${(task.description || '').substring(0, 60)}${(task.description || '').length > 60 ? '...' : ''}</div>
+                        <div class="dashboard-item-meta">
+                            <span><i class="fas fa-gift"></i> ${task.reward || 'Нет награды'}</span>
+                            <span style="color: ${statusColor}"><i class="fas fa-circle"></i> ${status}</span>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(item);
+            });
+        }
+        
+        function loadDashboardMaterials() {
+            const container = document.getElementById('dashboard-materials');
+            if (!container) return;
+            
+            // Статические материалы для демонстрации
+            const materials = [
+                {
+                    id: 1,
+                    title: 'Руководство по адаптации',
+                    description: 'Полное руководство для новых сотрудников',
+                    icon: 'book',
+                    type: 'guide'
+                },
+                {
+                    id: 2,
+                    title: 'Обучающие видео',
+                    description: 'Видеоуроки по работе с системой',
+                    icon: 'video',
+                    type: 'video'
+                },
+                {
+                    id: 3,
+                    title: 'Политика компании',
+                    description: 'Документы и политики компании',
+                    icon: 'file-pdf',
+                    type: 'document'
+                },
+                {
+                    id: 4,
+                    title: 'Организационная структура',
+                    description: 'Структура отделов и руководства',
+                    icon: 'sitemap',
+                    type: 'structure'
+                },
+                {
+                    id: 5,
+                    title: 'Программа наставничества',
+                    description: 'Как работает система наставничества',
+                    icon: 'user-tie',
+                    type: 'mentorship'
+                }
+            ];
+            
+            container.innerHTML = '';
+            
+            materials.forEach(material => {
+                const item = document.createElement('div');
+                item.className = 'dashboard-item';
+                item.onclick = function() {
+                    showTab('adaptation');
+                };
+                
+                item.innerHTML = `
+                    <div class="dashboard-item-icon material-icon">
+                        <i class="fas fa-${material.icon}"></i>
+                    </div>
+                    <div class="dashboard-item-content">
+                        <div class="dashboard-item-title">${material.title}</div>
+                        <div class="dashboard-item-description">${material.description}</div>
+                        <div class="dashboard-item-meta">
+                            <span><i class="fas fa-file"></i> ${material.type === 'guide' ? 'Руководство' : 
+                                                               material.type === 'video' ? 'Видео' : 
+                                                               material.type === 'document' ? 'Документ' : 
+                                                               material.type === 'structure' ? 'Структура' : 
+                                                               'Программа'}</span>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(item);
+            });
+        }
+        
+        function loadDashboardUsers() {
+            const container = document.getElementById('dashboard-users');
+            if (!container) return;
+            
+            if (Object.keys(users).length === 0) {
+                database.ref('users').once('value').then(snapshot => {
+                    users = snapshot.val() || {};
+                    displayDashboardUsers();
+                });
+            } else {
+                displayDashboardUsers();
+            }
+        }
+        
+        function displayDashboardUsers() {
+            const container = document.getElementById('dashboard-users');
+            if (!container) return;
+            
+            const usersArray = Object.values(users);
+            
+            // Фильтруем пользователей (исключаем текущего)
+            let filteredUsers = usersArray.filter(user => user.id !== currentUser.id);
+            
+            // Разделяем на наставников и специалистов
+            const mentors = filteredUsers.filter(user => user.role === 'mentor');
+            const specialists = filteredUsers.filter(user => user.role === 'specialist');
+            
+            // Берем по 2-3 каждого типа
+            const displayUsers = [
+                ...mentors.slice(0, 2),
+                ...specialists.slice(0, 3)
+            ].slice(0, 5); // Максимум 5 пользователей
+            
+            if (displayUsers.length === 0) {
+                container.innerHTML = `
+                    <div class="dashboard-empty-state">
+                        <i class="fas fa-user-slash"></i>
+                        <div>Нет других пользователей</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            displayUsers.forEach(user => {
+                const item = document.createElement('div');
+                item.className = 'dashboard-item';
+                item.onclick = function() {
+                    showUserProfile(user.id);
+                };
+                
+                const roleBadge = user.role === 'mentor' ? 
+                    '<span style="background: var(--mentor); color: white; padding: 1px 6px; border-radius: 8px; font-size: 10px;">Наставник</span>' : 
+                    '<span style="background: var(--specialist); color: white; padding: 1px 6px; border-radius: 8px; font-size: 10px;">Специалист</span>';
+                
+                const status = user.status === 'online' ? 
+                    '<span style="color: var(--online);"><i class="fas fa-circle"></i> В сети</span>' : 
+                    `<span style="color: var(--offline);"><i class="fas fa-circle"></i> Был(а) ${formatLastSeen(user.lastSeen)}</span>`;
+                
+                item.innerHTML = `
+                    <div class="dashboard-item-icon user-icon">
+                        <img src="${user.avatar || getDefaultAvatar(user.username)}" 
+                             alt="${user.username}" 
+                             style="width: 30px; height: 30px; border-radius: 50%;">
+                    </div>
+                    <div class="dashboard-item-content">
+                        <div class="dashboard-item-title">${user.username} ${roleBadge}</div>
+                        <div class="dashboard-item-description">${user.position || 'Должность не указана'}</div>
+                        <div class="dashboard-item-meta">
+                            ${status}
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(item);
+            });
+        }
 
         function setupReplySystem() {
             document.addEventListener('click', function(event) {
@@ -2309,6 +2930,7 @@
                 mainApp.style.display = 'block';
                 
                 setupUsersListener();
+                updateDashboard(); // Обновляем дашборд при авторизации
             } else {
                 authContainer.style.display = 'flex';
                 mainApp.style.display = 'none';
@@ -2419,6 +3041,7 @@
                     
                     showAlert('Успех!', 'success', 'Регистрация прошла успешно!');
                     setupUsersListener();
+                    updateDashboard(); // Обновляем дашборд после регистрации
                 }).catch(error => {
                     console.error('Ошибка регистрации:', error);
                     showAlert('Ошибка', 'error', 'Не удалось зарегистрироваться');
@@ -2473,6 +3096,7 @@
                 
                 showAlert('Успех!', 'success', 'Вход выполнен успешно!');
                 setupUsersListener();
+                updateDashboard(); // Обновляем дашборд после входа
             }).catch(error => {
                 console.error('Ошибка входа:', error);
                 showAlert('Ошибка', 'error', 'Ошибка при входе в систему');
@@ -2660,6 +3284,9 @@
             });
             
             switch(tabName) {
+                case 'dashboard':
+                    updateDashboard(); // Обновляем дашборд при переключении
+                    break;
                 case 'chat':
                     loadUsers();
                     loadMessages();
@@ -3923,7 +4550,7 @@
             Swal.fire({
                 title: 'Удалить задание?',
                 icon: 'warning',
-                showCancelButton: true,
+                showCancelButton: true;
                 confirmButtonText: 'Удалить',
                 cancelButtonText: 'Отмена'
             }).then((result) => {
@@ -4167,6 +4794,12 @@
                 if (document.getElementById('create-event-form') && 
                     document.getElementById('create-event-form').style.display !== 'none') {
                     loadEventParticipants();
+                }
+                
+                // Обновляем дашборд при изменении мероприятий
+                const dashboardTab = document.getElementById('dashboard-tab');
+                if (dashboardTab && dashboardTab.classList.contains('active')) {
+                    displayDashboardEvents();
                 }
             });
         }
