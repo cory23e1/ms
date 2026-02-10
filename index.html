@@ -2751,7 +2751,9 @@
             initTasks();
             initEventsSystem();
             setupEventListeners();
-            checkAdminStatus();
+            setTimeout(() => {
+                checkAdminStatus();
+            }, 1000);
             initMaterialsSystem();
             
             setTimeout(() => {
@@ -3552,6 +3554,7 @@
             const createFormBtn = document.getElementById('show-create-form-btn');
             const createEventBtn = document.getElementById('show-create-event-btn');
             const createEventForm = document.getElementById('create-event-form');
+            const createMaterialBtn = document.getElementById('show-create-material-btn');
             
             if (adminPanel) {
                 adminPanel.style.display = isAdmin ? 'block' : 'none';
@@ -3567,6 +3570,10 @@
             
             if (createEventForm) {
                 createEventForm.style.display = isAdmin ? 'block' : 'none';
+            }
+
+            if (createMaterialBtn) {
+                createMaterialBtn.style.display = isAdmin ? 'block' : 'none';
             }
         }
 
@@ -5224,6 +5231,10 @@
                     const taskCard = createTaskCard(task);
                     if (taskCard) {
                         tasksList.appendChild(taskCard);
+
+                        setTimeout(() => {
+                            updateTaskActions(task.id, task);
+                        }, 100);
                     }
                 } catch (error) {
                     console.error('Ошибка создания карточки задания:', error, task);
@@ -5627,47 +5638,108 @@
                 return;
             }
             
+            // Создаем модальное окно, если его нет
+            if (!document.getElementById('task-modal')) {
+                const modalHTML = `
+                    <div class="modal" id="task-modal">
+                        <div class="modal-content">
+                            <h2 id="task-modal-title" class="mb-10"></h2>
+                            <div class="mb-15">
+                                <span id="task-modal-reward" style="background: var(--warning); color: white; padding: 5px 10px; border-radius: 5px;"></span>
+                            </div>
+                            <p id="task-modal-description" style="line-height: 1.6; margin-bottom: 20px;"></p>
+                            
+                            <div id="task-modal-attachments" style="margin: 20px 0;"></div>
+                            
+                            <div id="task-modal-actions" class="d-flex gap-10"></div>
+                            
+                            <button class="btn w-100 mt-20" onclick="closeTaskModal()" style="background: rgba(255,255,255,0.1); color: white;">
+                                <i class="fas fa-times"></i> Закрыть
+                            </button>
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', modalHTML);
+            }
+            
             const modal = document.getElementById('task-modal');
             
+            // Очищаем предыдущие данные
+            document.getElementById('task-modal-title').textContent = '';
+            document.getElementById('task-modal-reward').textContent = '';
+            document.getElementById('task-modal-description').textContent = '';
+            document.getElementById('task-modal-attachments').innerHTML = '';
+            document.getElementById('task-modal-actions').innerHTML = '';
+            
+            // Заполняем данные
             document.getElementById('task-modal-title').textContent = task.title || 'Без названия';
             
             const rewardElement = document.getElementById('task-modal-reward');
             rewardElement.textContent = task.reward || 'Нет награды';
-            rewardElement.style.background = task.status === 'completed' ? 'var(--success)' : 'var(--warning)';
+            
+            // Определяем цвет статуса
+            let statusColor = '#f8961e'; // По умолчанию warning
+            if (task.status === 'completed') {
+                statusColor = '#4cc9f0'; // success
+            } else if (task.report?.status === 'submitted') {
+                statusColor = '#e63946'; // danger
+            } else if (task.report?.status === 'approved') {
+                statusColor = '#4CAF50'; // online green
+            }
+            rewardElement.style.background = statusColor;
             
             document.getElementById('task-modal-description').textContent = task.description || 'Нет описания';
             
             const attachmentsDiv = document.getElementById('task-modal-attachments');
-            attachmentsDiv.innerHTML = '';
             
+            // Показываем прикрепленные файлы
             if (task.attachments && task.attachments.length > 0) {
                 attachmentsDiv.innerHTML = `
                     <h4><i class="fas fa-paperclip"></i> Прикрепленные файлы:</h4>
                     <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
-                        ${task.attachments.map(att => `
-                            <div style="text-align: center;">
-                                <a href="#" onclick="downloadAttachment('${att.data}', '${att.name}')" style="text-decoration: none; color: white;">
-                                    ${att.type === 'image' || att.type === 'gif' ? 
-                                        `<img src="${att.data}" alt="${att.name}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 5px;">` : 
-                                        `<div style="width: 100px; height: 100px; background: rgba(67, 97, 238, 0.3); border-radius: 5px; display: flex; align-items: center; justify-content: center;">
-                                            <i class="fas fa-file fa-2x"></i>
-                                        </div>`
-                                    }
-                                    <div style="margin-top: 5px; font-size: 12px;">${att.name}</div>
-                                </a>
-                            </div>
-                        `).join('')}
+                        ${task.attachments.map(att => {
+                            if (!att) return '';
+                            
+                            const fileType = att.type || getFileTypeFromName(att.name);
+                            const fileName = att.name || 'Без имени';
+                            const fileData = att.data || '';
+                            
+                            if (fileType === 'image' || fileType === 'gif') {
+                                return `
+                                    <div style="text-align: center;">
+                                        <a href="#" onclick="viewImage('${fileData}'); return false;" style="text-decoration: none; color: white;">
+                                            <img src="${fileData}" alt="${fileName}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 5px; cursor: pointer;">
+                                            <div style="margin-top: 5px; font-size: 12px; max-width: 100px; overflow: hidden; text-overflow: ellipsis;">${fileName}</div>
+                                        </a>
+                                    </div>
+                                `;
+                            } else {
+                                const iconClass = getFileIcon(fileName);
+                                return `
+                                    <div style="text-align: center;">
+                                        <a href="#" onclick="downloadAttachment('${fileData}', '${fileName}'); return false;" style="text-decoration: none; color: white;">
+                                            <div style="width: 100px; height: 100px; background: rgba(67, 97, 238, 0.3); border-radius: 5px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                                                <i class="${iconClass} fa-2x"></i>
+                                            </div>
+                                            <div style="margin-top: 5px; font-size: 12px; max-width: 100px; overflow: hidden; text-overflow: ellipsis;">${fileName}</div>
+                                        </a>
+                                    </div>
+                                `;
+                            }
+                        }).join('')}
                     </div>
                 `;
+            } else {
+                attachmentsDiv.innerHTML = '';
             }
             
             const actionsDiv = document.getElementById('task-modal-actions');
-            actionsDiv.innerHTML = '';
             
+            // Добавляем информацию о создателе
             const creator = users[task.createdBy];
             if (creator) {
                 actionsDiv.innerHTML += `
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; width: 100%;">
                         <img src="${creator.avatar || getDefaultAvatar(creator.username)}" 
                              alt="${creator.username}" 
                              style="width: 30px; height: 30px; border-radius: 50%;">
@@ -5681,27 +5753,63 @@
                 `;
             }
             
+            // Добавляем статус задания
+            let statusText = 'Активно';
+            if (task.status === 'completed') {
+                statusText = 'Завершено';
+            } else if (task.report?.status === 'submitted') {
+                statusText = 'Ожидает проверки';
+            } else if (task.report?.status === 'approved') {
+                statusText = 'Принято';
+            } else if (task.report?.status === 'rejected') {
+                statusText = 'Возвращено на доработку';
+            }
+            
+            actionsDiv.innerHTML += `
+                <div style="margin-bottom: 10px; width: 100%;">
+                    <span style="background: ${statusColor}; color: white; padding: 5px 12px; border-radius: 10px; font-size: 12px;">
+                        <i class="fas fa-circle"></i> ${statusText}
+                    </span>
+                </div>
+            `;
+            
+            // Добавляем кнопки действий
+            const isAssignedToMe = task.assignedTo === currentUser.id;
+            const isGeneralTask = !task.assignedTo || task.assignedTo === 'all';
+            const isMyTask = task.createdBy === currentUser.id;
             const isCompleted = currentUser.completedTasks?.includes(taskId);
             
-            if (!isCompleted && currentUser.role === 'specialist' && !task.report) {
+            // Кнопка "Сдать отчет" для специалистов
+            if (currentUser.role === 'specialist' && (isAssignedToMe || isGeneralTask) && !isCompleted && task.status !== 'completed') {
                 actionsDiv.innerHTML += `
-                    <button class="btn btn-success" onclick="completeTask('${taskId}'); closeTaskModal();">
-                        <i class="fas fa-check"></i> Отметить выполненным
+                    <button class="btn btn-success" onclick="openReportModal('${taskId}')" style="flex: 1;">
+                        <i class="fas fa-file-upload"></i> Сдать отчет
                     </button>
                 `;
             }
             
-            if (isAdmin || task.createdBy === currentUser.id) {
+            // Кнопка "Проверить отчет" для наставников
+            if (currentUser.role === 'mentor' && task.report?.status === 'submitted') {
                 actionsDiv.innerHTML += `
-                    <button class="btn btn-danger" onclick="deleteTask('${taskId}'); closeTaskModal();">
+                    <button class="btn btn-warning" onclick="reviewReport('${taskId}')" style="flex: 1;">
+                        <i class="fas fa-check-circle"></i> Проверить отчет
+                    </button>
+                `;
+            }
+            
+            // Кнопка удаления для создателя или админа
+            if (isMyTask || isAdmin) {
+                actionsDiv.innerHTML += `
+                    <button class="btn btn-danger" onclick="deleteTask('${taskId}'); closeTaskModal();" style="flex: 1;">
                         <i class="fas fa-trash"></i> Удалить
                     </button>
                 `;
             }
             
+            // Отображаем модальное окно
             modal.classList.add('active');
         }
-
+        
         function completeTask(taskId) {
             if (!currentUser.completedTasks) currentUser.completedTasks = [];
             
@@ -7046,7 +7154,7 @@
         }
 
         function closeAllModals() {
-            document.querySelectorAll('.modal.active').forEach(modal => {
+            document.querySelectorAll('.modal').forEach(modal => {
                 modal.classList.remove('active');
             });
         }
@@ -7098,6 +7206,17 @@
             
             input.style.height = 'auto';
             input.style.height = Math.min(input.scrollHeight, 150) + 'px';
+        }
+
+        function getFileTypeFromName(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(ext)) {
+                return ext === 'gif' ? 'gif' : 'image';
+            } else if (['mp4', 'webm', 'ogg', 'mov', 'avi', 'wmv'].includes(ext)) {
+                return 'video';
+            } else {
+                return 'file';
+            }
         }
     </script>
 </body>
