@@ -1536,6 +1536,78 @@
                 font-size: 14px;
                 z-index: 10;
             }
+
+            .materials-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .material-filters {
+                justify-content: center;
+            }
+            
+            .material-filters .tab-btn {
+                flex: 1;
+                min-width: 80px;
+                font-size: 11px;
+                padding: 8px 5px;
+            }
+        }
+
+        /* Стили для материалов */
+        .material-filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .material-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .material-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            border-color: var(--primary);
+        }
+        
+        /* Стили для прикрепляемых элементов */
+        .attachable-item {
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .attachable-item:hover {
+            background: rgba(67, 97, 238, 0.1);
+            transform: translateX(5px);
+        }
+        
+        /* Стили для прикрепленного контента в сообщении */
+        .message-attachment-content {
+            background: rgba(67, 97, 238, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .message-attachment-content:hover {
+            background: rgba(67, 97, 238, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
         /* Утилиты */
@@ -1887,6 +1959,9 @@
                                 <div class="chat-buttons">
                                     <button class="chat-btn" onclick="openAttachmentModal()">
                                         <i class="fas fa-paperclip"></i>
+                                    </button>
+                                    <button class="chat-btn" onclick="openAttachContentModal()" title="Прикрепить мероприятие, задание или материал">
+                                        <i class="fas fa-link"></i>
                                     </button>
                                     <button class="chat-btn" onclick="toggleEmojiPicker()" type="button">
                                         <i class="fas fa-smile"></i>
@@ -2553,6 +2628,67 @@
                 </button>
             </div>
         </div>
+
+        <div class="modal" id="attach-content-modal">
+            <div class="modal-content" style="max-width: 600px;">
+                <h2 class="mb-20"><i class="fas fa-link"></i> Прикрепить существующий контент</h2>
+                
+                <div class="tabs" style="display: flex; gap: 5px; margin-bottom: 20px;">
+                    <button class="tab-btn active" onclick="switchAttachTab('events')">
+                        <i class="fas fa-calendar-alt"></i> Мероприятия
+                    </button>
+                    <button class="tab-btn" onclick="switchAttachTab('tasks')">
+                        <i class="fas fa-tasks"></i> Задания
+                    </button>
+                    <button class="tab-btn" onclick="switchAttachTab('materials')">
+                        <i class="fas fa-graduation-cap"></i> Материалы
+                    </button>
+                </div>
+                
+                <!-- Вкладка мероприятий -->
+                <div class="tab-content active" id="attach-events-tab">
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        <div id="attach-events-list">
+                            <div class="loading-status">
+                                <i class="fas fa-spinner fa-spin"></i> Загрузка мероприятий...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Вкладка заданий -->
+                <div class="tab-content" id="attach-tasks-tab" style="display: none;">
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        <div id="attach-tasks-list">
+                            <div class="loading-status">
+                                <i class="fas fa-spinner fa-spin"></i> Загрузка заданий...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Вкладка материалов -->
+                <div class="tab-content" id="attach-materials-tab" style="display: none;">
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        <div id="attach-materials-list">
+                            <div class="loading-status">
+                                <i class="fas fa-spinner fa-spin"></i> Загрузка материалов...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-between mt-20">
+                    <button class="btn" onclick="closeAttachContentModal()" style="background: rgba(255,255,255,0.1); color: white;">
+                        <i class="fas fa-times"></i> Отмена
+                    </button>
+                    <small style="color: rgba(255,255,255,0.5); align-self: center;">
+                        Выберите элемент для прикрепления
+                    </small>
+                </div>
+            </div>
+        </div>
+        
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -2592,6 +2728,11 @@
         let eventMessagesListener = null;
         let emojiPickerVisible = false;
         let selectedRole = 'mentor';
+        let materials = {};
+        let materialFiles = [];
+        let materialCover = null;
+        let currentMaterialFilter = 'all';
+        let currentAttachTab = 'events';
         
         const emojiCategories = {
             smileys: ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🥸', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕'],
@@ -2611,6 +2752,7 @@
             initEventsSystem();
             setupEventListeners();
             checkAdminStatus();
+            initMaterialsSystem();
             
             setTimeout(() => {
                 showEmojiCategory('smileys');
@@ -3714,6 +3856,7 @@
             const displayTime = formatTime(timestamp);
             
             let attachmentHtml = '';
+            
             if (message.attachment) {
                 if (message.attachment.type === 'image' || message.attachment.type === 'gif') {
                     attachmentHtml = `
@@ -3764,6 +3907,55 @@
                         </div>
                     `;
                 }
+
+                else if (message.attachment.type === 'content') {
+                    // Отображение прикрепленного контента
+                    let icon = '';
+                    let color = '';
+                    let action = '';
+                    
+                    switch(message.attachment.contentType) {
+                        case 'event':
+                            icon = 'fas fa-calendar-alt';
+                            color = '#4361ee';
+                            action = `viewAttachedEvent('${message.attachment.contentId}')`;
+                            break;
+                        case 'task':
+                            icon = 'fas fa-tasks';
+                            color = '#4cc9f0';
+                            action = `viewAttachedTask('${message.attachment.contentId}')`;
+                            break;
+                        case 'material':
+                            icon = 'fas fa-graduation-cap';
+                            color = '#f72585';
+                            action = `viewAttachedMaterial('${message.attachment.contentId}')`;
+                            break;
+                    }
+                    
+                    attachmentHtml = `
+                        <div class="message-attachment" style="margin-top: 10px;">
+                            <div onclick="${action}" style="background: ${color}20; border: 1px solid ${color}; border-radius: 10px; padding: 12px; cursor: pointer; transition: all 0.3s;" 
+                                 onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 5px 15px rgba(0,0,0,0.2)';"
+                                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 40px; height: 40px; background: ${color}; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="${icon}" style="color: white; font-size: 18px;"></i>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; font-size: 14px; margin-bottom: 5px;">
+                                            ${message.attachment.contentTitle || 'Прикрепленный контент'}
+                                        </div>
+                                        <div style="font-size: 12px; color: rgba(255,255,255,0.7);">
+                                            ${message.attachment.preview || ''}
+                                        </div>
+                                    </div>
+                                    <i class="fas fa-external-link-alt" style="color: ${color};"></i>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
             }
             
             let replyPreviewHtml = '';
@@ -3899,33 +4091,59 @@
             const serverTimestamp = firebase.database.ServerValue.TIMESTAMP;
             
             let finalAttachment = null;
-            
-            if (currentAttachment && currentAttachment.fileObject) {
-                try {
-                    Swal.fire({
-                        title: 'Загрузка файла...',
-                        text: 'Пожалуйста, подождите',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
+
+            if (currentAttachment) {
+                if (currentAttachment.type === 'content') {
+                    // Обработка прикрепленного контента
+                    finalAttachment = {
+                        type: 'content',
+                        contentType: currentAttachment.contentType,
+                        contentId: currentAttachment.contentId,
+                        contentTitle: currentAttachment.contentData.title,
+                        contentDescription: currentAttachment.contentData.description || '',
+                        timestamp: Date.now()
+                    };
+                    
+                    // Добавляем превью в зависимости от типа контента
+                    if (currentAttachment.contentType === 'event') {
+                        const eventDate = new Date(currentAttachment.contentData.datetime);
+                        finalAttachment.preview = `📅 ${currentAttachment.contentData.title}\nДата: ${eventDate.toLocaleDateString('ru-RU')}`;
+                    } else if (currentAttachment.contentType === 'task') {
+                        finalAttachment.preview = `✅ ${currentAttachment.contentData.title}\nНаграда: ${currentAttachment.contentData.reward || 'Нет награды'}`;
+                    } else if (currentAttachment.contentType === 'material') {
+                        finalAttachment.preview = `📚 ${currentAttachment.contentData.title}`;
+                    }
+                } else if (currentAttachment.fileObject) {
+                    if (currentAttachment && currentAttachment.fileObject) {
+                        try {
+                            Swal.fire({
+                                title: 'Загрузка файла...',
+                                text: 'Пожалуйста, подождите',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                            
+                            finalAttachment = currentAttachment;
+                            Swal.close();
+                            
+                        } catch (error) {
+                            console.error('Ошибка загрузки:', error);
+                            Swal.fire({
+                                title: 'Ошибка загрузки',
+                                text: 'Не удалось загрузить файл.',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                            return;
                         }
-                    });
-                    
+                    } else if (currentAttachment && currentAttachment.external) {
+                        finalAttachment = currentAttachment;
+                    }
+                } else if (currentAttachment.external) {
                     finalAttachment = currentAttachment;
-                    Swal.close();
-                    
-                } catch (error) {
-                    console.error('Ошибка загрузки:', error);
-                    Swal.fire({
-                        title: 'Ошибка загрузки',
-                        text: 'Не удалось загрузить файл.',
-                        icon: 'error',
-                        confirmButtonText: 'OK'
-                    });
-                    return;
                 }
-            } else if (currentAttachment && currentAttachment.external) {
-                finalAttachment = currentAttachment;
             }
             
             const message = {
@@ -4051,6 +4269,885 @@
                     showAlert('База данных очищена!', 'success');
                 }
             });
+        }
+
+        //МАТЕРИАЛЫ
+        function initMaterialsSystem() {
+            loadMaterials();
+            
+            // Настройка загрузки обложки
+            document.getElementById('material-cover')?.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                if (file.size > 5 * 1024 * 1024) {
+                    showAlert('Изображение слишком большое! Максимум 5MB', 'error');
+                    this.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    materialCover = e.target.result;
+                    const preview = document.getElementById('material-cover-preview-img');
+                    preview.src = materialCover;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            });
+            
+            // Настройка загрузки файлов
+            document.getElementById('material-files')?.addEventListener('change', function(e) {
+                const files = Array.from(e.target.files);
+                materialFiles = [];
+                const preview = document.getElementById('material-file-preview');
+                preview.innerHTML = '';
+                
+                files.slice(0, 5).forEach((file, index) => {
+                    if (file.size > 10 * 1024 * 1024) {
+                        showAlert('Ошибка', 'error', `Файл "${file.name}" слишком большой!`);
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        materialFiles.push({
+                            name: file.name,
+                            type: getFileType(file),
+                            data: e.target.result,
+                            size: file.size,
+                            fileType: file.type
+                        });
+                        
+                        const previewItem = document.createElement('div');
+                        previewItem.className = 'preview-item';
+                        
+                        if (file.type.startsWith('image/')) {
+                            previewItem.innerHTML = `
+                                <img src="${e.target.result}" alt="${file.name}">
+                                <button class="remove-preview" onclick="removeMaterialFile(${index})">×</button>
+                            `;
+                        } else {
+                            const iconClass = getFileIcon(file.name);
+                            previewItem.innerHTML = `
+                                <div style="width: 100%; height: 100%; background: rgba(67, 97, 238, 0.3); display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 10px;">
+                                    <i class="${iconClass} fa-2x"></i>
+                                    <div style="font-size: 10px; margin-top: 5px; text-align: center; word-break: break-all;">${file.name.substring(0, 15)}${file.name.length > 15 ? '...' : ''}</div>
+                                </div>
+                                <button class="remove-preview" onclick="removeMaterialFile(${index})">×</button>
+                            `;
+                        }
+                        
+                        preview.appendChild(previewItem);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            });
+        }
+        
+        function loadMaterials() {
+            database.ref('materials').on('value', snapshot => {
+                materials = snapshot.val() || {};
+                
+                const materialsTab = document.getElementById('adaptation-tab');
+                if (materialsTab && materialsTab.classList.contains('active')) {
+                    displayMaterials();
+                }
+                
+                updateMaterialsCount();
+                
+                // Показываем кнопку создания для админа
+                const createBtn = document.getElementById('show-create-material-btn');
+                if (createBtn) {
+                    createBtn.style.display = isAdmin ? 'block' : 'none';
+                }
+            });
+        }
+        
+        function displayMaterials() {
+            const grid = document.getElementById('materials-grid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            
+            const materialsArray = [];
+            for (const id in materials) {
+                if (materials.hasOwnProperty(id)) {
+                    materialsArray.push({
+                        id: id,
+                        ...materials[id]
+                    });
+                }
+            }
+            
+            let filteredMaterials = materialsArray;
+            
+            if (currentMaterialFilter !== 'all') {
+                filteredMaterials = materialsArray.filter(material => material.type === currentMaterialFilter);
+            }
+            
+            filteredMaterials.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            
+            if (filteredMaterials.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
+                        <i class="fas fa-graduation-cap fa-3x" style="margin-bottom: 20px;"></i>
+                        <h3>Нет материалов</h3>
+                        <p>${isAdmin ? 'Создайте первый материал для адаптации' : 'Материалы еще не добавлены'}</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            filteredMaterials.forEach(material => {
+                const materialCard = createMaterialCard(material);
+                grid.appendChild(materialCard);
+            });
+        }
+        
+        function createMaterialCard(material) {
+            const card = document.createElement('div');
+            card.className = 'material-card';
+            card.style.cssText = `
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 15px;
+                overflow: hidden;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                transition: all 0.3s;
+                cursor: pointer;
+                position: relative;
+            `;
+            
+            card.onclick = function() {
+                viewMaterial(material.id);
+            };
+            
+            const typeIcons = {
+                'guide': 'fas fa-book',
+                'video': 'fas fa-video',
+                'document': 'fas fa-file-pdf',
+                'link': 'fas fa-link',
+                'presentation': 'fas fa-chart-line',
+                'course': 'fas fa-graduation-cap'
+            };
+            
+            const typeNames = {
+                'guide': 'Руководство',
+                'video': 'Видео',
+                'document': 'Документ',
+                'link': 'Ссылка',
+                'presentation': 'Презентация',
+                'course': 'Курс'
+            };
+            
+            const typeColors = {
+                'guide': '#4361ee',
+                'video': '#f72585',
+                'document': '#4cc9f0',
+                'link': '#f8961e',
+                'presentation': '#3a0ca3',
+                'course': '#4CAF50'
+            };
+            
+            const typeIcon = typeIcons[material.type] || 'fas fa-file';
+            const typeName = typeNames[material.type] || 'Материал';
+            const typeColor = typeColors[material.type] || '#4361ee';
+            
+            const filesCount = material.files ? material.files.length : 0;
+            
+            card.innerHTML = `
+                <div style="height: 120px; background: linear-gradient(135deg, ${typeColor}, ${typeColor}99); 
+                            display: flex; align-items: center; justify-content: center; position: relative;">
+                    ${material.cover ? 
+                        `<img src="${material.cover}" alt="${material.title}" style="width: 100%; height: 100%; object-fit: cover;">` : 
+                        `<i class="${typeIcon} fa-3x" style="color: rgba(255,255,255,0.7);"></i>`
+                    }
+                    <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); 
+                                color: white; padding: 3px 8px; border-radius: 10px; font-size: 11px; display: flex; align-items: center; gap: 5px;">
+                        <i class="${typeIcon}"></i> ${typeName}
+                    </div>
+                    ${filesCount > 0 ? `
+                        <div style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); 
+                                    color: white; padding: 3px 8px; border-radius: 10px; font-size: 11px; display: flex; align-items: center; gap: 5px;">
+                            <i class="fas fa-paperclip"></i> ${filesCount}
+                        </div>
+                    ` : ''}
+                </div>
+                <div style="padding: 20px;">
+                    <h3 style="margin: 0 0 10px 0; font-size: 16px; color: white; font-weight: 600;">${material.title || 'Без названия'}</h3>
+                    <p style="margin: 0 0 15px 0; color: rgba(255,255,255,0.7); font-size: 14px; line-height: 1.5;">
+                        ${(material.description || 'Нет описания').substring(0, 100)}${(material.description || '').length > 100 ? '...' : ''}
+                    </p>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="color: rgba(255,255,255,0.5); font-size: 12px;">
+                            <i class="far fa-calendar"></i> ${new Date(material.createdAt || Date.now()).toLocaleDateString('ru-RU')}
+                        </div>
+                        ${isAdmin ? `
+                            <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); deleteMaterial('${material.id}')" style="padding: 2px 8px; font-size: 11px;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+                this.style.boxShadow = '0 10px 20px rgba(0,0,0,0.2)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = 'none';
+            });
+            
+            return card;
+        }
+        
+        function toggleCreateMaterialForm() {
+            if (!isAdmin) {
+                showAlert('Ошибка доступа', 'error', 'Только администратор может создавать материалы!');
+                return;
+            }
+            
+            const form = document.getElementById('create-material-form');
+            const btn = document.getElementById('show-create-material-btn');
+            
+            if (form.style.display === 'none' || form.style.display === '') {
+                form.style.display = 'block';
+                btn.innerHTML = '<i class="fas fa-times"></i> Отмена';
+            } else {
+                form.style.display = 'none';
+                btn.innerHTML = '<i class="fas fa-plus"></i> Создать материал';
+                clearMaterialForm();
+            }
+        }
+        
+        function clearMaterialForm() {
+            document.getElementById('material-title').value = '';
+            document.getElementById('material-description').value = '';
+            document.getElementById('material-type').value = 'guide';
+            document.getElementById('material-cover').value = '';
+            document.getElementById('material-cover-preview-img').style.display = 'none';
+            document.getElementById('material-files').value = '';
+            document.getElementById('material-file-preview').innerHTML = '';
+            materialFiles = [];
+            materialCover = null;
+        }
+        
+        function removeMaterialFile(index) {
+            materialFiles.splice(index, 1);
+            updateMaterialFilePreview();
+        }
+        
+        function updateMaterialFilePreview() {
+            const preview = document.getElementById('material-file-preview');
+            preview.innerHTML = '';
+            
+            materialFiles.forEach((file, index) => {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'preview-item';
+                
+                if (file.type === 'image') {
+                    previewItem.innerHTML = `
+                        <img src="${file.data}" alt="${file.name}">
+                        <button class="remove-preview" onclick="removeMaterialFile(${index})">×</button>
+                    `;
+                } else {
+                    const iconClass = getFileIcon(file.name);
+                    previewItem.innerHTML = `
+                        <div style="width: 100%; height: 100%; background: rgba(67, 97, 238, 0.3); display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 10px;">
+                            <i class="${iconClass} fa-2x"></i>
+                            <div style="font-size: 10px; margin-top: 5px; text-align: center; word-break: break-all;">${file.name.substring(0, 15)}${file.name.length > 15 ? '...' : ''}</div>
+                        </div>
+                        <button class="remove-preview" onclick="removeMaterialFile(${index})">×</button>
+                    `;
+                }
+                
+                preview.appendChild(previewItem);
+            });
+        }
+        
+        function createMaterial() {
+            if (!isAdmin) {
+                showAlert('Ошибка доступа', 'error', 'Только администратор может создавать материалы!');
+                return;
+            }
+            
+            const title = document.getElementById('material-title').value.trim();
+            const description = document.getElementById('material-description').value.trim();
+            const type = document.getElementById('material-type').value;
+            
+            if (!title || !description) {
+                showAlert('Ошибка', 'warning', 'Заполните все обязательные поля!');
+                return;
+            }
+            
+            const materialId = generateId();
+            const materialData = {
+                id: materialId,
+                title: title,
+                description: description,
+                type: type,
+                cover: materialCover,
+                files: materialFiles,
+                createdBy: currentUser.id,
+                createdByName: currentUser.username,
+                createdAt: Date.now(),
+                views: 0,
+                downloads: 0
+            };
+            
+            database.ref('materials/' + materialId).set(materialData)
+                .then(() => {
+                    showAlert('Успех!', 'success', 'Материал создан!');
+                    clearMaterialForm();
+                    toggleCreateMaterialForm();
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    showAlert('Ошибка', 'error', 'Не удалось создать материал');
+                });
+        }
+        
+        function viewMaterial(materialId) {
+            const material = materials[materialId];
+            if (!material) {
+                showAlert('Ошибка', 'error', 'Материал не найден');
+                return;
+            }
+            
+            // Увеличиваем счетчик просмотров
+            database.ref(`materials/${materialId}/views`).set((material.views || 0) + 1);
+            
+            const modalContent = `
+                <div style="max-width: 800px; max-height: 90vh; overflow-y: auto; background: var(--dark); border-radius: 20px; padding: 30px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 style="margin: 0;">${material.title}</h2>
+                        <button class="btn" onclick="Swal.close()" style="background: rgba(255,255,255,0.1); color: white; padding: 5px 10px;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    ${material.cover ? `
+                        <div style="margin-bottom: 20px;">
+                            <img src="${material.cover}" alt="${material.title}" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 10px;">
+                        </div>
+                    ` : ''}
+                    
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+                        <span style="background: ${typeColors[material.type] || '#4361ee'}; color: white; padding: 5px 12px; border-radius: 12px; font-size: 14px;">
+                            <i class="${typeIcons[material.type] || 'fas fa-file'}"></i> ${typeNames[material.type] || 'Материал'}
+                        </span>
+                        <span style="color: rgba(255,255,255,0.7);">
+                            <i class="far fa-calendar"></i> ${new Date(material.createdAt).toLocaleDateString('ru-RU')}
+                        </span>
+                        <span style="color: rgba(255,255,255,0.7);">
+                            <i class="fas fa-eye"></i> ${material.views || 0} просмотров
+                        </span>
+                    </div>
+                    
+                    <div style="margin-bottom: 30px;">
+                        <h4><i class="fas fa-align-left"></i> Описание</h4>
+                        <p style="line-height: 1.6; margin-top: 10px; white-space: pre-wrap;">${material.description}</p>
+                    </div>
+                    
+                    ${material.files && material.files.length > 0 ? `
+                        <div style="margin-bottom: 30px;">
+                            <h4><i class="fas fa-paperclip"></i> Прикрепленные файлы (${material.files.length})</h4>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; margin-top: 15px;">
+                                ${material.files.map((file, index) => `
+                                    <div style="text-align: center; cursor: pointer;" onclick="downloadAttachment('${file.data}', '${file.name}')">
+                                        <div style="width: 100px; height: 100px; background: rgba(67, 97, 238, 0.1); border-radius: 10px; 
+                                                 display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
+                                            <i class="${getFileIcon(file.name)} fa-2x" style="color: var(--primary);"></i>
+                                        </div>
+                                        <div style="font-size: 12px; word-break: break-all;">${file.name}</div>
+                                        <div style="font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 2px;">
+                                            ${formatFileSize(file.size)}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button class="btn btn-primary" onclick="attachToChat('material', '${materialId}')">
+                            <i class="fas fa-share"></i> Прикрепить в чат
+                        </button>
+                        ${isAdmin ? `
+                            <button class="btn btn-danger" onclick="deleteMaterial('${materialId}')">
+                                <i class="fas fa-trash"></i> Удалить
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            
+            Swal.fire({
+                html: modalContent,
+                showConfirmButton: false,
+                width: '90%',
+                background: 'transparent',
+                backdrop: 'rgba(0,0,0,0.9)'
+            });
+        }
+        
+        function deleteMaterial(materialId) {
+            if (!isAdmin) return;
+            
+            Swal.fire({
+                title: 'Удалить материал?',
+                text: 'Материал будет удален безвозвратно',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Удалить',
+                cancelButtonText: 'Отмена'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    database.ref('materials/' + materialId).remove()
+                        .then(() => {
+                            showAlert('Материал удален!', 'success');
+                            Swal.close();
+                        })
+                        .catch(error => {
+                            console.error('Ошибка:', error);
+                            showAlert('Ошибка', 'error', 'Не удалось удалить материал');
+                        });
+                }
+            });
+        }
+        
+        function filterMaterials(filter) {
+            currentMaterialFilter = filter;
+            
+            document.querySelectorAll('.material-filters .tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            event.target.classList.add('active');
+            displayMaterials();
+        }
+        
+        function updateMaterialsCount() {
+            const countElement = document.getElementById('materials-count');
+            if (countElement) {
+                const count = Object.keys(materials).length;
+                countElement.textContent = `${count} материалов`;
+            }
+        }
+        
+        // ФУНКЦИИ ДЛЯ ПРИКРЕПЛЕНИЯ КОНТЕНТА В ЧАТ
+        function openAttachContentModal() {
+            closeAllModals();
+            document.getElementById('attach-content-modal').classList.add('active');
+            loadAttachableContent();
+        }
+        
+        function closeAttachContentModal() {
+            document.getElementById('attach-content-modal').classList.remove('active');
+        }
+        
+        function switchAttachTab(tab) {
+            currentAttachTab = tab;
+            
+            document.querySelectorAll('#attach-content-modal .tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.querySelectorAll('#attach-content-modal .tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            event.target.classList.add('active');
+            document.getElementById(`attach-${tab}-tab`).style.display = 'block';
+            
+            loadAttachableContent(tab);
+        }
+        
+        function loadAttachableContent(type = null) {
+            const tabType = type || currentAttachTab;
+            
+            switch(tabType) {
+                case 'events':
+                    loadAttachableEvents();
+                    break;
+                case 'tasks':
+                    loadAttachableTasks();
+                    break;
+                case 'materials':
+                    loadAttachableMaterials();
+                    break;
+            }
+        }
+        
+        function loadAttachableEvents() {
+            const container = document.getElementById('attach-events-list');
+            if (!container) return;
+            
+            if (Object.keys(events).length === 0) {
+                container.innerHTML = `
+                    <div class="loading-status">
+                        <i class="fas fa-spinner fa-spin"></i> Загрузка мероприятий...
+                    </div>
+                `;
+                
+                database.ref('events').once('value').then(snapshot => {
+                    events = snapshot.val() || {};
+                    displayAttachableEvents();
+                });
+            } else {
+                displayAttachableEvents();
+            }
+        }
+        
+        function displayAttachableEvents() {
+            const container = document.getElementById('attach-events-list');
+            if (!container) return;
+            
+            const eventsArray = [];
+            for (const id in events) {
+                eventsArray.push({ id, ...events[id] });
+            }
+            
+            if (eventsArray.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
+                        <i class="fas fa-calendar-times fa-2x"></i>
+                        <div style="margin-top: 10px;">Нет мероприятий для прикрепления</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            eventsArray.sort((a, b) => b.datetime - a.datetime).forEach(event => {
+                const eventDate = new Date(event.datetime);
+                const isPast = eventDate < new Date();
+                
+                const card = document.createElement('div');
+                card.className = 'attachable-item';
+                card.style.cssText = `
+                    padding: 15px;
+                    background: rgba(255,255,255,0.05);
+                    border-radius: 10px;
+                    margin-bottom: 10px;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                    border-left: 4px solid ${isPast ? '#6c757d' : '#4361ee'};
+                `;
+                
+                card.onclick = function() {
+                    attachToChat('event', event.id);
+                };
+                
+                card.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="width: 50px; height: 50px; background: ${isPast ? '#6c757d' : '#4361ee'}; 
+                                    border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; margin-bottom: 5px;">${event.title || 'Без названия'}</div>
+                            <div style="font-size: 12px; color: rgba(255,255,255,0.7);">
+                                <i class="far fa-calendar"></i> ${eventDate.toLocaleDateString('ru-RU')}
+                                <span style="margin-left: 10px;"><i class="fas fa-map-marker-alt"></i> ${event.location || 'Не указано'}</span>
+                            </div>
+                        </div>
+                        <i class="fas fa-link" style="color: var(--primary);"></i>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+        
+        function loadAttachableTasks() {
+            const container = document.getElementById('attach-tasks-list');
+            if (!container) return;
+            
+            if (Object.keys(tasks).length === 0) {
+                container.innerHTML = `
+                    <div class="loading-status">
+                        <i class="fas fa-spinner fa-spin"></i> Загрузка заданий...
+                    </div>
+                `;
+                
+                database.ref('tasks').once('value').then(snapshot => {
+                    tasks = snapshot.val() || {};
+                    displayAttachableTasks();
+                });
+            } else {
+                displayAttachableTasks();
+            }
+        }
+        
+        function displayAttachableTasks() {
+            const container = document.getElementById('attach-tasks-list');
+            if (!container) return;
+            
+            const tasksArray = Object.entries(tasks).map(([id, task]) => ({ id, ...task }));
+            
+            // Фильтруем доступные задачи
+            let filteredTasks = tasksArray;
+            
+            if (currentUser.role === 'specialist') {
+                filteredTasks = tasksArray.filter(task => {
+                    const isAssignedToMe = task.assignedTo === currentUser.id;
+                    const isGeneralTask = !task.assignedTo || task.assignedTo === 'all';
+                    return isAssignedToMe || isGeneralTask;
+                });
+            }
+            
+            if (filteredTasks.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
+                        <i class="fas fa-tasks fa-2x"></i>
+                        <div style="margin-top: 10px;">Нет заданий для прикрепления</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            filteredTasks.sort((a, b) => b.createdAt - a.createdAt).forEach(task => {
+                const card = document.createElement('div');
+                card.className = 'attachable-item';
+                card.style.cssText = `
+                    padding: 15px;
+                    background: rgba(255,255,255,0.05);
+                    border-radius: 10px;
+                    margin-bottom: 10px;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                    border-left: 4px solid ${task.status === 'completed' ? '#4cc9f0' : '#4361ee'};
+                `;
+                
+                card.onclick = function() {
+                    attachToChat('task', task.id);
+                };
+                
+                card.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="width: 50px; height: 50px; background: ${task.status === 'completed' ? '#4cc9f0' : '#4361ee'}; 
+                                    border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; margin-bottom: 5px;">${task.title || 'Без названия'}</div>
+                            <div style="font-size: 12px; color: rgba(255,255,255,0.7);">
+                                <i class="fas fa-gift"></i> ${task.reward || 'Нет награды'}
+                                <span style="margin-left: 10px;">
+                                    <i class="fas fa-circle" style="color: ${task.status === 'completed' ? '#4cc9f0' : '#4361ee'}; font-size: 8px;"></i>
+                                    ${task.status === 'completed' ? 'Завершено' : 'Активно'}
+                                </span>
+                            </div>
+                        </div>
+                        <i class="fas fa-link" style="color: var(--primary);"></i>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+        
+        function loadAttachableMaterials() {
+            const container = document.getElementById('attach-materials-list');
+            if (!container) return;
+            
+            if (Object.keys(materials).length === 0) {
+                container.innerHTML = `
+                    <div class="loading-status">
+                        <i class="fas fa-spinner fa-spin"></i> Загрузка материалов...
+                    </div>
+                `;
+                
+                database.ref('materials').once('value').then(snapshot => {
+                    materials = snapshot.val() || {};
+                    displayAttachableMaterials();
+                });
+            } else {
+                displayAttachableMaterials();
+            }
+        }
+        
+        function displayAttachableMaterials() {
+            const container = document.getElementById('attach-materials-list');
+            if (!container) return;
+            
+            const materialsArray = [];
+            for (const id in materials) {
+                materialsArray.push({ id, ...materials[id] });
+            }
+            
+            if (materialsArray.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
+                        <i class="fas fa-graduation-cap fa-2x"></i>
+                        <div style="margin-top: 10px;">Нет материалов для прикрепления</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            materialsArray.sort((a, b) => b.createdAt - a.createdAt).forEach(material => {
+                const typeIcons = {
+                    'guide': 'fas fa-book',
+                    'video': 'fas fa-video',
+                    'document': 'fas fa-file-pdf',
+                    'link': 'fas fa-link',
+                    'presentation': 'fas fa-chart-line',
+                    'course': 'fas fa-graduation-cap'
+                };
+                
+                const typeNames = {
+                    'guide': 'Руководство',
+                    'video': 'Видео',
+                    'document': 'Документ',
+                    'link': 'Ссылка',
+                    'presentation': 'Презентация',
+                    'course': 'Курс'
+                };
+                
+                const card = document.createElement('div');
+                card.className = 'attachable-item';
+                card.style.cssText = `
+                    padding: 15px;
+                    background: rgba(255,255,255,0.05);
+                    border-radius: 10px;
+                    margin-bottom: 10px;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                    border-left: 4px solid ${typeColors[material.type] || '#4361ee'};
+                `;
+                
+                card.onclick = function() {
+                    attachToChat('material', material.id);
+                };
+                
+                card.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="width: 50px; height: 50px; background: ${typeColors[material.type] || '#4361ee'}; 
+                                    border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                            <i class="${typeIcons[material.type] || 'fas fa-file'}"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; margin-bottom: 5px;">${material.title || 'Без названия'}</div>
+                            <div style="font-size: 12px; color: rgba(255,255,255,0.7);">
+                                <i class="${typeIcons[material.type] || 'fas fa-file'}"></i> ${typeNames[material.type] || 'Материал'}
+                                ${material.files && material.files.length > 0 ? 
+                                    `<span style="margin-left: 10px;"><i class="fas fa-paperclip"></i> ${material.files.length} файлов</span>` : ''}
+                            </div>
+                        </div>
+                        <i class="fas fa-link" style="color: var(--primary);"></i>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+        
+        function attachToChat(contentType, contentId) {
+            let content = null;
+            let contentText = '';
+            
+            switch(contentType) {
+                case 'event':
+                    content = events[contentId];
+                    if (content) {
+                        const eventDate = new Date(content.datetime);
+                        contentText = `📅 Мероприятие: ${content.title}\n`;
+                        contentText += `📅 Дата: ${eventDate.toLocaleDateString('ru-RU')}\n`;
+                        contentText += `📍 Место: ${content.location || 'Не указано'}\n`;
+                        contentText += `📝 ${(content.description || 'Нет описания').substring(0, 100)}${content.description && content.description.length > 100 ? '...' : ''}\n`;
+                        contentText += `🔗 ID: ${contentId}`;
+                    }
+                    break;
+                    
+                case 'task':
+                    content = tasks[contentId];
+                    if (content) {
+                        contentText = `✅ Задание: ${content.title}\n`;
+                        contentText += `🏆 Награда: ${content.reward || 'Нет награды'}\n`;
+                        contentText += `📝 ${(content.description || 'Нет описания').substring(0, 100)}${content.description && content.description.length > 100 ? '...' : ''}\n`;
+                        contentText += `🔗 ID: ${contentId}`;
+                    }
+                    break;
+                    
+                case 'material':
+                    content = materials[contentId];
+                    if (content) {
+                        const typeNames = {
+                            'guide': 'Руководство',
+                            'video': 'Видео',
+                            'document': 'Документ',
+                            'link': 'Ссылка',
+                            'presentation': 'Презентация',
+                            'course': 'Курс'
+                        };
+                        
+                        contentText = `📚 Материал: ${content.title}\n`;
+                        contentText += `📁 Тип: ${typeNames[content.type] || 'Материал'}\n`;
+                        contentText += `📝 ${(content.description || 'Нет описания').substring(0, 100)}${content.description && content.description.length > 100 ? '...' : ''}\n`;
+                        contentText += `🔗 ID: ${contentId}`;
+                    }
+                    break;
+            }
+            
+            if (!content) {
+                showAlert('Ошибка', 'error', 'Контент не найден');
+                return;
+            }
+            
+            currentAttachment = {
+                type: 'content',
+                contentType: contentType,
+                contentId: contentId,
+                contentData: content,
+                name: `${contentType === 'event' ? 'Мероприятие' : contentType === 'task' ? 'Задание' : 'Материал'}: ${content.title}`,
+                external: true
+            };
+            
+            closeAttachContentModal();
+            
+            const input = document.getElementById('message-input');
+            if (input) {
+                input.value = contentText + '\n\n' + input.value;
+                input.focus();
+                input.style.height = 'auto';
+                input.style.height = Math.min(input.scrollHeight, 150) + 'px';
+            }
+            
+            showAlert('Контент прикреплен!', 'success', 'Теперь вы можете отправить сообщение с прикреплением');
+        }
+
+        function viewAttachedEvent(eventId) {
+            if (events[eventId]) {
+                viewEvent(eventId);
+            } else {
+                showAlert('Мероприятие не найдено', 'error');
+            }
+        }
+        
+        function viewAttachedTask(taskId) {
+            if (tasks[taskId]) {
+                viewTask(taskId);
+            } else {
+                showAlert('Задание не найдено', 'error');
+            }
+        }
+        
+        function viewAttachedMaterial(materialId) {
+            if (materials[materialId]) {
+                viewMaterial(materialId);
+            } else {
+                showAlert('Материал не найден', 'error');
+            }
         }
 
         // ЗАДАНИЯ
