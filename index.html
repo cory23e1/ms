@@ -2891,6 +2891,10 @@
         let materialCover = null;
         let currentMaterialFilter = 'all';
         let currentAttachTab = 'events';
+        let unreadMessagesCount = 0;
+        let isChatTabActive = false;
+        let lastMessageSoundTime = 0;
+        const SOUND_COOLDOWN = 2000; // 2 секунды между звуками
         
         const emojiCategories = {
             smileys: ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🥸', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕'],
@@ -2943,6 +2947,21 @@
             setTimeout(() => {
                 showEmojiCategory('smileys');
             }, 1000);
+
+            // Проверяем, какая вкладка активна при загрузке
+            const activeTab = document.querySelector('.nav-link.active');
+            if (activeTab && activeTab.getAttribute('data-tab') === 'chat') {
+                isChatTabActive = true;
+            }
+            
+            // Добавляем аудио элемент, если его нет
+            if (!document.getElementById('fart-sound')) {
+                const audio = document.createElement('audio');
+                audio.id = 'fart-sound';
+                audio.preload = 'auto';
+                audio.innerHTML = '<source src="https://assets.mixkit.co/sfx/preview/mixkit-cartoon-fart-bleep-1036.mp3" type="audio/mpeg">';
+                document.body.appendChild(audio);
+            }
         });
 
         // ДАШБОРД ФУНКЦИИ
@@ -3731,6 +3750,9 @@
                     }, 100);
                     break;
                 case 'chat':
+                    isChatTabActive = true;
+                    unreadMessagesCount = 0;
+                    updateTabTitle(); // Сбрасываем счетчик при открытии чата
                     loadUsers();
                     loadMessages();
                     break;
@@ -3751,6 +3773,7 @@
                     loadMaterials();
                     break;
             }
+            isChatTabActive = (tabName === 'chat');
         }
 
         // АДМИН ПАНЕЛЬ
@@ -4040,8 +4063,40 @@
         }
 
         function loadMessages() {
+            let lastMessageTimestamp = localStorage.getItem('lastMessageTimestamp') || 0;
+            let hasNewMessages = false;
+            
             database.ref('messages').limitToLast(50).on('value', snapshot => {
                 const messages = snapshot.val() || {};
+                const messagesArray = Object.values(messages);
+                
+                // Находим самое новое сообщение
+                let newestTimestamp = 0;
+                messagesArray.forEach(message => {
+                    const msgTime = message.firebaseTimestamp || message.timestamp || message.localTimestamp || 0;
+                    if (msgTime > newestTimestamp) {
+                        newestTimestamp = msgTime;
+                    }
+                    
+                    // Проверяем, новое ли это сообщение (не от текущего пользователя и после последнего сохраненного времени)
+                    if (message.userId !== currentUser?.id && msgTime > lastMessageTimestamp) {
+                        hasNewMessages = true;
+                    }
+                });
+                
+                // Если есть новые сообщения и чат не активен
+                if (hasNewMessages && !isChatTabActive) {
+                    unreadMessagesCount++;
+                    updateTabTitle();
+                    playFartSound();
+                }
+                
+                // Сохраняем время последнего сообщения
+                if (newestTimestamp > lastMessageTimestamp) {
+                    lastMessageTimestamp = newestTimestamp;
+                    localStorage.setItem('lastMessageTimestamp', lastMessageTimestamp);
+                }
+                
                 displayMessages(messages);
             });
         }
@@ -4400,6 +4455,10 @@
             
             try {
                 await database.ref('messages/' + message.id).set(message);
+
+                // Обновляем время последнего сообщения
+                const msgTime = message.firebaseTimestamp || message.timestamp || message.localTimestamp || Date.now();
+                localStorage.setItem('lastMessageTimestamp', msgTime);
                 
                 input.focus();
                 
@@ -6951,40 +7010,6 @@
                 counter.textContent = count;
             }
         }
-        
-        // АДАПТАЦИЯ
-        // function loadMaterials() {
-        //     const materialsList = document.getElementById('materials-list');
-        //     materialsList.innerHTML = `
-        //         <div class="material-item">
-        //             <div class="material-icon">
-        //                 <i class="fas fa-book"></i>
-        //             </div>
-        //             <div class="material-content">
-        //                 <div class="material-title">Руководство по адаптации</div>
-        //                 <div class="material-description">Полное руководство для новых сотрудников</div>
-        //             </div>
-        //         </div>
-        //         <div class="material-item">
-        //             <div class="material-icon">
-        //                 <i class="fas fa-video"></i>
-        //             </div>
-        //             <div class="material-content">
-        //                 <div class="material-title">Обучающие видео</div>
-        //                 <div class="material-description">Видеоуроки по работе с системой</div>
-        //             </div>
-        //         </div>
-        //         <div class="material-item">
-        //             <div class="material-icon">
-        //                 <i class="fas fa-file-pdf"></i>
-        //             </div>
-        //             <div class="material-content">
-        //                 <div class="material-title">Политика компании</div>
-        //                 <div class="material-description">Документы и политики компании</div>
-        //             </div>
-        //         </div>
-        //     `;
-        // }
 
         // ВЛОЖЕНИЯ
         function openAttachmentModal() {
@@ -7358,6 +7383,35 @@
                     }
                 }
             });
+
+            // Добавьте обработчик события visibilitychange для обновления состояния вкладки
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    // Вкладка не активна
+                    if (isChatTabActive) {
+                        isChatTabActive = false;
+                    }
+                } else {
+                    // Вкладка стала активной
+                    const activeTab = document.querySelector('.nav-link.active');
+                    if (activeTab && activeTab.getAttribute('data-tab') === 'chat') {
+                        isChatTabActive = true;
+                        unreadMessagesCount = 0;
+                        updateTabTitle();
+                    }
+                }
+            });
+            
+            // Добавьте обработчик для клика по вкладке чата
+            document.querySelectorAll('.nav-link[data-tab="chat"]').forEach(link => {
+                link.addEventListener('click', function() {
+                    setTimeout(() => {
+                        isChatTabActive = true;
+                        unreadMessagesCount = 0;
+                        updateTabTitle();
+                    }, 100);
+                });
+            });
         }
 
         function toggleUsersSidebar() {
@@ -7432,6 +7486,73 @@
                 return 'file';
             }
         }
+
+        function updateTabTitle() {
+            if (unreadMessagesCount > 0 && !isChatTabActive) {
+                document.title = `(${unreadMessagesCount}) 🔥 МС Adaptive APP`;
+            } else {
+                document.title = '🔥 МС Adaptive APP';
+            }
+        }
+        
+        // Добавьте эту функцию для воспроизведения звука
+        function playFartSound() {
+            const now = Date.now();
+            if (now - lastMessageSoundTime < SOUND_COOLDOWN) {
+                return; // Не проигрывать звук слишком часто
+            }
+            
+            try {
+                const audio = document.getElementById('fart-sound');
+                if (audio) {
+                    audio.currentTime = 0;
+                    audio.play().catch(e => {
+                        console.log("Не удалось воспроизвести звук:", e);
+                        // Альтернативный звук, если основной не загрузился
+                        playAlternativeSound();
+                    });
+                    lastMessageSoundTime = now;
+                } else {
+                    playAlternativeSound();
+                }
+            } catch (error) {
+                console.log("Ошибка воспроизведения звука:", error);
+                playAlternativeSound();
+            }
+        }
+        
+        // Альтернативный звук (бип)
+        function playAlternativeSound() {
+            const now = Date.now();
+            if (now - lastMessageSoundTime < SOUND_COOLDOWN) {
+                return;
+            }
+            
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 150;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.2);
+                
+                lastMessageSoundTime = now;
+            } catch (error) {
+                console.log("Не удалось создать альтернативный звук:", error);
+            }
+        }
     </script>
+    <audio id="fart-sound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-cartoon-fart-bleep-1036.mp3" type="audio/mpeg">
+    </audio>
 </body>
 </html>
