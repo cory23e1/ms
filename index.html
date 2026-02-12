@@ -6470,8 +6470,8 @@
                     </div>
                 </div>
                 <div style="padding: 20px;">
-                    <h3 style="margin: 0 0 10px 0; font-size: 18px; color: white; font-weight: 600;">${event.title || 'Без названия'}</h3>
-                    <p style="margin: 0 0 15px 0; color: rgba(255,255,255,0.7); font-size: 14px; line-height: 1.5;">
+                    <h3 style="margin: 0 0 10px 0; font-size: 18px; color: black; font-weight: 600;">${event.title || 'Без названия'}</h3>
+                    <p style="margin: 0 0 15px 0; color: black; font-size: 14px; line-height: 1.5;">
                         ${(event.description || 'Нет описания').substring(0, 100)}${(event.description || '').length > 100 ? '...' : ''}
                     </p>
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
@@ -6479,7 +6479,7 @@
                             <i class="far fa-calendar"></i>
                             <span>${formattedDate}</span>
                         </div>
-                        <div style="color: rgba(255,255,255,0.7); font-size: 14px; display: flex; align-items: center; gap: 5px;">
+                        <div style="color: black; font-size: 14px; display: flex; align-items: center; gap: 5px;">
                             <i class="fas fa-map-marker-alt"></i>
                             <span>${event.location || 'Не указано'}</span>
                         </div>
