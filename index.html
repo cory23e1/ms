@@ -1120,7 +1120,7 @@
         border: 2px solid rgba(255, 215, 0, 0.3);
         overflow: hidden;
         margin-bottom: 20px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 5px 7px rgba(0, 0, 0, 0.3);
     }
     
     .event-card-simple:hover {
@@ -4756,12 +4756,12 @@
                     ` : ''}
                 </div>
                 <div style="padding: 20px;">
-                    <h3 style="margin: 0 0 10px 0; font-size: 16px; color: white; font-weight: 600;">${material.title || 'Без названия'}</h3>
-                    <p style="margin: 0 0 15px 0; color: rgba(255,255,255,0.7); font-size: 14px; line-height: 1.5;">
+                    <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #555; font-weight: 600;">${material.title || 'Без названия'}</h3>
+                    <p style="margin: 0 0 15px 0; color: #555; font-size: 14px; line-height: 1.5;">
                         ${(material.description || 'Нет описания').substring(0, 100)}${(material.description || '').length > 100 ? '...' : ''}
                     </p>
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div style="color: rgba(255,255,255,0.5); font-size: 12px;">
+                        <div style="color: #555; font-size: 12px;">
                             <i class="far fa-calendar"></i> ${new Date(material.createdAt || Date.now()).toLocaleDateString('ru-RU')}
                         </div>
                         ${isAdmin ? `
@@ -5554,12 +5554,12 @@
                             '<span class="role-mentor" style="margin-left: 5px;"><i class="fas fa-user-tie"></i> Наставник</span>' : 
                             '<span class="role-specialist" style="margin-left: 5px;"><i class="fas fa-user-graduate"></i> Специалист</span>';
                         
-                        assignedInfo = `<div style="margin-top: 5px; font-size: 12px; color: rgba(255,255,255,0.7);">
+                        assignedInfo = `<div style="margin-top: 5px; font-size: 12px; color: #555;">
                             <i class="fas fa-user"></i> Для: ${user.username} ${roleBadge}
                         </div>`;
                     }
                 } else if (task.assignedTo === 'all') {
-                    assignedInfo = `<div style="margin-top: 5px; font-size: 12px; color: rgba(255,255,255,0.7);">
+                    assignedInfo = `<div style="margin-top: 5px; font-size: 12px; color: #555;">
                         <i class="fas fa-users"></i> Для: Все специалисты
                     </div>`;
                 }
@@ -5568,7 +5568,7 @@
                 if (task.attachments && task.attachments.length > 0) {
                     attachmentsHtml = `
                         <div style="margin: 10px 0;">
-                            <small style="color: rgba(255,255,255,0.5);">
+                            <small style="color: #555;">
                                 <i class="fas fa-paperclip"></i> ${task.attachments.length} файлов
                             </small>
                         </div>
