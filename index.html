@@ -321,7 +321,7 @@
         border-radius: 12px;
         transition: all 0.3s;
         cursor: pointer;
-        border: 1px black solid;
+        border: 1px #00000029 solid;
     }
     
     .dashboard-item:hover {
@@ -462,7 +462,7 @@
         padding: 8px;
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid var(--gray);
-        color: #555;
+        color: #bfadad;
         border-radius: 8px;
         cursor: pointer;
         transition: all 0.3s;
@@ -912,13 +912,12 @@
     }
 
     .task-card {
-        background: rgba(255, 255, 255, 0.05);
+        background: #eee;
         border-radius: 15px;
         padding: 20px;
-        border: 2px solid rgba(255, 215, 0, 0.3);
         transition: all 0.3s;
         border-left: 4px solid var(--primary);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 5px 8px rgba(0, 0, 0, 0.3);
     }
 
     .task-card:hover {
@@ -963,7 +962,7 @@
     }
 
     .task-description {
-        color: rgba(255, 255, 255, 0.8);
+        color: #555;
         line-height: 1.5;
         margin-bottom: 15px;
     }
@@ -2606,7 +2605,7 @@
                 
                 <div id="task-modal-actions" class="d-flex gap-10"></div>
                 
-                <button class="btn w-100 mt-20" onclick="closeTaskModal()" style="background: rgba(255,255,255,0.1); color: white;">
+                <button class="btn w-50 mt-20" onclick="closeTaskModal()" style="background: #f27474; color: white;">
                     <i class="fas fa-times"></i> Закрыть
                 </button>
             </div>
@@ -2686,7 +2685,7 @@
                 <!-- Кнопки действий -->
                 <div id="event-modal-actions" class="d-flex gap-10" style="margin-top: 20px;"></div>
                 
-                <button class="btn w-100 mt-20" onclick="closeEventModal()" style="background: rgba(255,255,255,0.1); color: white;">
+                <button class="btn w-50 mt-20" onclick="closeEventModal()" style="background: #f27474; color: white;">
                     <i class="fas fa-times"></i> Закрыть
                 </button>
             </div>
@@ -2784,7 +2783,7 @@
                     </div>
                 </div>
                 
-                <button class="btn w-100 mt-20" onclick="closeReviewReportModal()" style="background: rgba(255,255,255,0.1); color: white;">
+                <button class="btn w-50 mt-20" onclick="closeReviewReportModal()" style="background: #f27474; color: white;">
                     <i class="fas fa-times"></i> Закрыть
                 </button>
             </div>
@@ -5929,7 +5928,7 @@
                             
                             <div id="task-modal-actions" class="d-flex gap-10"></div>
                             
-                            <button class="btn w-100 mt-20" onclick="closeTaskModal()" style="background: rgba(255,255,255,0.1); color: white;">
+                            <button class="btn w-50 mt-20" onclick="closeTaskModal()" style="background: #f27474; color: white;">
                                 <i class="fas fa-times"></i> Закрыть
                             </button>
                         </div>
@@ -6443,7 +6442,7 @@
             card.className = 'event-card-simple';
             card.setAttribute('data-event-id', event.id);
             card.style.cssText = `
-                background: rgba(255, 255, 255, 0.05);
+                background: #EEE;
                 border-radius: 15px;
                 padding: 0;
                 cursor: pointer;
