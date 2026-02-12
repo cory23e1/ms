@@ -1052,7 +1052,7 @@
         background: rgba(255, 255, 255, 0.1);
         border: 2px solid rgba(255, 215, 0, 0.3);
         border-radius: 8px;
-        color: white;
+        color: #555;
         font-size: 16px;
         transition: all 0.3s;
     }
@@ -2552,16 +2552,16 @@
                 
                 <div class="mb-15">
                     <div class="d-flex gap-10 mb-15">
-                        <button class="btn" onclick="selectAttachmentType('image')" style="background: rgba(255,255,255,0.1); color: white;">
+                        <button class="btn" onclick="selectAttachmentType('image')" style="background: #555; color:white;">
                             <i class="fas fa-image"></i> Изображение
                         </button>
-                        <button class="btn" onclick="selectAttachmentType('gif')" style="background: rgba(255,255,255,0.1); color: white;">
+                        <button class="btn" onclick="selectAttachmentType('gif')" style="background: #555; color: white;">
                             <i class="fas fa-photo-video"></i> GIF
                         </button>
-                        <button class="btn" onclick="selectAttachmentType('video')" style="background: rgba(255,255,255,0.1); color: white;">
+                        <button class="btn" onclick="selectAttachmentType('video')" style="background: #555; color: white;">
                             <i class="fas fa-video"></i> Видео
                         </button>
-                        <button class="btn" onclick="selectAttachmentType('file')" style="background: rgba(255,255,255,0.1); color: white;">
+                        <button class="btn" onclick="selectAttachmentType('file')" style="background: #555; color: white;">
                             <i class="fas fa-file"></i> Файл
                         </button>
                     </div>
@@ -2581,7 +2581,7 @@
                 </div>
                 
                 <div class="d-flex justify-between">
-                    <button class="btn" onclick="closeAttachmentModal()" style="background: rgba(255,255,255,0.1); color: white;">
+                    <button class="btn" onclick="closeAttachmentModal()" style="background: rgb(219 105 105); color: white;">
                         <i class="fas fa-times"></i> Отмена
                     </button>
                     <button class="btn btn-primary" onclick="attachFile()">
@@ -4690,7 +4690,7 @@
             const card = document.createElement('div');
             card.className = 'material-card';
             card.style.cssText = `
-                background: rgba(255, 255, 255, 0.05);
+                background: #eee;
                 border-radius: 15px;
                 overflow: hidden;
                 border: 1px solid rgb(202 184 184 / 58%);
