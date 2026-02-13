@@ -2292,23 +2292,6 @@
             </div>
 
             <!-- ВКЛАДКА АДАПТАЦИИ -->
-            <!-- <div class="tab-content" id="adaptation-tab">
-                <h2 class="mb-20"><i class="fas fa-graduation-cap"></i> Материалы для адаптации</h2>
-                
-                <div class="materials-list" id="materials-list">
-                    <div class="material-item">
-                        <div class="material-icon">
-                            <i class="fas fa-book"></i>
-                        </div>
-                        <div class="material-content">
-                            <div class="material-title">Добро пожаловать!</div>
-                            <div class="material-description">Здесь будут размещены материалы для адаптации новых сотрудников</div>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
-
-            <!-- ВКЛАДКА АДАПТАЦИИ -->
             <div class="tab-content" id="adaptation-tab">
                 <h2 class="mb-20"><i class="fas fa-graduation-cap"></i> Материалы для адаптации</h2>
                 
@@ -4504,55 +4487,20 @@
 
         function deleteMessage(messageId) {
             if (!isAdmin) return;
-            
-            Swal.fire({
-                title: 'Удалить сообщение?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Удалить',
-                cancelButtonText: 'Отмена'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    database.ref('messages/' + messageId).remove();
-                    showAlert('Сообщение удалено!', 'success');
-                }
-            });
+            database.ref('messages/' + messageId).remove();
+            showAlert('Сообщение удалено!', 'success');
         }
 
         function deleteAllMessages() {
             if (!isAdmin) return;
-            
-            Swal.fire({
-                title: 'Удалить ВСЕ сообщения?',
-                text: 'Это действие нельзя отменить!',
-                icon: 'error',
-                showCancelButton: true,
-                confirmButtonText: 'Удалить всё',
-                cancelButtonText: 'Отмена'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    database.ref('messages').remove();
-                    showAlert('Все сообщения удалены!', 'success');
-                }
-            });
+            database.ref('messages').remove();
+            showAlert('Все сообщения удалены!', 'success');
         }
 
         function clearDatabase() {
             if (!isAdmin) return;
-            
-            Swal.fire({
-                title: 'Очистить всю базу данных?',
-                text: 'Удалятся все сообщения и пользователи!',
-                icon: 'error',
-                showCancelButton: true,
-                confirmButtonText: 'Очистить',
-                cancelButtonText: 'Отмена'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    database.ref().remove();
-                    showAlert('База данных очищена!', 'success');
-                }
-            });
+            database.ref().remove();
+            showAlert('База данных очищена!', 'success');
         }
 
         //МАТЕРИАЛЫ
@@ -4988,27 +4936,15 @@
         
         function deleteMaterial(materialId) {
             if (!isAdmin) return;
-            
-            Swal.fire({
-                title: 'Удалить материал?',
-                text: 'Материал будет удален безвозвратно',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Удалить',
-                cancelButtonText: 'Отмена'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    database.ref('materials/' + materialId).remove()
-                        .then(() => {
-                            showAlert('Материал удален!', 'success');
-                            Swal.close();
-                        })
-                        .catch(error => {
-                            console.error('Ошибка:', error);
-                            showAlert('Ошибка', 'error', 'Не удалось удалить материал');
-                        });
-                }
-            });
+            database.ref('materials/' + materialId).remove()
+                .then(() => {
+                    showAlert('Материал удален!', 'success');
+                    Swal.close(); // закрываем модальное окно материала
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    showAlert('Ошибка', 'error', 'Не удалось удалить материал');
+                });
         }
         
         function filterMaterials(filter) {
@@ -6103,44 +6039,20 @@
                 return;
             }
             
-            Swal.fire({
-                title: 'Выполнить задание?',
-                text: 'Вы действительно выполнили это задание?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Да, выполнил',
-                cancelButtonText: 'Отмена'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    currentUser.completedTasks.push(taskId);
-                    
-                    const task = tasks[taskId];
-                    const pointsMatch = task.reward.match(/\d+/);
-                    if (pointsMatch) {
-                        currentUser.points += parseInt(pointsMatch[0]);
-                    }
-                    
-                    saveUserProfile();
-                    showAlert('Поздравляем!', 'success', 'Задание выполнено!');
-                }
-            });
+            currentUser.completedTasks.push(taskId);
+            const task = tasks[taskId];
+            const pointsMatch = task.reward.match(/\d+/);
+            if (pointsMatch) {
+                currentUser.points += parseInt(pointsMatch[0]);
+            }
+            saveUserProfile();
+            showAlert('Поздравляем!', 'success', 'Задание выполнено!');
         }
 
         function deleteTask(taskId) {
             if (!isAdmin) return;
-            
-            Swal.fire({
-                title: 'Удалить задание?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Удалить',
-                cancelButtonText: 'Отмена'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    database.ref('tasks/' + taskId).remove();
-                    showAlert('Задание удалено!', 'success');
-                }
-            });
+            database.ref('tasks/' + taskId).remove();
+            showAlert('Задание удалено!', 'success');
         }
 
         function openReportModal(taskId) {
@@ -6192,61 +6104,47 @@
                 return;
             }
             
-            Swal.fire({
-                title: 'Отправить отчет?',
-                text: 'Отчет будет отправлен на проверку наставнику',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Отправить',
-                cancelButtonText: 'Отмена',
-                showLoaderOnConfirm: true,
-                preConfirm: async () => {
-                    try {
-                        let fileUrl = '';
-                        let fileName = '';
-                        
-                        if (reportFile) {
-                            const reader = new FileReader();
-                            reader.onload = function(e) {
-                                fileUrl = e.target.result;
-                                fileName = reportFile.name;
-                            };
-                            reader.readAsDataURL(reportFile);
-                        }
-                        
-                        const updateData = {
-                            'report': {
-                                fileUrl: fileUrl,
-                                fileName: fileName,
-                                submittedAt: Date.now(),
-                                status: 'submitted',
-                                comment: comment,
-                                submittedBy: currentUser.id
-                            }
-                        };
-                        
-                        await database.ref(`tasks/${currentReportTask.id}`).update(updateData);
-                        
-                        if (tasks[currentReportTask.id]) {
-                            tasks[currentReportTask.id].report = {
-                                ...tasks[currentReportTask.id].report,
-                                ...updateData.report
-                            };
-                        }
-                        
-                        return true;
-                    } catch (error) {
-                        Swal.showValidationMessage(`Ошибка: ${error.message}`);
-                        return false;
+            try {
+                let fileUrl = '';
+                let fileName = '';
+                
+                if (reportFile) {
+                    const reader = new FileReader();
+                    fileUrl = await new Promise((resolve, reject) => {
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(reportFile);
+                    });
+                    fileName = reportFile.name;
+                }
+                
+                const updateData = {
+                    'report': {
+                        fileUrl: fileUrl,
+                        fileName: fileName,
+                        submittedAt: Date.now(),
+                        status: 'submitted',
+                        comment: comment,
+                        submittedBy: currentUser.id
                     }
+                };
+                
+                await database.ref(`tasks/${currentReportTask.id}`).update(updateData);
+                
+                if (tasks[currentReportTask.id]) {
+                    tasks[currentReportTask.id].report = {
+                        ...tasks[currentReportTask.id].report,
+                        ...updateData.report
+                    };
                 }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    showAlert('Успех!', 'success', 'Отчет отправлен на проверку');
-                    closeReportModal();
-                    displayTasks();
-                }
-            });
+                
+                showAlert('Успех!', 'success', 'Отчет отправлен на проверку');
+                closeReportModal();
+                displayTasks();
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showAlert('Ошибка', 'error', 'Не удалось отправить отчет');
+            }
         }
         
         function reviewReport(taskId) {
@@ -6819,27 +6717,15 @@
         
         function deleteEvent(eventId) {
             if (!isAdmin) return;
-            
-            Swal.fire({
-                title: 'Удалить мероприятие?',
-                text: 'Все данные о мероприятии будут удалены',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Удалить',
-                cancelButtonText: 'Отмена'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    database.ref('events/' + eventId).remove()
-                        .then(() => {
-                            showAlert('Мероприятие удалено!', 'success');
-                            closeEventModal();
-                        })
-                        .catch(error => {
-                            console.error('Ошибка:', error);
-                            showAlert('Ошибка', 'error', 'Не удалось удалить мероприятие');
-                        });
-                }
-            });
+            database.ref('events/' + eventId).remove()
+                .then(() => {
+                    showAlert('Мероприятие удалено!', 'success');
+                    closeEventModal();
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    showAlert('Ошибка', 'error', 'Не удалось удалить мероприятие');
+                });
         }
 
         function switchEventTab(tabName) {
