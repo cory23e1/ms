@@ -289,8 +289,29 @@
     
     .dashboard-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        grid-template-columns: 1.5fr 2.5fr; /* карта ~37.5% */
+        grid-template-areas: 
+            "map events"
+            "map tasks"
+            "materials users";
         gap: 25px;
+    }
+
+    /* Назначаем области каждому блоку */
+    .card-map {
+        grid-area: map;
+    }
+    .card-events {
+        grid-area: events;
+    }
+    .card-tasks {
+        grid-area: tasks;
+    }
+    .card-materials {
+        grid-area: materials;
+    }
+    .card-users {
+        grid-area: users;
     }
     
     .dashboard-card {
@@ -1722,6 +1743,16 @@
             font-size: 11px;
             padding: 8px 5px;
         }
+
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+            grid-template-areas: 
+                "map"
+                "events"
+                "tasks"
+                "materials"
+                "users";
+        }
     }
 
     /* Стили для материалов */
@@ -2006,7 +2037,7 @@
                     
                     <div class="dashboard-grid">
                         <!-- НОВЫЙ БЛОК КАРТЫ -->
-                        <div class="dashboard-card">
+                        <div class="dashboard-card card-map">
                             <div class="dashboard-map-header">
                                 <i class="fas fa-map-marked-alt"></i>
                                 <span>Карта предприятия</span>
@@ -2017,7 +2048,7 @@
                         </div>
                         
                         <!-- Карточка мероприятий -->
-                        <div class="dashboard-card">
+                        <div class="dashboard-card card-events">
                             <div class="dashboard-card-header">
                                 <div class="dashboard-card-title">
                                     <i class="fas fa-calendar-alt"></i>
@@ -2035,7 +2066,7 @@
                         </div>
                         
                         <!-- Карточка заданий -->
-                        <div class="dashboard-card">
+                        <div class="dashboard-card card-tasks">
                             <div class="dashboard-card-header">
                                 <div class="dashboard-card-title">
                                     <i class="fas fa-tasks"></i>
@@ -2053,7 +2084,7 @@
                         </div>
                         
                         <!-- Карточка материалов -->
-                        <div class="dashboard-card">
+                        <div class="dashboard-card card-materials">
                             <div class="dashboard-card-header">
                                 <div class="dashboard-card-title">
                                     <i class="fas fa-graduation-cap"></i>
@@ -2071,7 +2102,7 @@
                         </div>
                         
                         <!-- Карточка пользователей -->
-                        <div class="dashboard-card">
+                        <div class="dashboard-card card-users">
                             <div class="dashboard-card-header">
                                 <div class="dashboard-card-title">
                                     <i class="fas fa-users"></i>
