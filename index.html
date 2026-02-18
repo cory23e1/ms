@@ -2466,8 +2466,29 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Награда *</label>
-                        <input type="text" class="form-control" id="task-reward" placeholder="Например: 100 очков, Бонус, Сертификат">
+                        <label class="form-label">Награда (очки) *</label>
+                        <input type="number" class="form-control" id="task-reward-points" placeholder="Например: 100" min="0" step="1" value="0">
+                        <small style="color: rgba(255,255,255,0.5);">Количество очков за выполнение</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Тип задания *</label>
+                        <div style="display: flex; gap: 20px;">
+                            <label style="display: flex; align-items: center; gap: 5px; color: var(--primary);">
+                                <input type="radio" name="task-type" value="regular" checked onchange="toggleTaskType()"> Обычное (с отчетом)
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 5px; color: var(--primary);">
+                                <input type="radio" name="task-type" value="quiz" onchange="toggleTaskType()"> Тест (с вопросами)
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="quiz-questions-section" style="display: none; margin-top: 20px; border-top: 1px solid rgba(255,215,0,0.3); padding-top: 20px;">
+                        <h3><i class="fas fa-question-circle"></i> Вопросы теста</h3>
+                        <div id="quiz-questions-container"></div>
+                        <button type="button" class="btn btn-primary" onclick="addQuizQuestion()" style="margin-top: 10px;">
+                            <i class="fas fa-plus"></i> Добавить вопрос
+                        </button>
                     </div>
 
                     <div class="form-group" id="task-assign-group" style="display: none;">
@@ -3002,6 +3023,34 @@
             </div>
         </div>
 
+        <!-- Модальное окно прохождения теста -->
+        <div class="modal" id="quiz-modal">
+            <div class="modal-content" style="max-width: 700px;">
+                <h2 class="mb-20" id="quiz-modal-title">Тест: <span id="quiz-task-title"></span></h2>
+                <div id="quiz-content">
+                    <div id="quiz-question-display" style="margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h3 id="quiz-question-number"></h3>
+                            <span id="quiz-progress"></span>
+                        </div>
+                        <div id="quiz-question-text" style="font-size: 18px; margin: 15px 0;"></div>
+                        <div id="quiz-question-image" style="text-align: center; margin-bottom: 15px;"></div>
+                        <div id="quiz-options" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; gap: 10px;">
+                        <button class="btn" id="quiz-prev-btn" onclick="prevQuizQuestion()" style="background: #555; color: white;" disabled>← Назад</button>
+                        <button class="btn btn-primary" id="quiz-next-btn" onclick="nextQuizQuestion()">Далее →</button>
+                        <button class="btn btn-success" id="quiz-submit-btn" onclick="submitQuiz()" style="display: none;">Завершить тест</button>
+                    </div>
+                </div>
+                <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+                    <button class="btn" onclick="closeQuizModal()" style="background: #f27474; color: white;">
+                        <i class="fas fa-times"></i> Закрыть
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div class="modal" id="attach-content-modal">
             <div class="modal-content" style="max-width: 600px;">
                 <h2 class="mb-20"><i class="fas fa-link"></i> Прикрепить существующий контент</h2>
@@ -3192,6 +3241,11 @@
         let phonebookContacts = {};
         let currentContactId = null; // для редактирования/просмотра
         const SOUND_COOLDOWN = 2000; // 2 секунды между звуками
+        let taskQuestions = []; // временное хранение вопросов при создании
+        let currentQuizTask = null; // текущий проходимый тест
+        let currentQuizAnswers = []; // ответы пользователя (массив индексов)
+        let currentQuizIndex = 0;
+
         
         const emojiCategories = {
             smileys: ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🥸', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕'],
@@ -5851,11 +5905,14 @@
                         </div>
                     `;
                 }
+                const typeIcon = task.type === 'quiz' 
+                    ? '<span style="margin-left: 8px; background: var(--primary); color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;"><i class="fas fa-question-circle"></i> Тест</span>' 
+                    : '<span style="margin-left: 8px; background: #6c757d; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;"><i class="fas fa-file-alt"></i> Задание</span>';
                 
                 card.innerHTML = `
                     <div class="task-header">
-                        <h3 class="task-title">${task.title || 'Без названия'}</h3>
-                        <span class="task-reward" style="background: ${statusColor}">${task.reward || 'Нет награды'}</span>
+                        <h3 class="task-title">${task.title || 'Без названия'} ${typeIcon}</h3>
+                        <span class="task-reward" style="background: ${statusColor}">${task.rewardPoints || 0} очков</span>
                     </div>
                     
                     <div style="display: flex; align-items: center; margin: 5px 0;">
@@ -5878,6 +5935,9 @@
                         <!-- Кнопки добавляются динамически -->
                     </div>
                 `;
+                const typeIcon = task.type === 'quiz' ? 
+                '<span style="margin-left: 8px; background: var(--primary); color: white; padding: 2px 6px; border-radius: 8px; font-size: 10px;">Тест</span>' : 
+                '<span style="margin-left: 8px; background: #555; color: white; padding: 2px 6px; border-radius: 8px; font-size: 10px;">Задание</span>';
                 
                 updateTaskActions(task.id, task);
                 
@@ -5918,6 +5978,15 @@
                 actionsDiv.innerHTML += `
                     <button class="btn btn-success" onclick="openReportModal('${taskId}')">
                         <i class="fas fa-file-upload"></i> Выполнить
+                    </button>
+                `;
+            }
+
+            // Кнопка "Пройти тест" для заданий типа quiz
+            if (task.type === 'quiz' && task.status === 'active' && !isCompleted) {
+                actionsDiv.innerHTML += `
+                    <button class="btn btn-success" onclick="takeQuiz('${taskId}')">
+                        <i class="fas fa-play"></i> Пройти тест
                     </button>
                 `;
             }
@@ -6072,13 +6141,25 @@
             
             const title = document.getElementById('task-title').value.trim();
             const description = document.getElementById('task-description').value.trim();
-            const reward = document.getElementById('task-reward').value.trim();
+            const rewardPoints = parseInt(document.getElementById('task-reward-points').value) || 0;
             
-            if (!title || !description || !reward) {
-                showAlert('Ошибка', 'warning', 'Заполните все обязательные поля!');
+            if (!title || !description || rewardPoints <= 0) {
+                showAlert('Ошибка', 'warning', 'Заполните все обязательные поля! Укажите количество очков больше 0');
                 return;
             }
-
+        
+            const taskType = document.querySelector('input[name="task-type"]:checked').value;
+            let questions = [];
+            
+            if (taskType === 'quiz') {
+                questions = collectQuizQuestions();
+                if (questions === null) return; // ошибка уже показана
+                if (questions.length === 0) {
+                    showAlert('Добавьте хотя бы один вопрос', 'warning');
+                    return;
+                }
+            }
+        
             let assignedTo = null;
             if (currentUser.role === 'mentor') {
                 const specialistSelect = document.getElementById('task-specialist');
@@ -6092,13 +6173,15 @@
                 id: taskId,
                 title: title,
                 description: description,
-                reward: reward,
+                rewardPoints: rewardPoints, // числовое поле
                 attachments: taskFiles,
                 createdBy: currentUser.id,
                 assignedTo: assignedTo,
                 assignedBy: currentUser.id,
                 createdAt: Date.now(),
                 status: 'active',
+                type: taskType, // 'regular' или 'quiz'
+                questions: questions, // массив вопросов для теста
                 report: {
                     fileUrl: '',
                     fileName: '',
@@ -6153,10 +6236,16 @@
         function clearTaskForm() {
             document.getElementById('task-title').value = '';
             document.getElementById('task-description').value = '';
-            document.getElementById('task-reward').value = '';
+            document.getElementById('task-reward-points').value = '0';
             document.getElementById('task-files').value = '';
             document.getElementById('task-file-preview').innerHTML = '';
             taskFiles = [];
+            
+            // Сброс типа задания на обычное
+            document.querySelector('input[name="task-type"][value="regular"]').checked = true;
+            toggleTaskType(); // скрыть секцию вопросов
+            document.getElementById('quiz-questions-container').innerHTML = '';
+            taskQuestions = [];
         }
 
         function viewTask(taskId) {
@@ -6518,9 +6607,8 @@
                 const task = tasks[taskId];
                 const specialistId = task.assignedTo;
                 if (specialistId && specialistId !== 'all' && users[specialistId]) {
-                    const pointsMatch = task.reward.match(/\d+/);
-                    if (pointsMatch) {
-                        const points = parseInt(pointsMatch[0]);
+                    const points = task.rewardPoints || 0;
+                    if (points > 0 && specialistId && specialistId !== 'all' && users[specialistId]) {
                         users[specialistId].points = (users[specialistId].points || 0) + points;
                         await database.ref(`users/${specialistId}`).update({
                             points: users[specialistId].points
@@ -8028,9 +8116,308 @@
             // Можно открыть ссылку tel:
             window.location.href = `tel:${phone.replace(/[^0-9+]/g, '')}`;
         }
+
+        // Переключение типа задания (показ/скрытие секции вопросов)
+        function toggleTaskType() {
+            const isQuiz = document.querySelector('input[name="task-type"]:checked').value === 'quiz';
+            const quizSection = document.getElementById('quiz-questions-section');
+            if (quizSection) {
+                quizSection.style.display = isQuiz ? 'block' : 'none';
+            }
+            if (!isQuiz) {
+                // Очищаем вопросы, если переключились на обычное задание
+                document.getElementById('quiz-questions-container').innerHTML = '';
+                taskQuestions = [];
+            }
+        }
+        
+        // Добавление нового вопроса в форму создания
+        function addQuizQuestion() {
+            const container = document.getElementById('quiz-questions-container');
+            const template = document.getElementById('quiz-question-template').cloneNode(true);
+            template.style.display = 'block';
+            template.id = ''; // убираем id, чтобы не было дубликатов
+            
+            // Обновляем номера вопросов
+            const questionNumber = container.children.length + 1;
+            template.querySelector('.question-number').textContent = questionNumber;
+            
+            // Устанавливаем уникальные name для radio (чтобы не пересекались)
+            const radios = template.querySelectorAll('.correct-radio');
+            radios.forEach(radio => {
+                radio.name = `correct-${Date.now()}-${questionNumber}`;
+            });
+            
+            container.appendChild(template);
+        }
+        
+        // Удаление вопроса
+        function removeQuizQuestion(btn) {
+            const questionItem = btn.closest('.quiz-question-item');
+            if (questionItem) {
+                questionItem.remove();
+                // Перенумеровать оставшиеся вопросы
+                const container = document.getElementById('quiz-questions-container');
+                Array.from(container.children).forEach((item, idx) => {
+                    item.querySelector('.question-number').textContent = idx + 1;
+                });
+            }
+        }
+        
+        // Предпросмотр картинки вопроса
+        function previewQuizImage(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            if (file.size > 2 * 1024 * 1024) {
+                showAlert('Изображение слишком большое! Максимум 2MB', 'error');
+                input.value = '';
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewDiv = input.closest('.form-group').querySelector('.question-image-preview');
+                const img = previewDiv.querySelector('img');
+                img.src = e.target.result;
+                previewDiv.style.display = 'block';
+                
+                // Сохраняем данные картинки в hidden поле
+                const hiddenField = input.closest('.quiz-question-item').querySelector('.question-image-data');
+                hiddenField.value = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // Сбор данных вопросов перед созданием задания
+        function collectQuizQuestions() {
+            const items = document.querySelectorAll('#quiz-questions-container .quiz-question-item');
+            const questions = [];
+            
+            for (let item of items) {
+                const text = item.querySelector('.question-text').value.trim();
+                if (!text) {
+                    showAlert('Заполните текст вопроса', 'warning');
+                    return null;
+                }
+                
+                const options = [
+                    item.querySelector('.option-1').value.trim(),
+                    item.querySelector('.option-2').value.trim(),
+                    item.querySelector('.option-3').value.trim(),
+                    item.querySelector('.option-4').value.trim()
+                ];
+                
+                if (options.some(opt => !opt)) {
+                    showAlert('Заполните все варианты ответа', 'warning');
+                    return null;
+                }
+                
+                const correctRadio = item.querySelector('.correct-radio:checked');
+                if (!correctRadio) {
+                    showAlert('Выберите правильный ответ для вопроса', 'warning');
+                    return null;
+                }
+                const correct = parseInt(correctRadio.value);
+                
+                const imageData = item.querySelector('.question-image-data').value || '';
+                
+                questions.push({
+                    text: text,
+                    options: options,
+                    correct: correct,
+                    image: imageData
+                });
+            }
+            
+            return questions;
+        }
+
+        // Функции для прохождения теста
+        function takeQuiz(taskId) {
+            const task = tasks[taskId];
+            if (!task || task.type !== 'quiz') return;
+            
+            currentQuizTask = task;
+            currentQuizAnswers = new Array(task.questions.length).fill(-1); // -1 значит не отвечено
+            currentQuizIndex = 0;
+            
+            document.getElementById('quiz-task-title').textContent = task.title;
+            document.getElementById('quiz-modal').classList.add('active');
+            
+            renderQuizQuestion();
+        }
+        
+        function renderQuizQuestion() {
+            if (!currentQuizTask) return;
+            
+            const question = currentQuizTask.questions[currentQuizIndex];
+            const total = currentQuizTask.questions.length;
+            
+            document.getElementById('quiz-question-number').textContent = `Вопрос ${currentQuizIndex + 1} из ${total}`;
+            document.getElementById('quiz-question-text').textContent = question.text;
+            document.getElementById('quiz-progress').textContent = `${currentQuizIndex + 1}/${total}`;
+            
+            // Картинка
+            const imageDiv = document.getElementById('quiz-question-image');
+            if (question.image) {
+                imageDiv.innerHTML = `<img src="${question.image}" style="max-width: 100%; max-height: 200px; border-radius: 5px;">`;
+            } else {
+                imageDiv.innerHTML = '';
+            }
+            
+            // Варианты ответов
+            const optionsDiv = document.getElementById('quiz-options');
+            optionsDiv.innerHTML = '';
+            question.options.forEach((opt, idx) => {
+                const checked = currentQuizAnswers[currentQuizIndex] === idx ? 'checked' : '';
+                optionsDiv.innerHTML += `
+                    <label style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px; cursor: pointer;">
+                        <input type="radio" name="quiz-option" value="${idx}" ${checked} onchange="saveQuizAnswer(${idx})">
+                        <span>${opt}</span>
+                    </label>
+                `;
+            });
+            
+            // Управление кнопками
+            document.getElementById('quiz-prev-btn').disabled = currentQuizIndex === 0;
+            if (currentQuizIndex === total - 1) {
+                document.getElementById('quiz-next-btn').style.display = 'none';
+                document.getElementById('quiz-submit-btn').style.display = 'inline-block';
+            } else {
+                document.getElementById('quiz-next-btn').style.display = 'inline-block';
+                document.getElementById('quiz-submit-btn').style.display = 'none';
+            }
+        }
+        
+        function saveQuizAnswer(answerIndex) {
+            if (currentQuizTask) {
+                currentQuizAnswers[currentQuizIndex] = answerIndex;
+            }
+        }
+        
+        function nextQuizQuestion() {
+            if (currentQuizIndex < currentQuizTask.questions.length - 1) {
+                currentQuizIndex++;
+                renderQuizQuestion();
+            }
+        }
+        
+        function prevQuizQuestion() {
+            if (currentQuizIndex > 0) {
+                currentQuizIndex--;
+                renderQuizQuestion();
+            }
+        }
+        
+        function submitQuiz() {
+            // Проверяем, что на все вопросы даны ответы
+            const unanswered = currentQuizAnswers.indexOf(-1);
+            if (unanswered !== -1) {
+                showAlert('Ответьте на все вопросы!', 'warning');
+                // Перейти к первому неотвеченному
+                currentQuizIndex = unanswered;
+                renderQuizQuestion();
+                return;
+            }
+            
+            // Проверяем правильность ответов
+            const questions = currentQuizTask.questions;
+            let correctCount = 0;
+            for (let i = 0; i < questions.length; i++) {
+                if (currentQuizAnswers[i] === questions[i].correct) {
+                    correctCount++;
+                }
+            }
+            
+            if (correctCount === questions.length) {
+                // Все ответы верны – завершаем задание
+                completeQuizTask(currentQuizTask.id);
+            } else {
+                showAlert(`Вы ответили правильно на ${correctCount} из ${questions.length} вопросов. Попробуйте снова.`, 'info');
+                // Можно сбросить answers или оставить как есть для повторной попытки
+            }
+        }
+        
+        function completeQuizTask(taskId) {
+            const task = tasks[taskId];
+            if (!task) return;
+            
+            // Начисляем очки
+            const points = task.rewardPoints || 0;
+            if (points > 0 && task.assignedTo && task.assignedTo !== 'all' && task.assignedTo === currentUser.id) {
+                currentUser.points = (currentUser.points || 0) + points;
+                database.ref(`users/${currentUser.id}/points`).set(currentUser.points);
+                saveUserProfile();
+            }
+            
+            // Обновляем статус задания
+            database.ref(`tasks/${taskId}`).update({
+                status: 'completed',
+                completedAt: Date.now(),
+                completedBy: currentUser.id
+            }).then(() => {
+                showAlert('Поздравляем!', 'success', `Тест пройден! Вы получили ${points} очков.`);
+                closeQuizModal();
+                displayTasks(); // обновить список
+            }).catch(error => {
+                console.error('Ошибка:', error);
+                showAlert('Ошибка', 'error', 'Не удалось завершить тест');
+            });
+        }
+        
+        function closeQuizModal() {
+            document.getElementById('quiz-modal').classList.remove('active');
+            currentQuizTask = null;
+            currentQuizAnswers = [];
+            currentQuizIndex = 0;
+        }
     </script>
     <audio id="fart-sound" preload="auto">
         <source src="https://assets.mixkit.co/sfx/preview/mixkit-cartoon-fart-bleep-1036.mp3" type="audio/mpeg">
     </audio>
+
+    <!-- Шаблон вопроса для теста (скрыт) -->
+    <div id="quiz-question-template" style="display: none;">
+        <div class="quiz-question-item" style="background: rgba(255,255,255,0.05); border-radius: 10px; padding: 15px; margin-bottom: 15px; border: 1px solid rgba(255,215,0,0.3);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h4 style="margin: 0;">Вопрос <span class="question-number">1</span></h4>
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeQuizQuestion(this)" style="padding: 5px 10px;">
+                    <i class="fas fa-trash"></i> Удалить
+                </button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Текст вопроса *</label>
+                <input type="text" class="form-control question-text" placeholder="Введите вопрос">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Изображение (необязательно)</label>
+                <input type="file" class="form-control question-image" accept="image/*" onchange="previewQuizImage(this)">
+                <div class="question-image-preview" style="margin-top: 10px; max-width: 200px; display: none;">
+                    <img src="" style="width: 100%; border-radius: 5px;">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Варианты ответа *</label>
+                <div style="display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; margin-bottom: 5px;">
+                    <input type="text" class="form-control option-1" placeholder="Вариант 1">
+                    <input type="radio" name="correct-{INDEX}" value="0" class="correct-radio">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; margin-bottom: 5px;">
+                    <input type="text" class="form-control option-2" placeholder="Вариант 2">
+                    <input type="radio" name="correct-{INDEX}" value="1" class="correct-radio">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; margin-bottom: 5px;">
+                    <input type="text" class="form-control option-3" placeholder="Вариант 3">
+                    <input type="radio" name="correct-{INDEX}" value="2" class="correct-radio">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; margin-bottom: 5px;">
+                    <input type="text" class="form-control option-4" placeholder="Вариант 4">
+                    <input type="radio" name="correct-{INDEX}" value="3" class="correct-radio">
+                </div>
+            </div>
+            <input type="hidden" class="question-image-data" value="">
+        </div>
+    </div>
 </body>
 </html>
