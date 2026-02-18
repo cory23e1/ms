@@ -6457,6 +6457,8 @@
         function reviewReport(taskId) {
             const task = tasks[taskId];
             if (!task) return;
+
+            currentReportTask = task;
             
             const report = task.report || {};
             const user = users[report.submittedBy] || {};
@@ -6513,7 +6515,7 @@
                 
                 const task = tasks[taskId];
                 const specialistId = task.assignedTo;
-                if (specialistId && users[specialistId]) {
+                if (specialistId && specialistId !== 'all' && users[specialistId]) {
                     const pointsMatch = task.reward.match(/\d+/);
                     if (pointsMatch) {
                         const points = parseInt(pointsMatch[0]);
