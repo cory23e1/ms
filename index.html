@@ -6502,9 +6502,11 @@
             
             try {
                 await database.ref(`tasks/${taskId}`).update({
-                    'report.status': 'approved',
-                    'report.mentorFeedback': feedback,
-                    'status': 'completed'
+                    report: {
+                        status: 'approved',
+                        mentorFeedback: feedback
+                    },
+                    status: 'completed'
                 });
                 
                 if (tasks[taskId]) {
@@ -6548,8 +6550,10 @@
             
             try {
                 await database.ref(`tasks/${taskId}`).update({
-                    'report.status': 'rejected',
-                    'report.mentorFeedback': feedback
+                    report: {
+                        status: 'rejected',
+                        mentorFeedback: feedback
+                    }
                 });
                 
                 if (tasks[taskId]) {
