@@ -8342,32 +8342,38 @@
         function completeQuizTask(taskId) {
             const task = tasks[taskId];
             if (!task) return;
-            
-            // Начисляем очки
+        
+            // Начисляем очки, если задание назначено текущему пользователю
             const points = task.rewardPoints || 0;
             if (points > 0 && task.assignedTo && task.assignedTo !== 'all' && task.assignedTo === currentUser.id) {
                 currentUser.points = (currentUser.points || 0) + points;
                 database.ref(`users/${currentUser.id}/points`).set(currentUser.points);
                 saveUserProfile();
             }
-            
+        
             // Обновляем статус задания
             database.ref(`tasks/${taskId}`).update({
                 status: 'completed',
                 completedAt: Date.now(),
                 completedBy: currentUser.id
             }).then(() => {
-                showAlert('Поздравляем!', 'success', `Тест пройден! Вы получили ${points} очков.`);
+                // Сначала закрываем модалку
                 closeQuizModal();
-                displayTasks(); // обновить список
+                // Потом показываем сообщение
+                showAlert('Поздравляем!', 'success', `Тест пройден! Вы получили ${points} очков.`);
+                // Обновляем список заданий
+                displayTasks();
             }).catch(error => {
-                console.error('Ошибка:', error);
+                console.error('Ошибка при завершении теста:', error);
                 showAlert('Ошибка', 'error', 'Не удалось завершить тест');
             });
         }
         
         function closeQuizModal() {
-            document.getElementById('quiz-modal').classList.remove('active');
+            const modal = document.getElementById('quiz-modal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
             currentQuizTask = null;
             currentQuizAnswers = [];
             currentQuizIndex = 0;
