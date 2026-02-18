@@ -293,7 +293,8 @@
         grid-template-areas: 
             "map events"
             "map tasks"
-            "materials users";
+            "materials users"
+            "phonebook phonebook";
         gap: 25px;
     }
 
@@ -1751,7 +1752,8 @@
                 "events"
                 "tasks"
                 "materials"
-                "users";
+                "users"
+                "phonebook";
         }
     }
 
@@ -1878,6 +1880,107 @@
 
     .last-seen{
         color:rgba(255, 255, 255, 0.7);
+    }
+
+    /* Стили для телефонного справочника */
+    .phonebook-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+    
+    .contact-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border: 1px solid rgba(255, 215, 0, 0.3);
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+    
+    .contact-card:hover {
+        transform: translateY(-3px);
+        border-color: var(--primary);
+        box-shadow: 0 5px 15px rgba(255, 215, 0, 0.2);
+    }
+    
+    .contact-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--primary);
+    }
+    
+    .contact-info {
+        flex: 1;
+    }
+    
+    .contact-name {
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 4px;
+        color: var(--primary);
+    }
+    
+    .contact-phone {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 2px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .contact-position {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.6);
+    }
+    
+    .contact-actions {
+        display: flex;
+        gap: 5px;
+        margin-left: auto;
+    }
+    
+    .contact-actions button {
+        background: transparent;
+        border: none;
+        color: var(--primary);
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 5px;
+        transition: all 0.2s;
+    }
+    
+    .contact-actions button:hover {
+        background: rgba(255, 215, 0, 0.2);
+    }
+    
+    .phonebook-empty {
+        text-align: center;
+        padding: 30px;
+        color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .phonebook-empty i {
+        font-size: 48px;
+        margin-bottom: 15px;
+        color: var(--primary);
+    }
+    
+    .contact-preview {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin: 0 auto 15px;
+        border: 3px solid var(--primary);
+        display: block;
     }
 </style>
     
@@ -2122,6 +2225,24 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- Карточка телефонного справочника -->
+                        <div class="dashboard-card" style="grid-area: phonebook;">
+                            <div class="dashboard-card-header">
+                                <div class="dashboard-card-title">
+                                    <i class="fas fa-phone-alt"></i>
+                                    <span>Телефонный справочник</span>
+                                </div>
+                                <button class="dashboard-card-more" id="add-contact-btn" onclick="openAddContactModal()" style="display: none;">
+                                    <i class="fas fa-plus"></i> Добавить контакт
+                                </button>
+                            </div>
+                            <div class="phonebook-list" id="phonebook-list">
+                                <div class="loading-status">
+                                    <i class="fas fa-spinner fa-spin"></i> Загрузка контактов...
+                                </div>
+                            </div>
+                        </div>
+                        
                     </div>
                 </div>
             </div>
@@ -2940,6 +3061,86 @@
                 </div>
             </div>
         </div>
+
+        <!-- Модальное окно контакта -->
+        <div class="modal" id="contact-modal">
+            <div class="modal-content" style="max-width: 500px;">
+                <h2 class="mb-20" id="contact-modal-title"><i class="fas fa-address-book"></i> Добавить контакт</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">Фото контакта</label>
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+                        <img id="contact-avatar-preview" src="https://ui-avatars.com/api/?name=+&background=4361ee&color=fff" 
+                             alt="Превью" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);">
+                        <button class="btn" onclick="document.getElementById('contact-photo-input').click()" style="background: #555; color: white;">
+                            <i class="fas fa-upload"></i> Загрузить
+                        </button>
+                        <input type="file" id="contact-photo-input" accept="image/*" style="display: none;" onchange="previewContactPhoto(this.files[0])">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">ФИО *</label>
+                    <input type="text" class="form-control" id="contact-name" placeholder="Введите ФИО">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Телефон *</label>
+                    <input type="tel" class="form-control" id="contact-phone" placeholder="+7 (999) 123-45-67">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Должность</label>
+                    <input type="text" class="form-control" id="contact-position" placeholder="Например: Главный инженер">
+                </div>
+                
+                <input type="hidden" id="contact-id">
+                
+                <div class="d-flex justify-between">
+                    <button class="btn" onclick="closeContactModal()" style="background: rgba(255,255,255,0.1); color: white;">
+                        <i class="fas fa-times"></i> Отмена
+                    </button>
+                    <button class="btn btn-primary" onclick="saveContact()">
+                        <i class="fas fa-save"></i> Сохранить
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Модальное окно просмотра контакта -->
+        <div class="modal" id="view-contact-modal">
+            <div class="modal-content" style="max-width: 400px; text-align: center;">
+                <div style="position: relative;">
+                    <img id="view-contact-avatar" src="" alt="Фото" class="contact-preview">
+                    <h2 id="view-contact-name" style="margin: 10px 0 5px;"></h2>
+                    <div id="view-contact-phone" style="font-size: 16px; margin-bottom: 5px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <i class="fas fa-phone"></i> <span></span>
+                    </div>
+                    <div id="view-contact-position" style="color: rgba(255,255,255,0.7); margin-bottom: 20px;">
+                        <i class="fas fa-briefcase"></i> <span></span>
+                    </div>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button class="btn btn-primary" onclick="callContact()">
+                            <i class="fas fa-phone-alt"></i> Позвонить
+                        </button>
+                        <button class="btn" onclick="closeViewContactModal()" style="background: #f27474; color: white;">
+                            <i class="fas fa-times"></i> Закрыть
+                        </button>
+                    </div>
+                    <div id="view-contact-admin-actions" style="margin-top: 15px; display: none;">
+                        <hr style="border-color: rgba(255,215,0,0.3); margin: 15px 0;">
+                        <div style="display: flex; gap: 10px; justify-content: center;">
+                            <button class="btn btn-warning" onclick="editContactFromView()">
+                                <i class="fas fa-edit"></i> Редактировать
+                            </button>
+                            <button class="btn btn-danger" onclick="deleteContactFromView()">
+                                <i class="fas fa-trash"></i> Удалить
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         
     </div>
     
@@ -2988,6 +3189,8 @@
         let unreadMessagesCount = 0;
         let isChatTabActive = false;
         let lastMessageSoundTime = 0;
+        let phonebookContacts = {};
+        let currentContactId = null; // для редактирования/просмотра
         const SOUND_COOLDOWN = 2000; // 2 секунды между звуками
         
         const emojiCategories = {
@@ -3032,6 +3235,7 @@
             initChat();
             initTasks();
             initEventsSystem();
+            loadPhonebookContacts();
             setupEventListeners();
             setTimeout(() => {
                 checkAdminStatus();
@@ -3879,6 +4083,7 @@
             const createEventBtn = document.getElementById('show-create-event-btn');
             const createEventForm = document.getElementById('create-event-form');
             const createMaterialBtn = document.getElementById('show-create-material-btn');
+            const addContactBtn = document.getElementById('add-contact-btn');
             
             if (adminPanel) {
                 adminPanel.style.display = isAdmin ? 'block' : 'none';
@@ -3899,6 +4104,8 @@
             if (createMaterialBtn) {
                 createMaterialBtn.style.display = isAdmin ? 'block' : 'none';
             }
+
+            if (addContactBtn) addContactBtn.style.display = isAdmin ? 'flex' : 'none';
         }
 
         // ЧАТ
@@ -7547,6 +7754,273 @@
             } catch (error) {
                 console.log("Не удалось создать альтернативный звук:", error);
             }
+        }
+
+        // Загрузка контактов из Firebase
+        function loadPhonebookContacts() {
+            database.ref('phonebook').on('value', (snapshot) => {
+                phonebookContacts = snapshot.val() || {};
+                displayPhonebookContacts();
+                
+                // Обновление видимости кнопки добавления для админа
+                const addBtn = document.getElementById('add-contact-btn');
+                if (addBtn) {
+                    addBtn.style.display = isAdmin ? 'flex' : 'none';
+                }
+            });
+        }
+        
+        // Отображение контактов в карточке дашборда
+        function displayPhonebookContacts() {
+            const container = document.getElementById('phonebook-list');
+            if (!container) return;
+            
+            const contactsArray = Object.entries(phonebookContacts).map(([id, contact]) => ({ id, ...contact }));
+            
+            if (contactsArray.length === 0) {
+                container.innerHTML = `
+                    <div class="phonebook-empty">
+                        <i class="fas fa-phone-slash"></i>
+                        <div>Контакты отсутствуют</div>
+                        ${isAdmin ? '<small>Нажмите "Добавить контакт", чтобы создать первый контакт</small>' : ''}
+                    </div>
+                `;
+                return;
+            }
+            
+            // Сортируем по имени
+            contactsArray.sort((a, b) => a.name.localeCompare(b.name));
+            
+            // Показываем первые 6 контактов (остальные можно будет посмотреть в модалке)
+            const displayContacts = contactsArray.slice(0, 6);
+            
+            container.innerHTML = '<div class="phonebook-grid"></div>';
+            const grid = container.querySelector('.phonebook-grid');
+            
+            displayContacts.forEach(contact => {
+                const card = document.createElement('div');
+                card.className = 'contact-card';
+                card.onclick = () => viewContact(contact.id);
+                
+                const avatar = contact.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(contact.name)}&background=4361ee&color=fff`;
+                
+                let actionsHtml = '';
+                if (isAdmin) {
+                    actionsHtml = `
+                        <div class="contact-actions" onclick="event.stopPropagation()">
+                            <button onclick="editContact('${contact.id}')" title="Редактировать"><i class="fas fa-edit"></i></button>
+                            <button onclick="deleteContact('${contact.id}')" title="Удалить"><i class="fas fa-trash"></i></button>
+                        </div>
+                    `;
+                }
+                
+                card.innerHTML = `
+                    <img src="${avatar}" alt="${contact.name}" class="contact-avatar" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(contact.name)}&background=4361ee&color=fff'">
+                    <div class="contact-info">
+                        <div class="contact-name">${contact.name}</div>
+                        <div class="contact-phone"><i class="fas fa-phone"></i> ${contact.phone}</div>
+                        <div class="contact-position">${contact.position || 'Должность не указана'}</div>
+                    </div>
+                    ${actionsHtml}
+                `;
+                
+                grid.appendChild(card);
+            });
+            
+            // Если контактов больше 6, добавить ссылку "Показать все"
+            if (contactsArray.length > 6) {
+                const showAllLink = document.createElement('div');
+                showAllLink.style.textAlign = 'center';
+                showAllLink.style.marginTop = '10px';
+                showAllLink.innerHTML = `<a href="#" onclick="showAllContacts(); return false;" style="color: var(--primary);">Показать все (${contactsArray.length})</a>`;
+                container.appendChild(showAllLink);
+            }
+        }
+        
+        // Показать все контакты в модальном окне (опционально)
+        function showAllContacts() {
+            // Можно реализовать отдельную модалку со всеми контактами
+            // Для простоты просто откроем первый контакт (или можно вывести список)
+            const contactsArray = Object.entries(phonebookContacts).map(([id, contact]) => ({ id, ...contact }));
+            if (contactsArray.length > 0) {
+                viewContact(contactsArray[0].id);
+            }
+        }
+        
+        // Открыть модалку добавления контакта
+        function openAddContactModal() {
+            if (!isAdmin) {
+                showAlert('Ошибка доступа', 'error', 'Только администратор может добавлять контакты!');
+                return;
+            }
+            
+            document.getElementById('contact-modal-title').innerHTML = '<i class="fas fa-address-book"></i> Добавить контакт';
+            document.getElementById('contact-name').value = '';
+            document.getElementById('contact-phone').value = '';
+            document.getElementById('contact-position').value = '';
+            document.getElementById('contact-id').value = '';
+            document.getElementById('contact-avatar-preview').src = 'https://ui-avatars.com/api/?name=+&background=4361ee&color=fff';
+            document.getElementById('contact-modal').classList.add('active');
+        }
+        
+        // Редактирование контакта
+        function editContact(contactId) {
+            if (!isAdmin) return;
+            
+            const contact = phonebookContacts[contactId];
+            if (!contact) return;
+            
+            document.getElementById('contact-modal-title').innerHTML = '<i class="fas fa-edit"></i> Редактировать контакт';
+            document.getElementById('contact-name').value = contact.name || '';
+            document.getElementById('contact-phone').value = contact.phone || '';
+            document.getElementById('contact-position').value = contact.position || '';
+            document.getElementById('contact-id').value = contactId;
+            document.getElementById('contact-avatar-preview').src = contact.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(contact.name)}&background=4361ee&color=fff`;
+            
+            document.getElementById('contact-modal').classList.add('active');
+            closeViewContactModal();
+        }
+        
+        // Сохранить контакт
+        function saveContact() {
+            if (!isAdmin) return;
+            
+            const name = document.getElementById('contact-name').value.trim();
+            const phone = document.getElementById('contact-phone').value.trim();
+            const position = document.getElementById('contact-position').value.trim();
+            const contactId = document.getElementById('contact-id').value;
+            const photo = document.getElementById('contact-avatar-preview').src;
+            
+            if (!name || !phone) {
+                showAlert('Ошибка', 'warning', 'Заполните ФИО и телефон!');
+                return;
+            }
+            
+            const contactData = {
+                name: name,
+                phone: phone,
+                position: position || '',
+                photo: photo.startsWith('data:') ? photo : '', // сохраняем только загруженные фото, не URL
+                createdBy: currentUser.id,
+                createdAt: Date.now(),
+                updatedAt: Date.now()
+            };
+            
+            // Если фото не загружено (аватар по умолчанию), не сохраняем его, чтобы не занимать место
+            if (!photo.startsWith('data:')) {
+                delete contactData.photo;
+            }
+            
+            const savePromise = contactId 
+                ? database.ref(`phonebook/${contactId}`).update(contactData)
+                : database.ref('phonebook/' + generateId()).set(contactData);
+            
+            savePromise.then(() => {
+                showAlert('Успех!', 'success', contactId ? 'Контакт обновлен' : 'Контакт добавлен');
+                closeContactModal();
+            }).catch(error => {
+                console.error('Ошибка сохранения контакта:', error);
+                showAlert('Ошибка', 'error', 'Не удалось сохранить контакт');
+            });
+        }
+        
+        // Удалить контакт
+        function deleteContact(contactId) {
+            if (!isAdmin) return;
+            
+            Swal.fire({
+                title: 'Удалить контакт?',
+                text: 'Это действие нельзя отменить',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Да, удалить',
+                cancelButtonText: 'Отмена'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    database.ref(`phonebook/${contactId}`).remove()
+                        .then(() => {
+                            showAlert('Удалено!', 'success', 'Контакт удален');
+                            closeViewContactModal();
+                        })
+                        .catch(error => {
+                            console.error('Ошибка удаления:', error);
+                            showAlert('Ошибка', 'error', 'Не удалось удалить контакт');
+                        });
+                }
+            });
+        }
+        
+        // Просмотр контакта
+        function viewContact(contactId) {
+            const contact = phonebookContacts[contactId];
+            if (!contact) return;
+            
+            currentContactId = contactId;
+            
+            const avatar = contact.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(contact.name)}&background=4361ee&color=fff`;
+            document.getElementById('view-contact-avatar').src = avatar;
+            document.getElementById('view-contact-name').textContent = contact.name;
+            document.getElementById('view-contact-phone').querySelector('span').textContent = contact.phone;
+            document.getElementById('view-contact-position').querySelector('span').textContent = contact.position || 'Должность не указана';
+            
+            const adminActions = document.getElementById('view-contact-admin-actions');
+            if (isAdmin) {
+                adminActions.style.display = 'block';
+            } else {
+                adminActions.style.display = 'none';
+            }
+            
+            document.getElementById('view-contact-modal').classList.add('active');
+        }
+        
+        // Закрыть модалку просмотра
+        function closeViewContactModal() {
+            document.getElementById('view-contact-modal').classList.remove('active');
+            currentContactId = null;
+        }
+        
+        // Редактировать из просмотра
+        function editContactFromView() {
+            if (currentContactId) {
+                editContact(currentContactId);
+            }
+        }
+        
+        // Удалить из просмотра
+        function deleteContactFromView() {
+            if (currentContactId) {
+                deleteContact(currentContactId);
+            }
+        }
+        
+        // Закрыть модалку добавления/редактирования
+        function closeContactModal() {
+            document.getElementById('contact-modal').classList.remove('active');
+        }
+        
+        // Предпросмотр фото контакта
+        function previewContactPhoto(file) {
+            if (!file) return;
+            
+            if (file.size > 2 * 1024 * 1024) {
+                showAlert('Файл слишком большой! Максимум 2MB', 'error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('contact-avatar-preview').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // Функция для звонка (имитация)
+        function callContact() {
+            const phone = document.getElementById('view-contact-phone').querySelector('span').textContent;
+            // Можно открыть ссылку tel:
+            window.location.href = `tel:${phone.replace(/[^0-9+]/g, '')}`;
         }
     </script>
     <audio id="fart-sound" preload="auto">
