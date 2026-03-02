@@ -1982,6 +1982,10 @@
         border: 3px solid var(--primary);
         display: block;
     }
+
+    #user-points-balance{
+        color:white;
+    }
 </style>
     
 </head>
@@ -3254,6 +3258,12 @@
                 <div class="form-group">
                     <label class="form-label">Номинал (руб) *</label>
                     <input type="number" class="form-control" id="reward-amount" placeholder="500" min="0" step="1">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Стоимость (очки) *</label>
+                    <input type="number" class="form-control" id="reward-points-cost" placeholder="Например: 500" min="1" step="1">
+                    <small style="color: rgba(255,255,255,0.5);">Количество очков, которое нужно потратить</small>
                 </div>
         
                 <div class="form-group">
@@ -8501,10 +8511,14 @@
                 return;
             }
         
-            // Сортируем по номиналу (по убыванию)
-            rewardsArray.sort((a, b) => (b.amount || 0) - (a.amount || 0));
+            rewardsArray.sort((a, b) => (b.pointsCost || 0) - (a.pointsCost || 0));
         
-            container.innerHTML = rewardsArray.map(reward => `
+            container.innerHTML = rewardsArray.map(reward => {
+                const userPoints = currentUser?.points || 0;
+                const cost = reward.pointsCost || 0;
+                const canAfford = userPoints >= cost;
+        
+                return `
                 <div class="dashboard-item" style="cursor: default; border-left: 4px solid #FFD700;">
                     <div class="dashboard-item-icon" style="background: #FFD70020; color: #FFD700;">
                         <i class="fas fa-tag"></i>
@@ -8517,6 +8531,7 @@
                         <div class="dashboard-item-description">${reward.description || ''}</div>
                         <div class="dashboard-item-meta">
                             <span><i class="fas fa-store"></i> ${reward.shop || 'Любой магазин'}</span>
+                            <span><i class="fas fa-coins" style="color: #FFD700;"></i> Стоимость: ${cost} очков</span>
                         </div>
                     </div>
                     <div style="display: flex; gap: 5px; align-items: center;">
@@ -8528,12 +8543,15 @@
                                 <i class="fas fa-trash"></i>
                             </button>
                         ` : ''}
-                        <button class="btn btn-primary btn-sm" onclick="claimReward('${reward.id}')" style="background: #FFD700; color: black;">
+                        <button class="btn btn-sm ${canAfford ? 'btn-primary' : ''}" 
+                                onclick="claimReward('${reward.id}')" 
+                                style="${canAfford ? 'background: #FFD700; color: black;' : 'background: #555; color: #aaa; cursor: not-allowed;'}"
+                                ${canAfford ? '' : 'disabled'}>
                             <i class="fas fa-gift"></i> Получить
                         </button>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
         
         // Отображение рейтинга специалистов
@@ -8594,26 +8612,49 @@
             const reward = rewards[rewardId];
             if (!reward) return;
         
-            const promo = generatePromoCode();
-            Swal.fire({
-                title: 'Ваш промокод!',
-                html: `
-                    <div style="font-size: 24px; margin: 20px 0; padding: 10px; background: #FFD70020; border-radius: 8px;">
-                        <code style="font-family: monospace; font-weight: bold;">${promo}</code>
-                    </div>
-                    <p>Номинал: <strong>${reward.amount} ₽</strong><br>Магазин: ${reward.shop || 'Любой'}</p>
-                `,
-                icon: 'success',
-                confirmButtonText: 'Скопировать',
-                showCancelButton: true,
-                cancelButtonText: 'Закрыть'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    navigator.clipboard.writeText(promo).then(() => {
-                        Swal.fire('Скопировано!', 'Промокод скопирован в буфер обмена', 'success');
+            const userPoints = currentUser.points || 0;
+            const cost = reward.pointsCost || 0;
+        
+            if (userPoints < cost) {
+                showAlert('Недостаточно очков', 'warning', `Вам нужно ещё ${cost - userPoints} очков`);
+                return;
+            }
+        
+            const newPoints = userPoints - cost;
+            currentUser.points = newPoints;
+        
+            database.ref(`users/${currentUser.id}/points`).set(newPoints)
+                .then(() => {
+                    document.getElementById('user-points-balance').textContent = newPoints;
+                    displayRating(); // обновить рейтинг
+                    displayRewards(); // обновить список наград (кнопка станет недоступной)
+        
+                    const promo = generatePromoCode();
+                    Swal.fire({
+                        title: 'Ваш промокод!',
+                        html: `
+                            <div style="font-size: 24px; margin: 20px 0; padding: 10px; background: #FFD70020; border-radius: 8px;">
+                                <code style="font-family: monospace; font-weight: bold;">${promo}</code>
+                            </div>
+                            <p>Номинал: <strong>${reward.amount} ₽</strong><br>Магазин: ${reward.shop || 'Любой'}</p>
+                        `,
+                        icon: 'success',
+                        confirmButtonText: 'Скопировать',
+                        showCancelButton: true,
+                        cancelButtonText: 'Закрыть'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            navigator.clipboard.writeText(promo).then(() => {
+                                Swal.fire('Скопировано!', 'Промокод скопирован в буфер обмена', 'success');
+                            });
+                        }
                     });
-                }
-            });
+                })
+                .catch(error => {
+                    console.error('Ошибка при списании очков:', error);
+                    showAlert('Ошибка', 'error', 'Не удалось получить награду');
+                    currentUser.points = userPoints; // вернуть очки в локальном объекте
+                });
         }
         
         // ===== Админские функции для наград =====
@@ -8623,6 +8664,7 @@
             document.getElementById('reward-name').value = '';
             document.getElementById('reward-description').value = '';
             document.getElementById('reward-amount').value = '';
+            document.getElementById('reward-points-cost').value = '';
             document.getElementById('reward-shop').value = '';
             document.getElementById('reward-id').value = '';
             document.getElementById('reward-modal').classList.add('active');
@@ -8637,6 +8679,7 @@
             document.getElementById('reward-name').value = reward.name || '';
             document.getElementById('reward-description').value = reward.description || '';
             document.getElementById('reward-amount').value = reward.amount || '';
+            document.getElementById('reward-points-cost').value = reward.pointsCost || '';
             document.getElementById('reward-shop').value = reward.shop || '';
             document.getElementById('reward-id').value = rewardId;
             document.getElementById('reward-modal').classList.add('active');
@@ -8652,11 +8695,12 @@
             const name = document.getElementById('reward-name').value.trim();
             const description = document.getElementById('reward-description').value.trim();
             const amount = parseInt(document.getElementById('reward-amount').value) || 0;
+            const pointsCost = parseInt(document.getElementById('reward-points-cost').value) || 0;
             const shop = document.getElementById('reward-shop').value.trim();
             const rewardId = document.getElementById('reward-id').value;
         
-            if (!name || amount <= 0) {
-                showAlert('Ошибка', 'warning', 'Заполните название и корректный номинал');
+            if (!name || amount <= 0 || pointsCost <= 0) {
+                showAlert('Ошибка', 'warning', 'Заполните название, номинал и стоимость в очках (должны быть > 0)');
                 return;
             }
         
@@ -8664,6 +8708,7 @@
                 name,
                 description,
                 amount,
+                pointsCost,
                 shop,
                 createdBy: currentUser.id,
                 createdAt: Date.now(),
