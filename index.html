@@ -2111,11 +2111,18 @@
                 <li><a href="#" class="nav-link" data-tab="adaptation" onclick="showTab('adaptation')">
                     <i class="fas fa-graduation-cap"></i> Адаптация
                 </a></li>
+                <li><a href="#" class="nav-link" data-tab="rating" onclick="showTab('rating')">
+                    <i class="fas fa-trophy"></i> Рейтинг и награды
+                </a></li>
             </ul>
             
             <div class="user-menu">
                 <div class="user-info">
                     <div class="user-name" id="current-username">Гость</div>
+                    <div class="user-points" style="display: flex; align-items: center; gap: 5px; margin-top: 2px;">
+                        <i class="fas fa-coins" style="color: #FFD700;"></i>
+                        <span id="user-points-balance">0</span>
+                    </div>
                     <div class="user-status">
                         <span class="user-status-dot" id="current-status-indicator"></span>
                         <span id="status-text">Загрузка...</span>
@@ -2621,6 +2628,44 @@
                 <!-- Список материалов -->
                 <div class="materials-grid" id="materials-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
                     <!-- Материалы загружаются динамически -->
+                </div>
+            </div>
+
+            <!-- ВКЛАДКА РЕЙТИНГ И НАГРАДЫ -->
+            <div class="tab-content" id="rating-tab">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
+                    <!-- Левая колонка: рейтинг специалистов -->
+                    <div class="dashboard-card" style="grid-column: 1;">
+                        <div class="dashboard-card-header">
+                            <div class="dashboard-card-title">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Рейтинг специалистов</span>
+                            </div>
+                        </div>
+                        <div class="dashboard-list" id="rating-list">
+                            <div class="loading-status">
+                                <i class="fas fa-spinner fa-spin"></i> Загрузка рейтинга...
+                            </div>
+                        </div>
+                    </div>
+            
+                    <!-- Правая колонка: награды -->
+                    <div class="dashboard-card" style="grid-column: 2;">
+                        <div class="dashboard-card-header">
+                            <div class="dashboard-card-title">
+                                <i class="fas fa-gift"></i>
+                                <span>Награды</span>
+                            </div>
+                            <button class="dashboard-card-more" id="add-reward-btn" onclick="openAddRewardModal()" style="display: none;">
+                                <i class="fas fa-plus"></i> Добавить награду
+                            </button>
+                        </div>
+                        <div id="rewards-list" style="display: flex; flex-direction: column; gap: 15px;">
+                            <div class="loading-status">
+                                <i class="fas fa-spinner fa-spin"></i> Загрузка наград...
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -3190,6 +3235,44 @@
                 </div>
             </div>
         </div>
+
+        <!-- Модальное окно для добавления/редактирования награды -->
+        <div class="modal" id="reward-modal">
+            <div class="modal-content" style="max-width: 500px;">
+                <h2 class="mb-20" id="reward-modal-title"><i class="fas fa-gift"></i> Добавить награду</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">Название награды *</label>
+                    <input type="text" class="form-control" id="reward-name" placeholder="Например: Сертификат Wildberries">
+                </div>
+        
+                <div class="form-group">
+                    <label class="form-label">Описание</label>
+                    <textarea class="form-control" id="reward-description" placeholder="Краткое описание..." rows="3"></textarea>
+                </div>
+        
+                <div class="form-group">
+                    <label class="form-label">Номинал (руб) *</label>
+                    <input type="number" class="form-control" id="reward-amount" placeholder="500" min="0" step="1">
+                </div>
+        
+                <div class="form-group">
+                    <label class="form-label">Магазин</label>
+                    <input type="text" class="form-control" id="reward-shop" placeholder="Wildberries, Ozon, М.Видео...">
+                </div>
+        
+                <input type="hidden" id="reward-id">
+        
+                <div class="d-flex justify-between">
+                    <button class="btn" onclick="closeRewardModal()" style="background: rgba(255,255,255,0.1); color: white;">
+                        <i class="fas fa-times"></i> Отмена
+                    </button>
+                    <button class="btn btn-primary" onclick="saveReward()">
+                        <i class="fas fa-save"></i> Сохранить
+                    </button>
+                </div>
+            </div>
+        </div>
         
     </div>
     
@@ -3212,6 +3295,7 @@
         const database = firebase.database();
 
         // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
+        let rewards = {};
         let currentUser = null;
         let users = {};
         let tasks = {};
@@ -3291,6 +3375,8 @@
             initEventsSystem();
             loadPhonebookContacts();
             setupEventListeners();
+            loadRewards();
+            displayRating(); // сразу отобразим, если вкладка активна (но обычно активен дашборд)
             setTimeout(() => {
                 checkAdminStatus();
             }, 1000);
@@ -4029,6 +4115,8 @@
 
         function updateProfileUI() {
             document.getElementById('current-username').textContent = currentUser.username;
+            document.getElementById('user-points-balance').textContent = currentUser.points || 0;
+
             const avatar = document.getElementById('current-avatar');
             const preview = document.getElementById('avatar-preview');
             
@@ -4124,6 +4212,10 @@
                 case 'adaptation':
                     loadMaterials();
                     break;
+                case 'rating':
+                    displayRating();
+                    displayRewards();
+                    break;
             }
             isChatTabActive = (tabName === 'chat');
         }
@@ -4138,6 +4230,7 @@
             const createEventForm = document.getElementById('create-event-form');
             const createMaterialBtn = document.getElementById('show-create-material-btn');
             const addContactBtn = document.getElementById('add-contact-btn');
+            const addRewardBtn = document.getElementById('add-reward-btn');
             
             if (adminPanel) {
                 adminPanel.style.display = isAdmin ? 'block' : 'none';
@@ -4160,6 +4253,8 @@
             }
 
             if (addContactBtn) addContactBtn.style.display = isAdmin ? 'flex' : 'none';
+
+            if (addRewardBtn) addRewardBtn.style.display = isAdmin ? 'flex' : 'none';
         }
 
         // ЧАТ
@@ -4192,6 +4287,7 @@
                     users = snapshot.val() || {};
                     updateUsersList();
                     updateOnlineCount();
+                    updateRatingAndBalance();
                     lastUpdate = now;
                 }
             });
@@ -8377,6 +8473,242 @@
             currentQuizTask = null;
             currentQuizAnswers = [];
             currentQuizIndex = 0;
+        }
+
+        // Загрузка наград из Firebase
+        function loadRewards() {
+            database.ref('rewards').on('value', (snapshot) => {
+                rewards = snapshot.val() || {};
+                displayRewards();
+            });
+        }
+        
+        // Отображение списка наград
+        function displayRewards() {
+            const container = document.getElementById('rewards-list');
+            if (!container) return;
+        
+            const rewardsArray = Object.entries(rewards).map(([id, r]) => ({ id, ...r }));
+        
+            if (rewardsArray.length === 0) {
+                container.innerHTML = `
+                    <div class="dashboard-empty-state">
+                        <i class="fas fa-gift"></i>
+                        <div>Нет доступных наград</div>
+                        ${isAdmin ? '<small>Нажмите "Добавить награду", чтобы создать первую</small>' : ''}
+                    </div>
+                `;
+                return;
+            }
+        
+            // Сортируем по номиналу (по убыванию)
+            rewardsArray.sort((a, b) => (b.amount || 0) - (a.amount || 0));
+        
+            container.innerHTML = rewardsArray.map(reward => `
+                <div class="dashboard-item" style="cursor: default; border-left: 4px solid #FFD700;">
+                    <div class="dashboard-item-icon" style="background: #FFD70020; color: #FFD700;">
+                        <i class="fas fa-tag"></i>
+                    </div>
+                    <div class="dashboard-item-content" style="flex:1;">
+                        <div class="dashboard-item-title" style="display: flex; justify-content: space-between;">
+                            <span>${reward.name || 'Без названия'}</span>
+                            <span style="color: #FFD700; font-weight: bold;">${reward.amount || 0} ₽</span>
+                        </div>
+                        <div class="dashboard-item-description">${reward.description || ''}</div>
+                        <div class="dashboard-item-meta">
+                            <span><i class="fas fa-store"></i> ${reward.shop || 'Любой магазин'}</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 5px; align-items: center;">
+                        ${isAdmin ? `
+                            <button class="btn btn-warning btn-sm" onclick="editReward('${reward.id}')" title="Редактировать">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteReward('${reward.id}')" title="Удалить">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        ` : ''}
+                        <button class="btn btn-primary btn-sm" onclick="claimReward('${reward.id}')" style="background: #FFD700; color: black;">
+                            <i class="fas fa-gift"></i> Получить
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Отображение рейтинга специалистов
+        function displayRating() {
+            const container = document.getElementById('rating-list');
+            if (!container) return;
+        
+            const specialists = Object.values(users).filter(u => u.role === 'specialist');
+            specialists.sort((a, b) => (b.points || 0) - (a.points || 0)); // по убыванию очков
+        
+            if (specialists.length === 0) {
+                container.innerHTML = `
+                    <div class="dashboard-empty-state">
+                        <i class="fas fa-user-slash"></i>
+                        <div>Нет специалистов</div>
+                    </div>
+                `;
+                return;
+            }
+        
+            container.innerHTML = specialists.map((user, index) => `
+                <div class="dashboard-item" style="cursor: pointer;" onclick="showUserProfile('${user.id}')">
+                    <div style="width: 30px; text-align: center; font-weight: bold; color: ${index === 0 ? '#FFD700' : '#aaa'};">
+                        ${index + 1}
+                    </div>
+                    <img src="${user.avatar || getDefaultAvatar(user.username)}" 
+                         alt="${user.username}" 
+                         style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid #FFD700;">
+                    <div class="dashboard-item-content">
+                        <div class="dashboard-item-title">${user.username}</div>
+                        <div class="dashboard-item-description">
+                            ${user.position || 'Должность не указана'} • ${user.organization || 'Организация не указана'}
+                        </div>
+                        <div class="dashboard-item-meta">
+                            <span><i class="fas fa-star" style="color: #FFD700;"></i> ${user.points || 0} очков</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Генерация случайного промокода
+        function generatePromoCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            const segments = [];
+            for (let i = 0; i < 3; i++) {
+                let seg = '';
+                for (let j = 0; j < 4; j++) {
+                    seg += chars[Math.floor(Math.random() * chars.length)];
+                }
+                segments.push(seg);
+            }
+            return segments.join('-');
+        }
+        
+        // Получить награду
+        function claimReward(rewardId) {
+            const reward = rewards[rewardId];
+            if (!reward) return;
+        
+            const promo = generatePromoCode();
+            Swal.fire({
+                title: 'Ваш промокод!',
+                html: `
+                    <div style="font-size: 24px; margin: 20px 0; padding: 10px; background: #FFD70020; border-radius: 8px;">
+                        <code style="font-family: monospace; font-weight: bold;">${promo}</code>
+                    </div>
+                    <p>Номинал: <strong>${reward.amount} ₽</strong><br>Магазин: ${reward.shop || 'Любой'}</p>
+                `,
+                icon: 'success',
+                confirmButtonText: 'Скопировать',
+                showCancelButton: true,
+                cancelButtonText: 'Закрыть'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    navigator.clipboard.writeText(promo).then(() => {
+                        Swal.fire('Скопировано!', 'Промокод скопирован в буфер обмена', 'success');
+                    });
+                }
+            });
+        }
+        
+        // ===== Админские функции для наград =====
+        function openAddRewardModal() {
+            if (!isAdmin) return;
+            document.getElementById('reward-modal-title').innerHTML = '<i class="fas fa-plus"></i> Добавить награду';
+            document.getElementById('reward-name').value = '';
+            document.getElementById('reward-description').value = '';
+            document.getElementById('reward-amount').value = '';
+            document.getElementById('reward-shop').value = '';
+            document.getElementById('reward-id').value = '';
+            document.getElementById('reward-modal').classList.add('active');
+        }
+        
+        function editReward(rewardId) {
+            if (!isAdmin) return;
+            const reward = rewards[rewardId];
+            if (!reward) return;
+        
+            document.getElementById('reward-modal-title').innerHTML = '<i class="fas fa-edit"></i> Редактировать награду';
+            document.getElementById('reward-name').value = reward.name || '';
+            document.getElementById('reward-description').value = reward.description || '';
+            document.getElementById('reward-amount').value = reward.amount || '';
+            document.getElementById('reward-shop').value = reward.shop || '';
+            document.getElementById('reward-id').value = rewardId;
+            document.getElementById('reward-modal').classList.add('active');
+        }
+        
+        function closeRewardModal() {
+            document.getElementById('reward-modal').classList.remove('active');
+        }
+        
+        function saveReward() {
+            if (!isAdmin) return;
+        
+            const name = document.getElementById('reward-name').value.trim();
+            const description = document.getElementById('reward-description').value.trim();
+            const amount = parseInt(document.getElementById('reward-amount').value) || 0;
+            const shop = document.getElementById('reward-shop').value.trim();
+            const rewardId = document.getElementById('reward-id').value;
+        
+            if (!name || amount <= 0) {
+                showAlert('Ошибка', 'warning', 'Заполните название и корректный номинал');
+                return;
+            }
+        
+            const rewardData = {
+                name,
+                description,
+                amount,
+                shop,
+                createdBy: currentUser.id,
+                createdAt: Date.now(),
+                updatedAt: Date.now()
+            };
+        
+            const savePromise = rewardId
+                ? database.ref(`rewards/${rewardId}`).update(rewardData)
+                : database.ref('rewards/' + generateId()).set(rewardData);
+        
+            savePromise.then(() => {
+                showAlert('Успех!', 'success', rewardId ? 'Награда обновлена' : 'Награда добавлена');
+                closeRewardModal();
+            }).catch(error => {
+                console.error('Ошибка:', error);
+                showAlert('Ошибка', 'error', 'Не удалось сохранить награду');
+            });
+        }
+        
+        function deleteReward(rewardId) {
+            if (!isAdmin) return;
+            Swal.fire({
+                title: 'Удалить награду?',
+                text: 'Это действие нельзя отменить',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Да, удалить'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    database.ref(`rewards/${rewardId}`).remove()
+                        .then(() => showAlert('Удалено!', 'success', 'Награда удалена'))
+                        .catch(error => showAlert('Ошибка', 'error', 'Не удалось удалить'));
+                }
+            });
+        }
+        
+        // Обновление рейтинга при изменении пользователей
+        function updateRatingAndBalance() {
+            displayRating();
+            // Обновляем баланс текущего пользователя
+            if (currentUser) {
+                document.getElementById('user-points-balance').textContent = currentUser.points || 0;
+            }
         }
     </script>
     <audio id="fart-sound" preload="auto">
