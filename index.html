@@ -6746,7 +6746,7 @@
                 
                 // Сохраняем в submissions[userId]
                 const updateData = {
-                    [`submissions.${currentUser.id}`]: submission
+                    [`submissions/${currentUser.id}`]: submission
                 };
                 
                 await database.ref(`tasks/${currentReportTask.id}`).update(updateData);
@@ -6826,8 +6826,8 @@
                 if (!submission) return;
                 
                 const updateData = {
-                    [`submissions.${currentReviewUserId}.status`]: 'approved',
-                    [`submissions.${currentReviewUserId}.mentorFeedback`]: feedback
+                    [`submissions/${currentReviewUserId}/status`]: 'approved',
+                    [`submissions/${currentReviewUserId}/mentorFeedback`]: feedback
                 };
                 
                 await database.ref(`tasks/${taskId}`).update(updateData);
@@ -6860,8 +6860,8 @@
             
             try {
                 const updateData = {
-                    [`submissions.${currentReviewUserId}.status`]: 'rejected',
-                    [`submissions.${currentReviewUserId}.mentorFeedback`]: feedback
+                    [`submissions/${currentReviewUserId}/status`]: 'rejected',
+                    [`submissions/${currentReviewUserId}/mentorFeedback`]: feedback
                 };
                 
                 await database.ref(`tasks/${taskId}`).update(updateData);
@@ -8572,7 +8572,7 @@
             };
         
             const updateData = {
-                [`submissions.${userId}`]: quizResult
+                [`submissions/${userId}`]: quizResult
             };
             
             database.ref(`tasks/${taskId}`).update(updateData)
