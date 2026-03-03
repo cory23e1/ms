@@ -3319,6 +3319,7 @@
         let currentReply = null;
         let currentViewedUser = null;
         let currentReportTask = null;
+        let currentReviewUserId = null;
         let reportFile = null;
         let currentEventId = null;
         let eventMessagesListener = null;
@@ -5913,19 +5914,20 @@
             
             let filteredTasks = tasksArray;
             
-            if (currentUser.role === 'specialist') {
+            if (isAdmin) {
+                // Админ видит всё
+                filteredTasks = tasksArray;
+            } else if (currentUser.role === 'specialist') {
                 filteredTasks = tasksArray.filter(task => {
                     const isAssignedToMe = task.assignedTo === currentUser.id;
                     const isGeneralTask = !task.assignedTo || task.assignedTo === 'all';
                     const isMentorTask = task.createdBy === currentUser.mentorId;
-                    
                     return isAssignedToMe || isGeneralTask || isMentorTask;
                 });
             } else if (currentUser.role === 'mentor') {
                 filteredTasks = tasksArray.filter(task => {
                     const isCreatedByMe = task.createdBy === currentUser.id;
                     const isForMySpecialist = task.assignedTo && getMenteeIds().includes(task.assignedTo);
-                    
                     return isCreatedByMe || isForMySpecialist;
                 });
             }
@@ -5970,6 +5972,18 @@
                 let statusClass = 'active';
                 let statusText = 'Активно';
                 let statusColor = '#4361ee';
+
+                // Определяем статус для текущего пользователя
+                let userSubmission = null;
+                if (task.submissions && task.submissions[currentUser.id]) {
+                    userSubmission = task.submissions[currentUser.id];
+                }
+                
+                // Для админа: считаем ожидающие отчёты
+                let pendingCount = 0;
+                if (isAdmin && task.submissions) {
+                    pendingCount = Object.values(task.submissions).filter(s => s.status === 'submitted').length;
+                }
                 
                 if (task.status === 'completed') {
                     statusClass = 'completed';
@@ -6021,32 +6035,73 @@
                     `;
                 }
                 
-                let reportStatus = '';
-                if (task.report && task.report.status !== 'pending') {
+                // let reportStatus = '';
+                // if (task.report && task.report.status !== 'pending') {
+                //     const statusColors = {
+                //         'submitted': 'var(--warning)',
+                //         'approved': 'var(--success)',
+                //         'rejected': 'var(--danger)'
+                //     };
+                    
+                //     const statusTexts = {
+                //         'submitted': 'Ожидает проверки',
+                //         'approved': 'Принято',
+                //         'rejected': 'Возвращено на доработку'
+                //     };
+                    
+                //     reportStatus = `
+                //         <div style="margin-top: 10px;">
+                //             <span style="background: ${statusColors[task.report.status] || 'rgba(255,255,255,0.3)'}; 
+                //                   color: white; padding: 3px 8px; border-radius: 10px; font-size: 11px;">
+                //                 ${statusTexts[task.report.status] || task.report.status}
+                //             </span>
+                //         </div>
+                //     `;
+                // }
+                
+                const typeIcon = task.type === 'quiz' 
+                    ? '<span style="margin-left: 8px; background: var(--primary); color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;"><i class="fas fa-question-circle"></i> Тест</span>' 
+                    : '<span style="margin-left: 8px; background: #6c757d; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;"><i class="fas fa-file-alt"></i> Задание</span>';
+
+                let statusHtml = '';
+                if (userSubmission) {
                     const statusColors = {
                         'submitted': 'var(--warning)',
                         'approved': 'var(--success)',
                         'rejected': 'var(--danger)'
                     };
-                    
                     const statusTexts = {
                         'submitted': 'Ожидает проверки',
                         'approved': 'Принято',
-                        'rejected': 'Возвращено на доработку'
+                        'rejected': 'Возвращено'
                     };
-                    
-                    reportStatus = `
+                    statusHtml = `
                         <div style="margin-top: 10px;">
-                            <span style="background: ${statusColors[task.report.status] || 'rgba(255,255,255,0.3)'}; 
+                            <span style="background: ${statusColors[userSubmission.status] || 'rgba(255,255,255,0.3)'}; 
                                   color: white; padding: 3px 8px; border-radius: 10px; font-size: 11px;">
-                                ${statusTexts[task.report.status] || task.report.status}
+                                Ваш отчёт: ${statusTexts[userSubmission.status] || userSubmission.status}
+                            </span>
+                        </div>
+                    `;
+                } else if (task.type === 'quiz' && task.submissions && task.submissions[currentUser.id]) {
+                    statusHtml = `
+                        <div style="margin-top: 10px;">
+                            <span style="background: var(--success); color: white; padding: 3px 8px; border-radius: 10px; font-size: 11px;">
+                                Тест пройден
                             </span>
                         </div>
                     `;
                 }
-                const typeIcon = task.type === 'quiz' 
-                    ? '<span style="margin-left: 8px; background: var(--primary); color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;"><i class="fas fa-question-circle"></i> Тест</span>' 
-                    : '<span style="margin-left: 8px; background: #6c757d; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;"><i class="fas fa-file-alt"></i> Задание</span>';
+                
+                if (isAdmin && pendingCount > 0) {
+                    statusHtml += `
+                        <div style="margin-top: 5px;">
+                            <span style="background: var(--warning); color: white; padding: 3px 8px; border-radius: 10px; font-size: 11px;">
+                                <i class="fas fa-clock"></i> ${pendingCount} на проверке
+                            </span>
+                        </div>
+                    `;
+                }
                 
                 card.innerHTML = `
                     <div class="task-header">
@@ -6062,7 +6117,7 @@
                     </div>
                     
                     ${assignedInfo}
-                    ${reportStatus}
+                    ${statusHtml}
                     
                     <div class="task-description">
                         ${(task.description || 'Нет описания').substring(0, 150)}${task.description && task.description.length > 150 ? '...' : ''}
@@ -6152,6 +6207,20 @@
                         <i class="fas fa-trash"></i> Удалить
                     </button>
                 `;
+            }
+
+            // Для админа: кнопки проверки отчётов
+            if (isAdmin && task.submissions) {
+                Object.entries(task.submissions).forEach(([uid, sub]) => {
+                    if (sub.status === 'submitted') {
+                        const user = users[uid] || { username: 'Неизвестный' };
+                        actionsDiv.innerHTML += `
+                            <button class="btn btn-warning btn-sm" onclick="reviewReport('${taskId}', '${uid}')">
+                                <i class="fas fa-check-circle"></i> Проверить (${user.username})
+                            </button>
+                        `;
+                    }
+                });
             }
         }
         
@@ -6319,6 +6388,7 @@
                 assignedBy: currentUser.id,
                 createdAt: Date.now(),
                 status: 'active',
+                submissions: {}, // объект для хранения отчётов пользователей
                 type: taskType, // 'regular' или 'quiz'
                 questions: questions, // массив вопросов для теста
                 report: {
@@ -6663,61 +6733,73 @@
                     fileName = reportFile.name;
                 }
                 
+                const submission = {
+                    fileUrl: fileUrl,
+                    fileName: fileName,
+                    submittedAt: Date.now(),
+                    status: 'submitted',
+                    comment: comment,
+                    submittedBy: currentUser.id,
+                    submittedByName: currentUser.username,
+                    mentorFeedback: ''
+                };
+                
+                // Сохраняем в submissions[userId]
                 const updateData = {
-                    'report': {
-                        fileUrl: fileUrl,
-                        fileName: fileName,
-                        submittedAt: Date.now(),
-                        status: 'submitted',
-                        comment: comment,
-                        submittedBy: currentUser.id
-                    }
+                    [`submissions.${currentUser.id}`]: submission
                 };
                 
                 await database.ref(`tasks/${currentReportTask.id}`).update(updateData);
                 
+                // Обновляем локальный объект tasks
                 if (tasks[currentReportTask.id]) {
-                    tasks[currentReportTask.id].report = {
-                        ...tasks[currentReportTask.id].report,
-                        ...updateData.report
-                    };
+                    if (!tasks[currentReportTask.id].submissions) {
+                        tasks[currentReportTask.id].submissions = {};
+                    }
+                    tasks[currentReportTask.id].submissions[currentUser.id] = submission;
                 }
                 
                 showAlert('Успех!', 'success', 'Отчет отправлен на проверку');
                 closeReportModal();
-                displayTasks();
+                displayTasks(); // обновить список заданий
             } catch (error) {
                 console.error('Ошибка:', error);
                 showAlert('Ошибка', 'error', 'Не удалось отправить отчет');
             }
         }
         
-        function reviewReport(taskId) {
+        function reviewReport(taskId, userId) {
             const task = tasks[taskId];
             if (!task) return;
-
-            currentReportTask = task;
             
-            const report = task.report || {};
-            const user = users[report.submittedBy] || {};
+            const submission = task.submissions && task.submissions[userId];
+            if (!submission) {
+                showAlert('Ошибка', 'error', 'Отчет не найден');
+                return;
+            }
+        
+            currentReportTask = task;
+            currentReviewUserId = userId; // сохраняем userId
+            
+            const user = users[userId] || {};
             
             document.getElementById('review-task-title').textContent = task.title;
             document.getElementById('review-user-name').textContent = user.username || 'Неизвестный';
             document.getElementById('review-user-avatar').src = user.avatar || getDefaultAvatar(user.username);
-            document.getElementById('review-comment').textContent = report.comment || 'Нет комментария';
-            document.getElementById('mentor-feedback').value = report.mentorFeedback || '';
+            document.getElementById('review-comment').textContent = submission.comment || 'Нет комментария';
+            document.getElementById('mentor-feedback').value = submission.mentorFeedback || '';
             
             const attachmentDiv = document.getElementById('review-attachment');
-            if (report.fileUrl && report.fileName) {
+            if (submission.fileUrl && submission.fileName) {
                 attachmentDiv.innerHTML = `
                     <i class="fas fa-file" style="font-size: 24px; color: var(--primary);"></i>
                     <div style="flex: 1;">
-                        <div style="font-weight: 600;">${report.fileName}</div>
+                        <div style="font-weight: 600;">${submission.fileName}</div>
                         <div style="font-size: 12px; color: rgba(255,255,255,0.7);">
-                            Сдан: ${new Date(report.submittedAt).toLocaleString('ru-RU')}
+                            Сдан: ${new Date(submission.submittedAt).toLocaleString('ru-RU')}
                         </div>
                     </div>
-                    <button class="btn btn-primary btn-sm" onclick="downloadAttachment('${report.fileUrl}', '${report.fileName}')">
+                    <button class="btn btn-primary btn-sm" onclick="downloadAttachment('${submission.fileUrl}', '${submission.fileName}')">
                         <i class="fas fa-download"></i>
                     </button>
                 `;
@@ -6730,34 +6812,33 @@
         
         function closeReviewReportModal() {
             document.getElementById('review-report-modal').classList.remove('active');
+            currentReviewUserId = null;
         }
         
         async function approveReport() {
             const taskId = currentReportTask?.id;
-            if (!taskId) return;
+            if (!taskId || !currentReviewUserId) return;
             
             const feedback = document.getElementById('mentor-feedback').value.trim();
             
             try {
-                await database.ref(`tasks/${taskId}`).update({
-                    report: {
-                        status: 'approved',
-                        mentorFeedback: feedback
-                    },
-                    status: 'completed'
-                });
+                const submission = currentReportTask.submissions[currentReviewUserId];
+                if (!submission) return;
+                
+                const updateData = {
+                    [`submissions.${currentReviewUserId}.status`]: 'approved',
+                    [`submissions.${currentReviewUserId}.mentorFeedback`]: feedback
+                };
+                
+                await database.ref(`tasks/${taskId}`).update(updateData);
                 
                 // Начисляем очки специалисту
-                const task = tasks[taskId];
-                const specialistId = task.assignedTo;
-                if (specialistId && specialistId !== 'all' && users[specialistId]) {
-                    const points = task.rewardPoints || 0;
-                    if (points > 0) {
-                        await awardPoints(specialistId, points, taskId);
-                    }
+                const points = currentReportTask.rewardPoints || 0;
+                if (points > 0 && currentReviewUserId) {
+                    await awardPoints(currentReviewUserId, points, taskId);
                 }
                 
-                showAlert('Успех!', 'success', 'Отчет принят. Задание завершено.');
+                showAlert('Успех!', 'success', 'Отчет принят. Очки начислены.');
                 closeReviewReportModal();
                 displayTasks();
             } catch (error) {
@@ -6768,7 +6849,7 @@
         
         async function rejectReport() {
             const taskId = currentReportTask?.id;
-            if (!taskId) return;
+            if (!taskId || !currentReviewUserId) return;
             
             const feedback = document.getElementById('mentor-feedback').value.trim();
             
@@ -6778,17 +6859,12 @@
             }
             
             try {
-                await database.ref(`tasks/${taskId}`).update({
-                    report: {
-                        status: 'rejected',
-                        mentorFeedback: feedback
-                    }
-                });
+                const updateData = {
+                    [`submissions.${currentReviewUserId}.status`]: 'rejected',
+                    [`submissions.${currentReviewUserId}.mentorFeedback`]: feedback
+                };
                 
-                if (tasks[taskId]) {
-                    tasks[taskId].report.status = 'rejected';
-                    tasks[taskId].report.mentorFeedback = feedback;
-                }
+                await database.ref(`tasks/${taskId}`).update(updateData);
                 
                 showAlert('Отчет возвращен', 'info', 'Специалист получит ваши комментарии');
                 closeReviewReportModal();
@@ -8486,25 +8562,32 @@
         
             const points = task.rewardPoints || 0;
             const userId = currentUser.id;
+            
+            const quizResult = {
+                submittedAt: Date.now(),
+                status: 'approved',
+                answers: currentQuizAnswers,
+                correctCount: currentQuizAnswers.filter((ans, idx) => ans === task.questions[idx].correct).length,
+                totalQuestions: task.questions.length
+            };
         
-            // Обновляем статус задания
-            database.ref(`tasks/${taskId}`).update({
-                status: 'completed',
-                completedAt: Date.now(),
-                completedBy: userId
-            }).then(() => {
-                // Начисляем очки, если задание назначено текущему пользователю
-                if (task.assignedTo === userId || task.assignedTo === 'all' || !task.assignedTo) {
+            const updateData = {
+                [`submissions.${userId}`]: quizResult
+            };
+            
+            database.ref(`tasks/${taskId}`).update(updateData)
+                .then(() => {
                     return awardPoints(userId, points, taskId);
-                }
-            }).then(() => {
-                closeQuizModal();
-                showAlert('Поздравляем!', 'success', `Тест пройден! Вы получили ${points} очков.`);
-                displayTasks();
-            }).catch(error => {
-                console.error('Ошибка при завершении теста:', error);
-                showAlert('Ошибка', 'error', 'Не удалось завершить тест');
-            });
+                })
+                .then(() => {
+                    closeQuizModal();
+                    showAlert('Поздравляем!', 'success', `Тест пройден! Вы получили ${points} очков.`);
+                    displayTasks();
+                })
+                .catch(error => {
+                    console.error('Ошибка при завершении теста:', error);
+                    showAlert('Ошибка', 'error', 'Не удалось завершить тест');
+                });
         }
         
         function closeQuizModal() {
