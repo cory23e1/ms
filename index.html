@@ -3830,14 +3830,37 @@
             
             if (savedUser) {
                 currentUser = JSON.parse(savedUser);
-                updateProfileUI();
-                setUserStatus('online');
-                
-                authContainer.style.display = 'none';
-                mainApp.style.display = 'block';
-                
-                setupUsersListener();
-                updateDashboard(); // Обновляем дашборд при авторизации
+                // Проверим актуальность данных в Firebase
+                database.ref('users/' + currentUser.id).once('value').then(snapshot => {
+                    if (snapshot.exists()) {
+                        currentUser = snapshot.val();
+                        localStorage.setItem('current_user', JSON.stringify(currentUser));
+                        updateProfileUI();
+                        setUserStatus('online');
+                        
+                        authContainer.style.display = 'none';
+                        mainApp.style.display = 'block';
+                        
+                        setupUsersListener();
+                        updateDashboard();
+                        updateRatingAndBalance(); // обновим баланс и рейтинг
+                    } else {
+                        // Пользователь не найден в Firebase, выходим
+                        localStorage.removeItem('current_user');
+                        currentUser = null;
+                        authContainer.style.display = 'flex';
+                        mainApp.style.display = 'none';
+                    }
+                }).catch(() => {
+                    // Ошибка соединения, используем сохраненные данные
+                    updateProfileUI();
+                    setUserStatus('online');
+                    authContainer.style.display = 'none';
+                    mainApp.style.display = 'block';
+                    setupUsersListener();
+                    updateDashboard();
+                    updateRatingAndBalance();
+                });
             } else {
                 authContainer.style.display = 'flex';
                 mainApp.style.display = 'none';
@@ -4292,14 +4315,24 @@
             const UPDATE_DELAY = 2000;
             
             database.ref('users').on('value', (snapshot) => {
-                const now = Date.now();
-                if (now - lastUpdate > UPDATE_DELAY) {
-                    users = snapshot.val() || {};
-                    updateUsersList();
-                    updateOnlineCount();
-                    updateRatingAndBalance();
-                    lastUpdate = now;
+                users = snapshot.val() || {};
+                
+                // Обновляем текущего пользователя, если он изменился в Firebase
+                if (currentUser && users[currentUser.id]) {
+                    const freshUser = users[currentUser.id];
+                    // Проверяем, изменились ли очки или выполненные задания
+                    if (freshUser.points !== currentUser.points || 
+                        JSON.stringify(freshUser.completedTasks) !== JSON.stringify(currentUser.completedTasks)) {
+                        currentUser = freshUser;
+                        localStorage.setItem('current_user', JSON.stringify(currentUser));
+                        updateProfileUI();
+                        updateRatingAndBalance();
+                    }
                 }
+                
+                updateUsersList();
+                updateOnlineCount();
+                updateRatingAndBalance(); // обновит рейтинг (список всех)
             });
         }
 
@@ -6534,21 +6567,31 @@
         }
         
         function completeTask(taskId) {
-            if (!currentUser.completedTasks) currentUser.completedTasks = [];
-            
-            if (currentUser.completedTasks.includes(taskId)) {
+            const task = tasks[taskId];
+            if (!task) return;
+        
+            const points = task.rewardPoints || 0;
+            const userId = currentUser.id;
+        
+            if (currentUser.completedTasks && currentUser.completedTasks.includes(taskId)) {
                 showAlert('Вы уже выполнили это задание!', 'info');
                 return;
             }
-            
-            currentUser.completedTasks.push(taskId);
-            const task = tasks[taskId];
-            const pointsMatch = task.reward.match(/\d+/);
-            if (pointsMatch) {
-                currentUser.points += parseInt(pointsMatch[0]);
-            }
-            saveUserProfile();
-            showAlert('Поздравляем!', 'success', 'Задание выполнено!');
+        
+            awardPoints(userId, points, taskId).then(() => {
+                // Обновляем статус задания
+                return database.ref(`tasks/${taskId}`).update({
+                    status: 'completed',
+                    completedAt: Date.now(),
+                    completedBy: userId
+                });
+            }).then(() => {
+                showAlert('Поздравляем!', 'success', `Задание выполнено! Вы получили ${points} очков.`);
+                displayTasks();
+            }).catch(error => {
+                console.error('Ошибка:', error);
+                showAlert('Ошибка', 'error', 'Не удалось завершить задание');
+            });
         }
 
         function deleteTask(taskId) {
@@ -6704,21 +6747,13 @@
                     status: 'completed'
                 });
                 
-                if (tasks[taskId]) {
-                    tasks[taskId].report.status = 'approved';
-                    tasks[taskId].report.mentorFeedback = feedback;
-                    tasks[taskId].status = 'completed';
-                }
-                
+                // Начисляем очки специалисту
                 const task = tasks[taskId];
                 const specialistId = task.assignedTo;
                 if (specialistId && specialistId !== 'all' && users[specialistId]) {
                     const points = task.rewardPoints || 0;
-                    if (points > 0 && specialistId && specialistId !== 'all' && users[specialistId]) {
-                        users[specialistId].points = (users[specialistId].points || 0) + points;
-                        await database.ref(`users/${specialistId}`).update({
-                            points: users[specialistId].points
-                        });
+                    if (points > 0) {
+                        await awardPoints(specialistId, points, taskId);
                     }
                 }
                 
@@ -8449,25 +8484,22 @@
             const task = tasks[taskId];
             if (!task) return;
         
-            // Начисляем очки, если задание назначено текущему пользователю
             const points = task.rewardPoints || 0;
-            if (points > 0 && task.assignedTo && task.assignedTo !== 'all' && task.assignedTo === currentUser.id) {
-                currentUser.points = (currentUser.points || 0) + points;
-                database.ref(`users/${currentUser.id}/points`).set(currentUser.points);
-                saveUserProfile();
-            }
+            const userId = currentUser.id;
         
             // Обновляем статус задания
             database.ref(`tasks/${taskId}`).update({
                 status: 'completed',
                 completedAt: Date.now(),
-                completedBy: currentUser.id
+                completedBy: userId
             }).then(() => {
-                // Сначала закрываем модалку
+                // Начисляем очки, если задание назначено текущему пользователю
+                if (task.assignedTo === userId || task.assignedTo === 'all' || !task.assignedTo) {
+                    return awardPoints(userId, points, taskId);
+                }
+            }).then(() => {
                 closeQuizModal();
-                // Потом показываем сообщение
                 showAlert('Поздравляем!', 'success', `Тест пройден! Вы получили ${points} очков.`);
-                // Обновляем список заданий
                 displayTasks();
             }).catch(error => {
                 console.error('Ошибка при завершении теста:', error);
@@ -8749,11 +8781,45 @@
         
         // Обновление рейтинга при изменении пользователей
         function updateRatingAndBalance() {
-            displayRating();
-            // Обновляем баланс текущего пользователя
+            displayRating();      // обновить список рейтинга
             if (currentUser) {
                 document.getElementById('user-points-balance').textContent = currentUser.points || 0;
             }
+        }
+
+        function awardPoints(userId, points, taskId) {
+            if (!userId || points <= 0) return Promise.resolve();
+            return database.ref('users/' + userId).once('value').then(snapshot => {
+                const user = snapshot.val();
+                if (!user) return;
+                const newPoints = (user.points || 0) + points;
+                const updates = {
+                    points: newPoints
+                };
+                // Если передан taskId, добавляем его в completedTasks
+                if (taskId) {
+                    let completed = user.completedTasks || [];
+                    if (!completed.includes(taskId)) {
+                        completed.push(taskId);
+                        updates.completedTasks = completed;
+                    }
+                }
+                return database.ref('users/' + userId).update(updates).then(() => {
+                    // Если это текущий пользователь, обновляем локальные данные
+                    if (currentUser && currentUser.id === userId) {
+                        currentUser.points = newPoints;
+                        if (taskId) {
+                            if (!currentUser.completedTasks) currentUser.completedTasks = [];
+                            if (!currentUser.completedTasks.includes(taskId)) {
+                                currentUser.completedTasks.push(taskId);
+                            }
+                        }
+                        localStorage.setItem('current_user', JSON.stringify(currentUser));
+                        document.getElementById('user-points-balance').textContent = newPoints;
+                        updateRatingAndBalance();
+                    }
+                });
+            });
         }
     </script>
     <audio id="fart-sound" preload="auto">
