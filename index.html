@@ -1490,7 +1490,7 @@
     }
     
     .message-actions {
-        display: none;
+        display: flex;
         margin-top: 8px;
         gap: 5px;
     }
@@ -4873,14 +4873,19 @@
                             ${reactionsHtml}
                             <div style="position: relative; display: inline-block;">
                                 <button class="reaction-picker-btn" onclick="event.stopPropagation(); toggleReactionPicker('${message.id}')">
-                                    <i class="fas fa-smile-o"></i>
+                                    <i class="fas fa-smile"></i>
                                 </button>
                                 <div class="reaction-picker" id="reaction-picker-${message.id}" style="display: none;">
                                     <button class="reaction-picker-emoji" onclick="toggleReaction('${message.id}', '👍')">👍</button>
+                                    <button class="reaction-picker-emoji" onclick="toggleReaction('${message.id}', '👎')">👎</button>
+                                    <button class="reaction-picker-emoji" onclick="toggleReaction('${message.id}', '🙏')">🙏</button>
+                                    <button class="reaction-picker-emoji" onclick="toggleReaction('${message.id}', '🤬')">🤬</button>
+                                    <button class="reaction-picker-emoji" onclick="toggleReaction('${message.id}', '🥺')">🥺</button>
+                                    <button class="reaction-picker-emoji" onclick="toggleReaction('${message.id}', '😁')">😁</button>
                                     <button class="reaction-picker-emoji" onclick="toggleReaction('${message.id}', '❤️')">❤️</button>
                                     <button class="reaction-picker-emoji" onclick="toggleReaction('${message.id}', '😄')">😄</button>
                                     <button class="reaction-picker-emoji" onclick="toggleReaction('${message.id}', '😮')">😮</button>
-                                    <button class="reaction-picker-emoji" onclick="toggleReaction('${message.id}', '😢')">😢</button>
+                                    <button class="reaction-picker-emoji" onclick="toggleReaction('${message.id}', '😭')">😭</button>
                                     <button class="reaction-picker-emoji" onclick="toggleReaction('${message.id}', '😡')">😡</button>
                                 </div>
                             </div>
