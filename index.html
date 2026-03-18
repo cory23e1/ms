@@ -1495,9 +1495,9 @@
         gap: 5px;
     }
     
-    .message:hover .message-actions {
+    /* .message:hover .message-actions {
         display: flex;
-    }
+    } */
 
     /* Мобильная адаптация */
     @media (max-width: 768px) {
@@ -1615,6 +1615,7 @@
         
         .message {
             max-width: 95% !important;
+            position:relative;
         }
         
         .message-content {
@@ -1985,6 +1986,100 @@
 
     #user-points-balance{
         color:white;
+    }
+
+    .message-reactions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+        align-items: center;
+    }
+    
+    .reaction-item {
+        display: inline-flex;
+        align-items: center;
+        background: rgba(255, 215, 0, 0.1);
+        border: 1px solid rgba(255, 215, 0, 0.3);
+        border-radius: 20px;
+        padding: 2px 8px;
+        font-size: 14px;
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.2s;
+    }
+    
+    .reaction-item:hover {
+        background: rgba(255, 215, 0, 0.3);
+        transform: scale(1.05);
+    }
+    
+    .reaction-item.active {
+        background: rgba(255, 215, 0, 0.4);
+        border-color: var(--primary);
+    }
+    
+    .reaction-emoji {
+        margin-right: 4px;
+        font-size: 16px;
+    }
+    
+    .reaction-count {
+        font-size: 12px;
+        color: #000;
+    }
+    
+    .reaction-picker-btn {
+        background: transparent;
+        border: 1px dashed rgba(255, 215, 0, 0.5);
+        border-radius: 20px;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--primary);
+        font-size: 18px;
+        transition: all 0.2s;
+    }
+    
+    .reaction-picker-btn:hover {
+        background: rgba(255, 215, 0, 0.2);
+        border-style: solid;
+    }
+    
+    .reaction-picker {
+        position: absolute;
+        background: rgba(0, 0, 0, 0.95);
+        border: 2px solid var(--primary);
+        border-radius: 15px;
+        padding: 10px;
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 5px;
+        z-index: 100;
+        box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3);
+        margin-top: 5px;
+    }
+    
+    .reaction-picker-emoji {
+        background: transparent;
+        border: none;
+        font-size: 24px;
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+    
+    .reaction-picker-emoji:hover {
+        background: rgba(255, 215, 0, 0.2);
+        transform: scale(1.1);
     }
 </style>
     
@@ -3340,7 +3435,7 @@
         let currentQuizTask = null; // текущий проходимый тест
         let currentQuizAnswers = []; // ответы пользователя (массив индексов)
         let currentQuizIndex = 0;
-
+        let currentReactionPicker = null;
         
         const emojiCategories = {
             smileys: ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🥸', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕'],
@@ -4745,36 +4840,151 @@
                     roleBadge = '<span class="role-specialist"><i class="fas fa-user-graduate"></i> Специалист</span>';
                 }
             }
-            
+
+            const reactionsHtml = renderReactionsHtml(message.reactions, message.id);
+
             div.innerHTML = `
                 <img src="${message.userAvatar || getDefaultAvatar(message.username)}" 
                      alt="${message.username}" 
-                     class="message-avatar">
-                <div class="message-content">
-                    <div class="message-header">
-                        <div class="message-sender">
-                            ${message.username}
-                            ${roleBadge}
+                         class="message-avatar">
+                    <div class="message-content">
+                        <div class="message-header">
+                            <div class="message-sender">
+                                ${message.username}
+                                ${roleBadge}
+                            </div>
+                            <div class="message-time">${displayTime}</div>
                         </div>
-                        <div class="message-time">${displayTime}</div>
-                    </div>
-                    ${replyPreviewHtml}
-                    <div class="message-text">${message.text || ''}</div>
-                    ${attachmentHtml}
-                    <div class="message-actions">
-                        <button class="reply-btn" onclick="handleReplyClick(event, '${message.id}', '${escapeHtml(message.username)}', '${escapeHtml((message.text || '').substring(0, 100))}')">
-                            <i class="fas fa-reply"></i> Ответить
-                        </button>
-                        ${isAdmin ? `
-                            <button class="btn btn-danger btn-sm" onclick="deleteMessage('${message.id}')">
-                                <i class="fas fa-trash"></i> Удалить
+                        ${replyPreviewHtml}
+                        <div class="message-text">${message.text || ''}</div>
+                        ${attachmentHtml}
+                        <div class="message-actions">
+                            <button class="reply-btn" onclick="handleReplyClick(event, '${message.id}', '${escapeHtml(message.username)}', '${escapeHtml((message.text || '').substring(0, 100))}')">
+                                <i class="fas fa-reply"></i> Ответить
                             </button>
-                        ` : ''}
+                            ${isAdmin ? `
+                                <button class="btn btn-danger btn-sm" onclick="deleteMessage('${message.id}')">
+                                    <i class="fas fa-trash"></i> Удалить
+                                </button>
+                            ` : ''}
+                        </div>
+                        <!-- Блок реакций -->
+                        <div class="message-reactions" id="reactions-${message.id}">
+                            ${reactionsHtml}
+                            <div style="position: relative; display: inline-block;">
+                                <button class="reaction-picker-btn" onclick="event.stopPropagation(); toggleReactionPicker('${message.id}')">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                                <div class="reaction-picker" id="reaction-picker-${message.id}" style="display: none;">
+                                    <button class="reaction-picker-emoji" onclick="toggleReaction('${message.id}', '👍')">👍</button>
+                                    <button class="reaction-picker-emoji" onclick="toggleReaction('${message.id}', '❤️')">❤️</button>
+                                    <button class="reaction-picker-emoji" onclick="toggleReaction('${message.id}', '😄')">😄</button>
+                                    <button class="reaction-picker-emoji" onclick="toggleReaction('${message.id}', '😮')">😮</button>
+                                    <button class="reaction-picker-emoji" onclick="toggleReaction('${message.id}', '😢')">😢</button>
+                                    <button class="reaction-picker-emoji" onclick="toggleReaction('${message.id}', '😡')">😡</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            `;
+                `;
             
             return div;
+        }
+
+        // Функция для генерации HTML уже существующих реакций
+        function renderReactionsHtml(reactions, messageId) {
+            if (!reactions) return '';
+            return Object.entries(reactions).map(([emoji, data]) => {
+                // data может быть объектом { users: { userId: true } } или просто количеством
+                let count = 0;
+                let active = false;
+                if (data.users) {
+                    count = Object.keys(data.users).length;
+                    active = data.users[currentUser.id] ? 'active' : '';
+                } else if (typeof data === 'object' && data.count) {
+                    count = data.count;
+                    // Если храним только счётчик, определить активность не можем – пропускаем
+                }
+                return `
+                    <span class="reaction-item ${active}" onclick="event.stopPropagation(); toggleReaction('${messageId}', '${emoji}')">
+                        <span class="reaction-emoji">${emoji}</span>
+                        <span class="reaction-count">${count}</span>
+                    </span>
+                `;
+            }).join('');
+        }
+        
+        function toggleReactionPicker(messageId) {
+            const picker = document.getElementById(`reaction-picker-${messageId}`);
+            if (!picker) return;
+            
+            // Закрыть предыдущий открытый пикер
+            if (currentReactionPicker && currentReactionPicker !== picker) {
+                currentReactionPicker.style.display = 'none';
+            }
+            
+            if (picker.style.display === 'none' || picker.style.display === '') {
+                picker.style.display = 'grid';
+                currentReactionPicker = picker;
+            } else {
+                picker.style.display = 'none';
+                currentReactionPicker = null;
+            }
+            
+            // Предотвратить всплытие, чтобы не закрыть случайно
+            event.stopPropagation();
+        }
+        
+        // Закрывать пикер при клике вне его
+        document.addEventListener('click', function(e) {
+            if (currentReactionPicker && !e.target.closest('.reaction-picker') && !e.target.closest('.reaction-picker-btn')) {
+                currentReactionPicker.style.display = 'none';
+                currentReactionPicker = null;
+            }
+        });
+        
+        function toggleReaction(messageId, emoji) {
+            // Закрыть пикер, если он открыт
+            const picker = document.getElementById(`reaction-picker-${messageId}`);
+            if (picker) picker.style.display = 'none';
+            currentReactionPicker = null;
+            
+            // Получить текущее сообщение из Firebase
+            const messageRef = database.ref('messages/' + messageId);
+            messageRef.once('value').then(snapshot => {
+                const message = snapshot.val();
+                if (!message) return;
+                
+                const reactions = message.reactions || {};
+                const userId = currentUser.id;
+                
+                if (!reactions[emoji]) {
+                    // Создаём новую реакцию
+                    reactions[emoji] = { users: { [userId]: true } };
+                } else {
+                    const users = reactions[emoji].users || {};
+                    if (users[userId]) {
+                        // Удаляем реакцию пользователя
+                        delete users[userId];
+                        if (Object.keys(users).length === 0) {
+                            delete reactions[emoji];
+                        } else {
+                            reactions[emoji].users = users;
+                        }
+                    } else {
+                        // Добавляем реакцию
+                        users[userId] = true;
+                        reactions[emoji].users = users;
+                    }
+                }
+                
+                // Обновляем в Firebase
+                return messageRef.update({ reactions: reactions });
+            }).then(() => {
+                // Сообщение обновится автоматически через listener
+            }).catch(error => {
+                console.error('Ошибка при обновлении реакции:', error);
+            });
         }
 
         function getVideoMimeType(filename) {
