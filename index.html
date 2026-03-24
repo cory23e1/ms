@@ -2195,23 +2195,8 @@
             </button>
             
             <ul class="nav-links">
-                <li><a href="#" class="nav-link active" data-tab="dashboard" onclick="showTab('dashboard')">
-                    <i class="fas fa-tachometer-alt"></i> Дашборд
-                </a></li>
                 <li><a href="#" class="nav-link" data-tab="chat" onclick="showTab('chat')">
                     <i class="fas fa-comments"></i> Мессенджер
-                </a></li>
-                <li><a href="#" class="nav-link" data-tab="events" onclick="showTab('events')">
-                    <i class="fas fa-calendar-alt"></i> Мероприятия
-                </a></li>
-                <li><a href="#" class="nav-link" data-tab="tasks" onclick="showTab('tasks')">
-                    <i class="fas fa-tasks"></i> Задания
-                </a></li>
-                <li><a href="#" class="nav-link" data-tab="adaptation" onclick="showTab('adaptation')">
-                    <i class="fas fa-graduation-cap"></i> Адаптация
-                </a></li>
-                <li><a href="#" class="nav-link" data-tab="rating" onclick="showTab('rating')">
-                    <i class="fas fa-trophy"></i> Рейтинг и награды
                 </a></li>
             </ul>
             
@@ -3475,7 +3460,7 @@
             checkAuth();
             setupNavigation();
             setupReplySystem();
-            showTab('dashboard'); // По умолчанию показываем дашборд
+            showTab('chat'); // По умолчанию показываем дашборд
             initChat();
             initTasks();
             initEventsSystem();
