@@ -4889,6 +4889,11 @@
                                     <button class="reaction-picker-emoji" onclick="toggleReaction('${message.id}', '😮')">😮</button>
                                     <button class="reaction-picker-emoji" onclick="toggleReaction('${message.id}', '😭')">😭</button>
                                     <button class="reaction-picker-emoji" onclick="toggleReaction('${message.id}', '😡')">😡</button>
+                                    <button class="reaction-picker-emoji" onclick="toggleReaction('${message.id}', '🍑')">🍑</button>
+                                    <button class="reaction-picker-emoji" onclick="toggleReaction('${message.id}', '💩')">💩</button>
+                                    <button class="reaction-picker-emoji" onclick="toggleReaction('${message.id}', '🤣')">🤣</button>
+                                    <button class="reaction-picker-emoji" onclick="toggleReaction('${message.id}', '🍆')">🍆</button>
+                                    <button class="reaction-picker-emoji" onclick="toggleReaction('${message.id}', '🖕')">🖕</button>
                                 </div>
                             </div>
                         </div>
@@ -4940,7 +4945,7 @@
             const reactionSpan = event.currentTarget;
             const tooltip = document.createElement('div');
             tooltip.className = 'reaction-tooltip';
-            tooltip.innerHTML = `<div><strong>${emoji}</strong> — ${escapeHtml(names)}</div>`;
+            tooltip.innerHTML = `<div style="color:white;"><strong>${emoji}</strong> — ${escapeHtml(names)}</div>`;
             document.body.appendChild(tooltip);
         
             const rect = reactionSpan.getBoundingClientRect();
