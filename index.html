@@ -2081,6 +2081,28 @@
         background: rgba(255, 215, 0, 0.2);
         transform: scale(1.1);
     }
+
+    .reaction-tooltip {
+        position: absolute;
+        background: rgba(0, 0, 0, 0.95);
+        border: 2px solid var(--primary);
+        border-radius: 10px;
+        padding: 8px 12px;
+        font-size: 12px;
+        z-index: 2000;
+        backdrop-filter: blur(5px);
+        box-shadow: 0 5px 15px rgba(255, 215, 0, 0.2);
+        white-space: nowrap;
+        pointer-events: none;
+        transition: opacity 0.2s;
+        opacity: 0;
+        visibility: hidden;
+    }
+    .reaction-tooltip.show {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
 </style>
     
 </head>
@@ -4880,7 +4902,6 @@
         function renderReactionsHtml(reactions, messageId) {
             if (!reactions) return '';
             return Object.entries(reactions).map(([emoji, data]) => {
-                // data может быть объектом { users: { userId: true } } или просто количеством
                 let count = 0;
                 let active = false;
                 if (data.users) {
@@ -4888,15 +4909,61 @@
                     active = data.users[currentUser.id] ? 'active' : '';
                 } else if (typeof data === 'object' && data.count) {
                     count = data.count;
-                    // Если храним только счётчик, определить активность не можем – пропускаем
                 }
                 return `
-                    <span class="reaction-item ${active}" onclick="event.stopPropagation(); toggleReaction('${messageId}', '${emoji}')">
+                    <span class="reaction-item ${active}" 
+                          data-message-id="${messageId}" 
+                          data-emoji="${emoji}" 
+                          onclick="event.stopPropagation(); showReactionUsers(event, '${messageId}', '${emoji}')">
                         <span class="reaction-emoji">${emoji}</span>
                         <span class="reaction-count">${count}</span>
                     </span>
                 `;
             }).join('');
+        }
+
+        async function showReactionUsers(event, messageId, emoji) {
+            event.stopPropagation();
+            const snapshot = await database.ref('messages/' + messageId).once('value');
+            const message = snapshot.val();
+            if (!message || !message.reactions || !message.reactions[emoji]) return;
+        
+            const usersObj = message.reactions[emoji].users || {};
+            const userIds = Object.keys(usersObj);
+            if (userIds.length === 0) return;
+        
+            const names = userIds.map(uid => {
+                const user = users[uid];
+                return user ? user.username : uid;
+            }).join(', ');
+        
+            const reactionSpan = event.currentTarget;
+            const tooltip = document.createElement('div');
+            tooltip.className = 'reaction-tooltip';
+            tooltip.innerHTML = `<div><strong>${emoji}</strong> — ${escapeHtml(names)}</div>`;
+            document.body.appendChild(tooltip);
+        
+            const rect = reactionSpan.getBoundingClientRect();
+            tooltip.style.left = rect.left + 'px';
+            tooltip.style.top = (rect.top - tooltip.offsetHeight - 5) + 'px';
+            tooltip.classList.add('show');
+        
+            const closeTooltip = (e) => {
+                if (!tooltip.contains(e.target) && !reactionSpan.contains(e.target)) {
+                    tooltip.classList.remove('show');
+                    setTimeout(() => tooltip.remove(), 300);
+                    document.removeEventListener('click', closeTooltip);
+                }
+            };
+            document.addEventListener('click', closeTooltip);
+        
+            setTimeout(() => {
+                if (tooltip && tooltip.parentNode) {
+                    tooltip.classList.remove('show');
+                    setTimeout(() => tooltip.remove(), 300);
+                }
+                document.removeEventListener('click', closeTooltip);
+            }, 5000);
         }
         
         function toggleReactionPicker(messageId) {
