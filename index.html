@@ -2002,13 +2002,12 @@
     .reaction-item {
         display: inline-flex;
         align-items: center;
+        gap: 6px;
         background: rgba(255, 215, 0, 0.1);
         border: 1px solid rgba(255, 215, 0, 0.3);
-        border-radius: 20px;
-        padding: 2px 8px;
-        font-size: 14px;
+        border-radius: 30px;
+        padding: 4px 10px;
         cursor: pointer;
-        user-select: none;
         transition: all 0.2s;
     }
     
@@ -2105,6 +2104,48 @@
         opacity: 1;
         visibility: visible;
         pointer-events: auto;
+    }
+
+    .reaction-avatars {
+        display: inline-flex;
+        align-items: center;
+        gap: -2px;
+        margin-left: 4px;
+    }
+    
+    .reaction-avatar {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid var(--primary);
+        margin-left: -5px;
+        transition: transform 0.1s;
+    }
+    
+    .reaction-avatar:first-child {
+        margin-left: 0;
+    }
+    
+    .reaction-avatar:hover {
+        transform: scale(1.2);
+        z-index: 10;
+    }
+    
+    .reaction-extra-count {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.7);
+        margin-left: 4px;
+    }
+    
+    .reaction-item:hover {
+        background: rgba(255, 215, 0, 0.3);
+        transform: scale(1.02);
+    }
+    
+    .reaction-item.active {
+        background: rgba(255, 215, 0, 0.4);
+        border-color: var(--primary);
     }
 </style>
     
@@ -4911,23 +4952,41 @@
         // Функция для генерации HTML уже существующих реакций
         function renderReactionsHtml(reactions, messageId) {
             if (!reactions) return '';
+        
             return Object.entries(reactions).map(([emoji, data]) => {
-                let count = 0;
-                let active = false;
-                if (data.users) {
-                    count = Object.keys(data.users).length;
-                    active = data.users[currentUser.id] ? 'active' : '';
-                } else if (typeof data === 'object' && data.count) {
-                    count = data.count;
+                const usersObj = data.users || {};
+                const userIds = Object.keys(usersObj);
+                const count = userIds.length;
+                const active = usersObj[currentUser.id] ? 'active' : '';
+        
+                // Генерируем аватарки (максимум 3)
+                let avatarsHtml = '';
+                const maxAvatars = 3;
+                const visibleUsers = userIds.slice(0, maxAvatars);
+                const remaining = count - maxAvatars;
+        
+                if (count > 0) {
+                    avatarsHtml = `
+                        <div class="reaction-avatars">
+                            ${visibleUsers.map(uid => {
+                                const user = users[uid];
+                                const avatar = user?.avatar || getDefaultAvatar(user?.username || uid);
+                                return `<img src="${avatar}" class="reaction-avatar" title="${user?.username || uid}" alt="${user?.username || uid}">`;
+                            }).join('')}
+                            ${remaining > 0 ? `<span class="reaction-extra-count">+${remaining}</span>` : ''}
+                        </div>
+                    `;
                 }
+        
                 return `
-                    <span class="reaction-item ${active}" 
-                          data-message-id="${messageId}" 
-                          data-emoji="${emoji}" 
-                          onclick="event.stopPropagation(); showReactionUsers(event, '${messageId}', '${emoji}')">
+                    <div class="reaction-item ${active}" 
+                         data-message-id="${messageId}" 
+                         data-emoji="${emoji}" 
+                         onclick="event.stopPropagation(); showReactionUsers(event, '${messageId}', '${emoji}')">
                         <span class="reaction-emoji">${emoji}</span>
                         <span class="reaction-count">${count}</span>
-                    </span>
+                        ${avatarsHtml}
+                    </div>
                 `;
             }).join('');
         }
@@ -9188,22 +9247,22 @@
         });
         
         // 2. При сворачивании/разворачивании вкладки – обновляем статус
-        document.addEventListener('visibilitychange', function() {
-            if (currentUser && currentUser.id) {
-                const newStatus = document.hidden ? 'offline' : 'online';
-                const lastSeen = Date.now();
-                database.ref('users/' + currentUser.id).update({
-                    status: newStatus,
-                    lastSeen: lastSeen
-                });
-                // Обновляем локального пользователя
-                if (currentUser) {
-                    currentUser.status = newStatus;
-                    currentUser.lastSeen = lastSeen;
-                    updateCurrentUserStatus(); // обновить индикатор в UI
-                }
-            }
-        });
+        // document.addEventListener('visibilitychange', function() {
+        //     if (currentUser && currentUser.id) {
+        //         const newStatus = document.hidden ? 'offline' : 'online';
+        //         const lastSeen = Date.now();
+        //         database.ref('users/' + currentUser.id).update({
+        //             status: newStatus,
+        //             lastSeen: lastSeen
+        //         });
+        //         // Обновляем локального пользователя
+        //         if (currentUser) {
+        //             currentUser.status = newStatus;
+        //             currentUser.lastSeen = lastSeen;
+        //             updateCurrentUserStatus(); // обновить индикатор в UI
+        //         }
+        //     }
+        // });
     </script>
     <audio id="fart-sound" preload="auto">
         <source src="https://assets.mixkit.co/sfx/preview/mixkit-cartoon-fart-bleep-1036.mp3" type="audio/mpeg">
