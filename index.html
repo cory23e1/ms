@@ -9174,6 +9174,34 @@
                 });
             });
         }
+
+        // 1. При закрытии вкладки или перезагрузке страницы – уходим в офлайн
+        window.addEventListener('beforeunload', function() {
+            if (currentUser && currentUser.id) {
+                database.ref('users/' + currentUser.id).update({
+                    status: 'offline',
+                    lastSeen: Date.now()
+                });
+            }
+        });
+        
+        // 2. При сворачивании/разворачивании вкладки – обновляем статус
+        document.addEventListener('visibilitychange', function() {
+            if (currentUser && currentUser.id) {
+                const newStatus = document.hidden ? 'offline' : 'online';
+                const lastSeen = Date.now();
+                database.ref('users/' + currentUser.id).update({
+                    status: newStatus,
+                    lastSeen: lastSeen
+                });
+                // Обновляем локального пользователя
+                if (currentUser) {
+                    currentUser.status = newStatus;
+                    currentUser.lastSeen = lastSeen;
+                    updateCurrentUserStatus(); // обновить индикатор в UI
+                }
+            }
+        });
     </script>
     <audio id="fart-sound" preload="auto">
         <source src="https://assets.mixkit.co/sfx/preview/mixkit-cartoon-fart-bleep-1036.mp3" type="audio/mpeg">
