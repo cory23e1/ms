@@ -556,11 +556,12 @@
         gap: 12px;
         padding: 12px;
         margin-bottom: 8px;
-        background: #e1e1e12e;
+        background: rgba(225, 225, 225, 0.18);
         border-radius: 10px;
         cursor: pointer;
         transition: all 0.3s;
         border: 1px solid transparent;
+        position: relative;
     }
 
     .user-card:hover {
@@ -2146,6 +2147,26 @@
     .reaction-item.active {
         background: rgba(255, 215, 0, 0.4);
         border-color: var(--primary);
+    }
+
+    .delete-user-btn {
+        background: rgba(255, 77, 77, 0.2);
+        border: 1px solid var(--danger);
+        color: var(--danger);
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        margin-left: auto;
+    }
+    .delete-user-btn:hover {
+        background: var(--danger);
+        color: white;
+        transform: scale(1.05);
     }
 </style>
     
@@ -4481,7 +4502,7 @@
         function updateUsersList() {
             const usersList = document.getElementById('users-list');
             if (!usersList) return;
-                
+            
             usersList.innerHTML = '';
             
             let filteredUsers = Object.values(users);
@@ -4495,11 +4516,7 @@
             }
             
             if (filteredUsers.length === 0) {
-                usersList.innerHTML = `
-                    <div class="loading-status">
-                        <i class="fas fa-user-slash"></i> Нет пользователей
-                    </div>
-                `;
+                usersList.innerHTML = `<div class="loading-status"><i class="fas fa-user-slash"></i> Нет пользователей</div>`;
                 return;
             }
             
@@ -4508,19 +4525,23 @@
             
             filteredUsers.slice(0, maxUsers).forEach(user => {
                 const userCard = createUserCardElement(user);
+                // Добавляем кнопку удаления, если админ и это не текущий пользователь
+                if (isAdmin && user.id !== currentUser.id) {
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-user-btn';
+                    deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+                    deleteBtn.title = 'Удалить пользователя';
+                    deleteBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        confirmDeleteUser(user.id, user.username);
+                    };
+                    // Добавляем кнопку в правую часть карточки (в конец)
+                    userCard.appendChild(deleteBtn);
+                }
                 fragment.appendChild(userCard);
             });
             
             usersList.appendChild(fragment);
-            
-            if (filteredUsers.length > maxUsers) {
-                const moreCard = document.createElement('div');
-                moreCard.className = 'user-card';
-                moreCard.style.textAlign = 'center';
-                moreCard.style.color = 'rgba(255,255,255,0.5)';
-                moreCard.innerHTML = `<i class="fas fa-ellipsis-h"></i> Еще ${filteredUsers.length - maxUsers} пользователей`;
-                usersList.appendChild(moreCard);
-            }
         }
 
         function createUserCardElement(user) {
@@ -5327,6 +5348,88 @@
             if (!isAdmin) return;
             database.ref('messages').remove();
             showAlert('Все сообщения удалены!', 'success');
+        }
+
+        function confirmDeleteUser(userId, username) {
+            Swal.fire({
+                title: `Удалить пользователя "${username}"?`,
+                text: 'Это действие удалит все данные пользователя: профиль, сообщения, отчёты и т.д. Восстановить невозможно!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Да, удалить навсегда',
+                cancelButtonText: 'Отмена'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    deleteUser(userId);
+                }
+            });
+        }
+        
+        async function deleteUser(userId) {
+            try {
+                // 1. Удаляем пользователя из узла 'users'
+                await database.ref('users/' + userId).remove();
+                
+                // 2. Удаляем запись аутентификации (логин/пароль)
+                // Нужно найти логин пользователя. Ищем в узле 'auth' по userId.
+                const authSnapshot = await database.ref('auth').once('value');
+                const authData = authSnapshot.val();
+                let loginToRemove = null;
+                if (authData) {
+                    for (const [login, data] of Object.entries(authData)) {
+                        if (data.userId === userId) {
+                            loginToRemove = login;
+                            break;
+                        }
+                    }
+                }
+                if (loginToRemove) {
+                    await database.ref('auth/' + loginToRemove).remove();
+                }
+                
+                // 3. (Опционально) Удаляем все сообщения, отправленные этим пользователем
+                const messagesSnapshot = await database.ref('messages').once('value');
+                const messages = messagesSnapshot.val() || {};
+                const updates = {};
+                for (const [msgId, msg] of Object.entries(messages)) {
+                    if (msg.userId === userId) {
+                        updates[msgId] = null;
+                    }
+                }
+                if (Object.keys(updates).length > 0) {
+                    await database.ref('messages').update(updates);
+                }
+                
+                // 4. Удаляем отчёты пользователя из заданий
+                const tasksSnapshot = await database.ref('tasks').once('value');
+                const tasks = tasksSnapshot.val() || {};
+                for (const [taskId, task] of Object.entries(tasks)) {
+                    if (task.submissions && task.submissions[userId]) {
+                        await database.ref(`tasks/${taskId}/submissions/${userId}`).remove();
+                    }
+                }
+                
+                // 5. Удаляем пользователя из участников мероприятий
+                const eventsSnapshot = await database.ref('events').once('value');
+                const events = eventsSnapshot.val() || {};
+                for (const [eventId, event] of Object.entries(events)) {
+                    if (event.participants && event.participants[userId]) {
+                        await database.ref(`events/${eventId}/participants/${userId}`).remove();
+                    }
+                }
+                
+                showAlert(`Пользователь "${userId}" удалён`, 'success');
+                
+                // Если удалили текущего пользователя – выходим
+                if (userId === currentUser.id) {
+                    logout();
+                }
+            } catch (error) {
+                console.error('Ошибка при удалении пользователя:', error);
+                showAlert('Ошибка удаления', 'error', 'Не удалось удалить пользователя');
+            }
         }
 
         function clearDatabase() {
