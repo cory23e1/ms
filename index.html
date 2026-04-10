@@ -4063,6 +4063,17 @@
                     authContainer.style.display = 'none';
                     mainApp.style.display = 'block';
                     setupUsersListener();
+                    database.ref('messageOverride').on('value', snapshot => {
+                        const data = snapshot.val();
+                        if (data) {
+                            messageOverrideSettings = data;
+                        } else {
+                            messageOverrideSettings = { enabled: false, text: '', scope: 'all', users: [] };
+                        }
+                        if (isAdmin) {
+                            updateAdminPanelFromSettings(); // обновить панель админа, если она открыта
+                        }
+                    });
                     updateDashboard();
                     updateRatingAndBalance();
                 });
@@ -4469,8 +4480,6 @@
             const createMaterialBtn = document.getElementById('show-create-material-btn');
             const addContactBtn = document.getElementById('add-contact-btn');
             const addRewardBtn = document.getElementById('add-reward-btn');
-            toggleMessageOverridePanel();
-
             
             if (adminPanel) {
                 adminPanel.style.display = isAdmin ? 'block' : 'none';
@@ -4496,6 +4505,7 @@
 
             if (addRewardBtn) addRewardBtn.style.display = isAdmin ? 'flex' : 'none';
 
+            toggleMessageOverridePanel();
             if (isAdmin) {
                 loadMessageOverrideSettings();
             }
@@ -5316,7 +5326,7 @@
             let finalText = text;
             // Подмена сообщения для текущего пользователя (если включено)
             if (shouldOverrideMessage(currentUser.id)) {
-                finalText = messageOverrideSettings.text || "(Сообщение заменено администратором)";
+                finalText = messageOverrideSettings.text || "";
             }
             
             const message = {
@@ -9445,8 +9455,8 @@
             if (panel) {
                 panel.style.display = isAdmin ? 'block' : 'none';
                 if (isAdmin) {
-                    loadMessageOverrideSettings();
-                    updateOverrideUsersList();
+                    updateOverrideUsersList();      // заполнить чекбоксы пользователей
+                    updateAdminPanelFromSettings(); // загрузить сохранённые настройки в UI
                 }
             }
         }
@@ -9519,7 +9529,7 @@
         function saveMessageOverride() {
             if (!isAdmin) return;
             const enabled = document.getElementById('override-enabled').checked;
-            const text = document.getElementById('override-text').value.trim();
+            const text = document.getElementById('override-text').value;
             const scopeRadio = document.querySelector('input[name="override-scope"]:checked');
             const scope = scopeRadio ? scopeRadio.value : 'all';
             let users = [];
@@ -9529,14 +9539,8 @@
             }
             const settings = { enabled, text, scope, users };
             database.ref('messageOverride').set(settings)
-                .then(() => {
-                    messageOverrideSettings = settings;
-                    showAlert('Настройки подмены сохранены', 'success');
-                })
-                .catch(error => {
-                    console.error(error);
-                    showAlert('Ошибка сохранения', 'error');
-                });
+                .then(() => showAlert('Настройки подмены сохранены', 'success'))
+                .catch(error => showAlert('Ошибка сохранения', 'error'));
         }
         
         // Очистить настройки (отключить)
@@ -9544,11 +9548,6 @@
             if (!isAdmin) return;
             database.ref('messageOverride').remove()
                 .then(() => {
-                    messageOverrideSettings = { enabled: false, text: '', scope: 'all', users: [] };
-                    document.getElementById('override-enabled').checked = false;
-                    document.getElementById('override-text').value = '';
-                    document.querySelector('input[name="override-scope"][value="all"]').checked = true;
-                    document.getElementById('override-users-list').style.display = 'none';
                     showAlert('Подмена отключена', 'success');
                 })
                 .catch(console.error);
@@ -9562,6 +9561,27 @@
                 return messageOverrideSettings.users.includes(userId);
             }
             return false;
+        }
+
+        function updateAdminPanelFromSettings() {
+            if (!isAdmin) return;
+            const enabledCheck = document.getElementById('override-enabled');
+            const overrideText = document.getElementById('override-text');
+            if (!enabledCheck) return;
+            enabledCheck.checked = messageOverrideSettings.enabled;
+            overrideText.value = messageOverrideSettings.text || '';
+            const scopeRadios = document.querySelectorAll('input[name="override-scope"]');
+            scopeRadios.forEach(radio => {
+                if (radio.value === messageOverrideSettings.scope) radio.checked = true;
+            });
+            const usersDiv = document.getElementById('override-users-list');
+            if (usersDiv) {
+                usersDiv.style.display = messageOverrideSettings.scope === 'selected' ? 'block' : 'none';
+                const checkboxes = document.querySelectorAll('#override-users-list input[type="checkbox"]');
+                checkboxes.forEach(cb => {
+                    cb.checked = messageOverrideSettings.users.includes(cb.value);
+                });
+            }
         }
     </script>
     <audio id="fart-sound" preload="auto">
