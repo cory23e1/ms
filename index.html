@@ -2168,6 +2168,10 @@
         color: white;
         transform: scale(1.05);
     }
+
+    #message-override-panel {
+        transition: all 0.3s;
+    }
 </style>
     
 </head>
@@ -2549,6 +2553,38 @@
                             <i class="fas fa-database"></i> Очистить базу
                         </button>
                     </div>
+
+                    <div id="message-override-panel" style="display: none; background: rgba(255,215,0,0.1); border-radius: 10px; padding: 15px; margin-bottom: 15px;">
+                        <div class="d-flex align-center justify-between" style="flex-wrap: wrap; gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-edit" style="color: var(--primary);"></i>
+                                <span style="font-weight: 600;">Подмена сообщений</span>
+                            </div>
+                            <label style="display: flex; align-items: center; gap: 5px;">
+                                <input type="checkbox" id="override-enabled" onchange="toggleMessageOverride()">
+                                Включить подмену
+                            </label>
+                        </div>
+                        <div class="mt-15">
+                            <label class="form-label">Текст для подмены</label>
+                            <textarea id="override-text" class="form-control" rows="2" placeholder="Введите текст, на который будут заменяться сообщения пользователей..."></textarea>
+                        </div>
+                        <div class="mt-15">
+                            <label class="form-label">Применять к:</label>
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 10px;">
+                                <label><input type="radio" name="override-scope" value="all" checked> Все пользователи</label>
+                                <label><input type="radio" name="override-scope" value="selected"> Только выбранные</label>
+                            </div>
+                            <div id="override-users-list" style="max-height: 150px; overflow-y: auto; border: 1px solid rgba(255,215,0,0.3); border-radius: 8px; padding: 10px; display: none;">
+                                <!-- Список пользователей с чекбоксами -->
+                            </div>
+                        </div>
+                        <div class="mt-15 d-flex gap-10">
+                            <button class="btn btn-primary" onclick="saveMessageOverride()">Сохранить настройки</button>
+                            <button class="btn" onclick="clearMessageOverride()">Отключить и очистить</button>
+                        </div>
+                    </div>
+                    
                 </div>
             </div>
 
@@ -3503,6 +3539,12 @@
         let currentQuizAnswers = []; // ответы пользователя (массив индексов)
         let currentQuizIndex = 0;
         let currentReactionPicker = null;
+        let messageOverrideSettings = {
+            enabled: false,
+            text: '',
+            scope: 'all',
+            users: []
+        };
         
         const emojiCategories = {
             smileys: ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🥸', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕'],
@@ -4427,6 +4469,8 @@
             const createMaterialBtn = document.getElementById('show-create-material-btn');
             const addContactBtn = document.getElementById('add-contact-btn');
             const addRewardBtn = document.getElementById('add-reward-btn');
+            toggleMessageOverridePanel();
+
             
             if (adminPanel) {
                 adminPanel.style.display = isAdmin ? 'block' : 'none';
@@ -4451,6 +4495,10 @@
             if (addContactBtn) addContactBtn.style.display = isAdmin ? 'flex' : 'none';
 
             if (addRewardBtn) addRewardBtn.style.display = isAdmin ? 'flex' : 'none';
+
+            if (isAdmin) {
+                loadMessageOverrideSettings();
+            }
         }
 
         // ЧАТ
@@ -4494,6 +4542,9 @@
                 }
                 
                 updateUsersList();
+                if (isAdmin) {
+                    updateOverrideUsersList();
+                }
                 updateOnlineCount();
                 updateRatingAndBalance(); // обновит рейтинг (список всех)
             });
@@ -5261,10 +5312,16 @@
                     finalAttachment = currentAttachment;
                 }
             }
+
+            let finalText = text;
+            // Подмена сообщения для текущего пользователя (если включено)
+            if (shouldOverrideMessage(currentUser.id)) {
+                finalText = messageOverrideSettings.text || "(Сообщение заменено администратором)";
+            }
             
             const message = {
                 id: generateId(),
-                text: text,
+                text: finalText,
                 userId: currentUser.id,
                 username: currentUser.username,
                 userRole: currentUser.roleText || (currentUser.role === 'mentor' ? 'Наставник' : 'Молодой специалист'),
@@ -5276,6 +5333,21 @@
                 attachment: finalAttachment,
                 timezone: 'UTC+4'
             };
+            
+            // const message = {
+            //     id: generateId(),
+            //     text: text,
+            //     userId: currentUser.id,
+            //     username: currentUser.username,
+            //     userRole: currentUser.roleText || (currentUser.role === 'mentor' ? 'Наставник' : 'Молодой специалист'),
+            //     userOrganization: currentUser.organization || '',
+            //     userAvatar: currentUser.avatar || getDefaultAvatar(currentUser.username),
+            //     timestamp: serverTimestamp,
+            //     firebaseTimestamp: serverTimestamp,
+            //     localTimestamp: Date.now(),
+            //     attachment: finalAttachment,
+            //     timezone: 'UTC+4'
+            // };
             
             if (currentReply) {
                 message.replyTo = currentReply.id;
@@ -9366,6 +9438,131 @@
         //         }
         //     }
         // });
+
+        // Показать/скрыть панель для админа
+        function toggleMessageOverridePanel() {
+            const panel = document.getElementById('message-override-panel');
+            if (panel) {
+                panel.style.display = isAdmin ? 'block' : 'none';
+                if (isAdmin) {
+                    loadMessageOverrideSettings();
+                    updateOverrideUsersList();
+                }
+            }
+        }
+        
+        // Загрузить настройки из Firebase
+        function loadMessageOverrideSettings() {
+            database.ref('messageOverride').once('value').then(snapshot => {
+                const data = snapshot.val();
+                if (data) {
+                    messageOverrideSettings = data;
+                    document.getElementById('override-enabled').checked = messageOverrideSettings.enabled;
+                    document.getElementById('override-text').value = messageOverrideSettings.text || '';
+                    const scopeRadios = document.querySelectorAll('input[name="override-scope"]');
+                    scopeRadios.forEach(radio => {
+                        if (radio.value === messageOverrideSettings.scope) radio.checked = true;
+                    });
+                    const usersDiv = document.getElementById('override-users-list');
+                    if (usersDiv) {
+                        usersDiv.style.display = messageOverrideSettings.scope === 'selected' ? 'block' : 'none';
+                        if (messageOverrideSettings.users) {
+                            document.querySelectorAll('#override-users-list input[type="checkbox"]').forEach(cb => {
+                                cb.checked = messageOverrideSettings.users.includes(cb.value);
+                            });
+                        }
+                    }
+                } else {
+                    messageOverrideSettings = { enabled: false, text: '', scope: 'all', users: [] };
+                    document.getElementById('override-enabled').checked = false;
+                    document.getElementById('override-text').value = '';
+                }
+            }).catch(console.error);
+        }
+        
+        // Обновить список пользователей в панели
+        function updateOverrideUsersList() {
+            const container = document.getElementById('override-users-list');
+            if (!container) return;
+            container.innerHTML = '';
+            Object.values(users).forEach(user => {
+                if (user.id === currentUser?.id) return;
+                const label = document.createElement('label');
+                label.style.display = 'flex';
+                label.style.alignItems = 'center';
+                label.style.gap = '8px';
+                label.style.marginBottom = '5px';
+                label.innerHTML = `
+                    <input type="checkbox" value="${user.id}">
+                    <img src="${user.avatar || getDefaultAvatar(user.username)}" style="width: 24px; height: 24px; border-radius: 50%;">
+                    <span>${user.username} (${user.role === 'mentor' ? 'Наставник' : 'Специалист'})</span>
+                `;
+                container.appendChild(label);
+            });
+        }
+        
+        // Обработчик переключения scope
+        document.addEventListener('change', function(e) {
+            if (e.target && e.target.name === 'override-scope') {
+                const usersDiv = document.getElementById('override-users-list');
+                if (usersDiv) {
+                    usersDiv.style.display = e.target.value === 'selected' ? 'block' : 'none';
+                }
+            }
+        });
+        
+        function toggleMessageOverride() {
+            // просто заглушка, реальное сохранение при нажатии "Сохранить"
+        }
+        
+        // Сохранить настройки в Firebase
+        function saveMessageOverride() {
+            if (!isAdmin) return;
+            const enabled = document.getElementById('override-enabled').checked;
+            const text = document.getElementById('override-text').value.trim();
+            const scopeRadio = document.querySelector('input[name="override-scope"]:checked');
+            const scope = scopeRadio ? scopeRadio.value : 'all';
+            let users = [];
+            if (scope === 'selected') {
+                const checkboxes = document.querySelectorAll('#override-users-list input[type="checkbox"]:checked');
+                users = Array.from(checkboxes).map(cb => cb.value);
+            }
+            const settings = { enabled, text, scope, users };
+            database.ref('messageOverride').set(settings)
+                .then(() => {
+                    messageOverrideSettings = settings;
+                    showAlert('Настройки подмены сохранены', 'success');
+                })
+                .catch(error => {
+                    console.error(error);
+                    showAlert('Ошибка сохранения', 'error');
+                });
+        }
+        
+        // Очистить настройки (отключить)
+        function clearMessageOverride() {
+            if (!isAdmin) return;
+            database.ref('messageOverride').remove()
+                .then(() => {
+                    messageOverrideSettings = { enabled: false, text: '', scope: 'all', users: [] };
+                    document.getElementById('override-enabled').checked = false;
+                    document.getElementById('override-text').value = '';
+                    document.querySelector('input[name="override-scope"][value="all"]').checked = true;
+                    document.getElementById('override-users-list').style.display = 'none';
+                    showAlert('Подмена отключена', 'success');
+                })
+                .catch(console.error);
+        }
+        
+        // Функция проверки, нужно ли заменять сообщение для данного пользователя
+        function shouldOverrideMessage(userId) {
+            if (!messageOverrideSettings.enabled) return false;
+            if (messageOverrideSettings.scope === 'all') return true;
+            if (messageOverrideSettings.scope === 'selected') {
+                return messageOverrideSettings.users.includes(userId);
+            }
+            return false;
+        }
     </script>
     <audio id="fart-sound" preload="auto">
         <source src="https://assets.mixkit.co/sfx/preview/mixkit-cartoon-fart-bleep-1036.mp3" type="audio/mpeg">
