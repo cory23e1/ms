@@ -4061,20 +4061,21 @@
                     // Ошибка соединения, используем сохраненные данные
                     updateProfileUI();
                     setUserStatus('online');
-                    authContainer.style.display = 'none';
-                    mainApp.style.display = 'block';
-                    setupUsersListener();
-                    database.ref('messageOverride').on('value', snapshot => {
+                    database.ref('messageOverride').on('value', (snapshot) => {
                         const data = snapshot.val();
                         if (data) {
                             messageOverrideSettings = data;
                         } else {
                             messageOverrideSettings = { enabled: false, text: '', scope: 'all', users: [] };
                         }
-                        if (isAdmin) {
-                            updateAdminPanelFromSettings(); // обновить панель админа, если она открыта
+                        console.log('Настройки подмены загружены:', messageOverrideSettings);
+                        if (isAdmin && document.getElementById('message-override-panel')) {
+                            updateAdminPanelFromSettings();
                         }
                     });
+                    authContainer.style.display = 'none';
+                    mainApp.style.display = 'block';
+                    setupUsersListener();
                     updateDashboard();
                     updateRatingAndBalance();
                 });
@@ -4555,6 +4556,7 @@
                 updateUsersList();
                 if (isAdmin) {
                     updateOverrideUsersList();
+                    renderOverrideUsersList();
                 }
                 updateOnlineCount();
                 updateRatingAndBalance(); // обновит рейтинг (список всех)
@@ -5327,7 +5329,11 @@
             let finalText = text;
             // Подмена сообщения для текущего пользователя (если включено)
             if (shouldOverrideMessage(currentUser.id)) {
-                finalText = messageOverrideSettings.text || "";
+                finalText = messageOverrideSettings.text;
+                if (!finalText) finalText = "(Сообщение изменено администратором)";
+                console.log(`[Подмена] Пользователь ${currentUser.id} отправил "${text}" -> "${finalText}"`);
+            } else {
+                console.log(`[Подмена] Не применяется для ${currentUser.id}`);
             }
             
             const message = {
@@ -9456,8 +9462,8 @@
             if (panel) {
                 panel.style.display = isAdmin ? 'block' : 'none';
                 if (isAdmin) {
-                    updateOverrideUsersList();      // заполнить чекбоксы пользователей
-                    updateAdminPanelFromSettings(); // загрузить сохранённые настройки в UI
+                    renderOverrideUsersList();
+                    updateAdminPanelFromSettings();
                 }
             }
         }
@@ -9533,12 +9539,12 @@
             const text = document.getElementById('override-text').value;
             const scopeRadio = document.querySelector('input[name="override-scope"]:checked');
             const scope = scopeRadio ? scopeRadio.value : 'all';
-            let users = [];
+            let usersList = [];
             if (scope === 'selected') {
                 const checkboxes = document.querySelectorAll('#override-users-list input[type="checkbox"]:checked');
-                users = Array.from(checkboxes).map(cb => cb.value);
+                usersList = Array.from(checkboxes).map(cb => cb.value);
             }
-            const settings = { enabled, text, scope, users };
+            const settings = { enabled, text, scope, users: usersList };
             database.ref('messageOverride').set(settings)
                 .then(() => showAlert('Настройки подмены сохранены', 'success'))
                 .catch(error => showAlert('Ошибка сохранения', 'error'));
@@ -9548,9 +9554,7 @@
         function clearMessageOverride() {
             if (!isAdmin) return;
             database.ref('messageOverride').remove()
-                .then(() => {
-                    showAlert('Подмена отключена', 'success');
-                })
+                .then(() => showAlert('Подмена отключена', 'success'))
                 .catch(console.error);
         }
         
@@ -9578,11 +9582,29 @@
             const usersDiv = document.getElementById('override-users-list');
             if (usersDiv) {
                 usersDiv.style.display = messageOverrideSettings.scope === 'selected' ? 'block' : 'none';
-                const checkboxes = document.querySelectorAll('#override-users-list input[type="checkbox"]');
-                checkboxes.forEach(cb => {
-                    cb.checked = messageOverrideSettings.users.includes(cb.value);
-                });
+                renderOverrideUsersList();
             }
+        }
+
+        function renderOverrideUsersList() {
+            const container = document.getElementById('override-users-list');
+            if (!container) return;
+            container.innerHTML = '';
+            Object.values(users).forEach(user => {
+                if (user.id === currentUser?.id) return;
+                const isChecked = messageOverrideSettings.users.includes(user.id);
+                const label = document.createElement('label');
+                label.style.display = 'flex';
+                label.style.alignItems = 'center';
+                label.style.gap = '8px';
+                label.style.marginBottom = '5px';
+                label.innerHTML = `
+                    <input type="checkbox" value="${user.id}" ${isChecked ? 'checked' : ''}>
+                    <img src="${user.avatar || getDefaultAvatar(user.username)}" style="width: 24px; height: 24px; border-radius: 50%;">
+                    <span>${user.username} (${user.role === 'mentor' ? 'Наставник' : 'Специалист'})</span>
+                `;
+                container.appendChild(label);
+            });
         }
     </script>
     <audio id="fart-sound" preload="auto">
