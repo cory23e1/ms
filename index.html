@@ -4059,6 +4059,15 @@
                         
                         authContainer.style.display = 'none';
                         mainApp.style.display = 'block';
+
+                        database.ref('messageOverride').on('value', (snapshot) => {
+                            const data = snapshot.val();
+                            messageOverrideSettings = data || { enabled: false, text: '', scope: 'all', users: [] };
+                            // если это админ и панель управления отображается, обновим её
+                            if (isAdmin) {
+                                updateAdminPanelFromSettings();
+                            }
+                        });
                         
                         setupUsersListener();
                         updateDashboard();
@@ -4074,20 +4083,18 @@
                     // Ошибка соединения, используем сохраненные данные
                     updateProfileUI();
                     setUserStatus('online');
+                    authContainer.style.display = 'none';
+                    mainApp.style.display = 'block';
+                    
                     database.ref('messageOverride').on('value', (snapshot) => {
                         const data = snapshot.val();
-                        if (data) {
-                            messageOverrideSettings = data;
-                        } else {
-                            messageOverrideSettings = { enabled: false, text: '', scope: 'all', users: [] };
-                        }
-                        console.log('Настройки подмены загружены:', messageOverrideSettings);
-                        if (isAdmin && document.getElementById('message-override-panel')) {
+                        messageOverrideSettings = data || { enabled: false, text: '', scope: 'all', users: [] };
+                        // если это админ и панель управления отображается, обновим её
+                        if (isAdmin) {
                             updateAdminPanelFromSettings();
                         }
                     });
-                    authContainer.style.display = 'none';
-                    mainApp.style.display = 'block';
+                    
                     setupUsersListener();
                     updateDashboard();
                     updateRatingAndBalance();
