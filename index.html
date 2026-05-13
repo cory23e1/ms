@@ -4757,22 +4757,24 @@
         // }
 
         function startPrivateChatWithCurrentUser() {
-    // Жёсткая проверка: если нет выбранного пользователя — выходим
             if (!currentViewedUser || !currentViewedUser.id) {
-                console.warn('startPrivateChatWithCurrentUser: currentViewedUser is null or undefined');
+                console.warn('startPrivateChatWithCurrentUser: currentViewedUser отсутствует');
                 showAlert('Ошибка', 'error', 'Не выбран пользователь для начала чата');
                 return;
             }
-        
-            // Сам с собой не общаемся → открываем свой профиль
             if (currentViewedUser.id === currentUser.id) {
                 openProfileModal();
                 return;
             }
         
-            // Закрываем профиль и стартуем приватный чат
+            // Сохраняем ID перед тем, как currentViewedUser будет обнулён
+            const targetUserId = currentViewedUser.id;
+        
+            // Закрываем модальное окно профиля (currentViewedUser станет null)
             closeUserProfileModal();
-            openPrivateChat(currentViewedUser.id);
+        
+            // Открываем приватный чат
+            openPrivateChat(targetUserId);
         }
 
         function updateOnlineCount() {
