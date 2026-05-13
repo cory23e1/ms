@@ -4757,7 +4757,12 @@
         // }
 
         function startPrivateChatWithCurrentUser() {
-            if (!currentViewedUser) return;
+            if (!currentViewedUser) {
+                console.warn('Нет выбранного пользователя для начала чата');
+                return;
+            }
+        
+            // Сам с собой не общаемся – открываем свой профиль
             if (currentViewedUser.id === currentUser.id) {
                 openProfileModal();
                 return;
