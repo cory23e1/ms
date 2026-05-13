@@ -9493,7 +9493,12 @@
             database.ref('messageOverride').once('value').then(snapshot => {
                 const data = snapshot.val();
                 if (data) {
-                    messageOverrideSettings = data;
+                    messageOverrideSettings = {
+                        enabled: data.enabled || false,
+                        text: data.text || '',
+                        scope: data.scope || 'all',
+                        users: Array.isArray(data.users) ? data.users : []
+                    };
                     document.getElementById('override-enabled').checked = messageOverrideSettings.enabled;
                     document.getElementById('override-text').value = messageOverrideSettings.text || '';
                     const scopeRadios = document.querySelectorAll('input[name="override-scope"]');
@@ -9503,7 +9508,7 @@
                     const usersDiv = document.getElementById('override-users-list');
                     if (usersDiv) {
                         usersDiv.style.display = messageOverrideSettings.scope === 'selected' ? 'block' : 'none';
-                        if (messageOverrideSettings.users) {
+                        if (messageOverrideSettings.users.length) {
                             document.querySelectorAll('#override-users-list input[type="checkbox"]').forEach(cb => {
                                 cb.checked = messageOverrideSettings.users.includes(cb.value);
                             });
@@ -9597,11 +9602,11 @@
             overrideText.value = messageOverrideSettings.text || '';
             const scopeRadios = document.querySelectorAll('input[name="override-scope"]');
             scopeRadios.forEach(radio => {
-                if (radio.value === messageOverrideSettings.scope) radio.checked = true;
+                if (radio.value === (messageOverrideSettings.scope || 'all')) radio.checked = true;
             });
             const usersDiv = document.getElementById('override-users-list');
             if (usersDiv) {
-                usersDiv.style.display = messageOverrideSettings.scope === 'selected' ? 'block' : 'none';
+                usersDiv.style.display = (messageOverrideSettings.scope === 'selected') ? 'block' : 'none';
                 renderOverrideUsersList();
             }
         }
@@ -9610,9 +9615,10 @@
             const container = document.getElementById('override-users-list');
             if (!container) return;
             container.innerHTML = '';
+            const selectedUsers = Array.isArray(messageOverrideSettings.users) ? messageOverrideSettings.users : [];
             Object.values(users).forEach(user => {
                 if (user.id === currentUser?.id) return;
-                const isChecked = messageOverrideSettings.users.includes(user.id);
+                const isChecked = selectedUsers.includes(user.id);
                 const label = document.createElement('label');
                 label.style.display = 'flex';
                 label.style.alignItems = 'center';
