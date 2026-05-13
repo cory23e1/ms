@@ -3036,7 +3036,7 @@
                     
                     <!-- Кнопки действий -->
                     <div id="user-profile-actions" style="display: flex; gap: 10px; margin-top: 25px;">
-                        <button class="btn btn-primary" onclick="startPrivateChatWithCurrentUser()" style="flex: 1;">
+                        <button class="btn btn-primary" onclick="event.stopPropagation(); startPrivateChatWithCurrentUser()" style="flex: 1;">
                             <i class="fas fa-comment"></i> Написать сообщение
                         </button>
                         
@@ -4757,16 +4757,20 @@
         // }
 
         function startPrivateChatWithCurrentUser() {
-            if (!currentViewedUser) {
-                console.warn('Нет выбранного пользователя для начала чата');
+    // Жёсткая проверка: если нет выбранного пользователя — выходим
+            if (!currentViewedUser || !currentViewedUser.id) {
+                console.warn('startPrivateChatWithCurrentUser: currentViewedUser is null or undefined');
+                showAlert('Ошибка', 'error', 'Не выбран пользователь для начала чата');
                 return;
             }
         
-            // Сам с собой не общаемся – открываем свой профиль
+            // Сам с собой не общаемся → открываем свой профиль
             if (currentViewedUser.id === currentUser.id) {
                 openProfileModal();
                 return;
             }
+        
+            // Закрываем профиль и стартуем приватный чат
             closeUserProfileModal();
             openPrivateChat(currentViewedUser.id);
         }
