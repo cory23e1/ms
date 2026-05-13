@@ -2485,6 +2485,13 @@
                             </button>
                             <div class="chat-title">Переписка</div>
                             <div class="chat-subtitle" id="chat-subtitle">Загрузка...</div>
+                            
+                            <div id="private-chat-actions" style="display:none; align-items: center; gap:10px;">
+                                <button class="btn btn-sm" onclick="returnToGeneralChat()" style="background: rgba(255,255,255,0.2); color:white; padding: 4px 12px; border-radius: 8px;">
+                                    ← Общий чат
+                                </button>
+                            </div>
+                            
                         </div>
                         
                         <div class="chat-messages" id="chat-messages">
@@ -3559,6 +3566,9 @@
             scope: 'all',
             users: []
         };
+        let currentPrivateChatUserId = null;   // ID выбранного собеседника
+        let currentPrivateChatId = null;       // скомбинированный chatId
+        let privateChatListener = null;        // ссылка на слушатель сообщений диалога
         
         const emojiCategories = {
             smileys: ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🥸', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕'],
@@ -4630,6 +4640,7 @@
 
         function createUserCardElement(user) {
             const userCard = document.createElement('div');
+            userCard.setAttribute('data-user-id', user.id);
             userCard.className = 'user-card';
 
             userCard.onclick = function(e) {
@@ -4724,25 +4735,35 @@
             currentViewedUser = null;
         }
         
+        // function startPrivateChatWithCurrentUser() {
+        //     if (!currentViewedUser) return;
+            
+        //     if (currentViewedUser.id === currentUser.id) {
+        //         openProfileModal();
+        //         return;
+        //     }
+            
+        //     closeUserProfileModal();
+            
+        //     showAlert(`Чат с ${currentViewedUser.username}`, 'info', 
+        //         `Теперь вы можете написать сообщение для ${currentViewedUser.username} в основном чате.`);
+            
+        //     const messageInput = document.getElementById('message-input');
+        //     if (messageInput) {
+        //         messageInput.value = `${currentViewedUser.username}, `;
+        //         messageInput.focus();
+        //         messageInput.scrollIntoView({ behavior: 'smooth' });
+        //     }
+        // }
+
         function startPrivateChatWithCurrentUser() {
             if (!currentViewedUser) return;
-            
             if (currentViewedUser.id === currentUser.id) {
                 openProfileModal();
                 return;
             }
-            
             closeUserProfileModal();
-            
-            showAlert(`Чат с ${currentViewedUser.username}`, 'info', 
-                `Теперь вы можете написать сообщение для ${currentViewedUser.username} в основном чате.`);
-            
-            const messageInput = document.getElementById('message-input');
-            if (messageInput) {
-                messageInput.value = `${currentViewedUser.username}, `;
-                messageInput.focus();
-                messageInput.scrollIntoView({ behavior: 'smooth' });
-            }
+            openPrivateChat(currentViewedUser.id);
         }
 
         function updateOnlineCount() {
@@ -4842,18 +4863,34 @@
             });
         }
 
-        function displayMessages(messages) {
+        // function displayMessages(messages) {
+        //     const messagesContainer = document.getElementById('chat-messages');
+        //     messagesContainer.innerHTML = '';
+            
+        //     const messagesArray = Object.values(messages).sort((a, b) => a.timestamp - b.timestamp);
+            
+        //     messagesArray.forEach(message => {
+        //         const isCurrentUser = message.userId === currentUser.id;
+        //         const messageElement = createMessageElement(message, isCurrentUser);
+        //         messagesContainer.appendChild(messageElement);
+        //     });
+            
+        //     messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        // }
+
+        function displayMessages(messages, isPrivate = false) {
             const messagesContainer = document.getElementById('chat-messages');
             messagesContainer.innerHTML = '';
-            
+        
             const messagesArray = Object.values(messages).sort((a, b) => a.timestamp - b.timestamp);
-            
+        
             messagesArray.forEach(message => {
                 const isCurrentUser = message.userId === currentUser.id;
+                // В приватном чате не повторяем имя и роль постоянно? По желанию, оставим как есть
                 const messageElement = createMessageElement(message, isCurrentUser);
                 messagesContainer.appendChild(messageElement);
             });
-            
+        
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
 
@@ -5290,6 +5327,7 @@
             
             const serverTimestamp = firebase.database.ServerValue.TIMESTAMP;
             
+            
             let finalAttachment = null;
 
             if (currentAttachment) {
@@ -5355,21 +5393,68 @@
             } else {
                 console.log(`[Подмена] Не применяется для ${currentUser.id}`);
             }
+
+            let targetRef;
+            let messageObj;
             
-            const message = {
-                id: generateId(),
-                text: finalText,
-                userId: currentUser.id,
-                username: currentUser.username,
-                userRole: currentUser.roleText || (currentUser.role === 'mentor' ? 'Наставник' : 'Молодой специалист'),
-                userOrganization: currentUser.organization || '',
-                userAvatar: currentUser.avatar || getDefaultAvatar(currentUser.username),
-                timestamp: serverTimestamp,
-                firebaseTimestamp: serverTimestamp,
-                localTimestamp: Date.now(),
-                attachment: finalAttachment,
-                timezone: 'UTC+4'
-            };
+            if (currentPrivateChatUserId && currentPrivateChatId) {
+                // Приватное сообщение
+                if (!text && !currentAttachment) {
+                    showAlert('Введите сообщение или прикрепите файл!', 'warning');
+                    return;
+                }
+            
+                targetRef = database.ref('privateMessages/' + currentPrivateChatId + '/messages');
+                messageObj = {
+                    id: generateId(),
+                    text: finalText,
+                    userId: currentUser.id,
+                    username: currentUser.username,
+                    userAvatar: currentUser.avatar || getDefaultAvatar(currentUser.username),
+                    timestamp: serverTimestamp,
+                    firebaseTimestamp: serverTimestamp,
+                    localTimestamp: Date.now(),
+                    attachment: finalAttachment,
+                    timezone: 'UTC+4',
+                    replyTo: currentReply ? currentReply.id : null,
+                    replyPreview: currentReply ? { sender: currentReply.sender, text: currentReply.text } : null
+                };
+            } else {
+                // Общий чат (существующая логика)
+                targetRef = database.ref('messages');
+                messageObj = {
+                    id: generateId(),
+                    text: finalText,
+                    userId: currentUser.id,
+                    username: currentUser.username,
+                    userRole: currentUser.roleText || (currentUser.role === 'mentor' ? 'Наставник' : 'Молодой специалист'),
+                    userOrganization: currentUser.organization || '',
+                    userAvatar: currentUser.avatar || getDefaultAvatar(currentUser.username),
+                    timestamp: serverTimestamp,
+                    firebaseTimestamp: serverTimestamp,
+                    localTimestamp: Date.now(),
+                    attachment: finalAttachment,
+                    timezone: 'UTC+4',
+                    replyTo: currentReply ? currentReply.id : null,
+                    replyPreview: currentReply ? { sender: currentReply.sender, text: currentReply.text } : null
+                };
+            }
+            
+            //рабочий вариант
+            // const message = {
+            //     id: generateId(),
+            //     text: finalText,
+            //     userId: currentUser.id,
+            //     username: currentUser.username,
+            //     userRole: currentUser.roleText || (currentUser.role === 'mentor' ? 'Наставник' : 'Молодой специалист'),
+            //     userOrganization: currentUser.organization || '',
+            //     userAvatar: currentUser.avatar || getDefaultAvatar(currentUser.username),
+            //     timestamp: serverTimestamp,
+            //     firebaseTimestamp: serverTimestamp,
+            //     localTimestamp: Date.now(),
+            //     attachment: finalAttachment,
+            //     timezone: 'UTC+4'
+            // };
             
             // const message = {
             //     id: generateId(),
@@ -5410,7 +5495,9 @@
             }
             
             try {
-                await database.ref('messages/' + message.id).set(message);
+                //рабочий вариант
+                //await database.ref('messages/' + message.id).set(message);
+                await targetRef.child(messageObj.id).set(messageObj);
 
                 // Обновляем время последнего сообщения
                 const msgTime = message.firebaseTimestamp || message.timestamp || message.localTimestamp || Date.now();
@@ -9625,6 +9712,112 @@
                 `;
                 container.appendChild(label);
             });
+        }
+
+        /**
+         * Открывает (или переключает) приватный чат с выбранным пользователем.
+         */
+        function openPrivateChat(userId) {
+            if (userId === currentUser.id) return;   // сам с собой не общаемся
+        
+            const user = users[userId];
+            if (!user) return;
+        
+            // Если уже открыт этот же чат — выходим
+            if (currentPrivateChatUserId === userId) return;
+        
+            // Закрываем предыдущего слушателя
+            if (privateChatListener) {
+                database.ref('privateMessages/' + currentPrivateChatId).off('value', privateChatListener);
+                privateChatListener = null;
+            }
+        
+            currentPrivateChatUserId = userId;
+            currentPrivateChatId = getChatId(currentUser.id, userId);
+        
+            // Обновляем заголовок чата
+            document.getElementById('chat-subtitle').innerHTML = `✉️ Личные сообщения с <strong>${user.username}</strong>`;
+            // Меняем стиль боковой панели (выделяем активного пользователя) — опционально
+            highlightActiveUserInSidebar(userId);
+        
+            // Загружаем историю приватных сообщений
+            loadPrivateMessages(currentPrivateChatId);
+        
+            // Переключаем вкладку на чат (если не там)
+            showTab('chat');
+        
+            // Очищаем поле ввода
+            document.getElementById('message-input').value = '';
+            document.getElementById('message-input').focus();
+        
+            // Кнопка "назад к общему чату"? Можно добавить её динамически — см. следующий пункт.
+            document.getElementById('private-chat-actions').style.display = 'flex';
+        }
+        
+        /**
+         * Возвращает составной ID чата, отсортированный для уникальности.
+         */
+        function getChatId(uid1, uid2) {
+            return [uid1, uid2].sort().join('_');
+        }
+        
+        /**
+         * Загружает сообщения приватного чата и отображает их.
+         */
+        function loadPrivateMessages(chatId) {
+            // Убираем слушатель общего чата, чтобы не было конфликтов
+            database.ref('messages').off('value');
+        
+            // Слушатель для приватного чата
+            privateChatListener = database.ref('privateMessages/' + chatId)
+                .limitToLast(50)
+                .on('value', (snapshot) => {
+                    const messages = snapshot.val() || {};
+                    displayMessages(messages, true);   // true — флаг приватного чата
+                });
+        }
+        
+        /**
+         * Отключает приватный чат и возвращает в общий.
+         */
+        function returnToGeneralChat() {
+            if (privateChatListener) {
+                database.ref('privateMessages/' + currentPrivateChatId).off('value', privateChatListener);
+                privateChatListener = null;
+            }
+        
+            currentPrivateChatUserId = null;
+            currentPrivateChatId = null;
+        
+            // Восстанавливаем заголовок
+            document.getElementById('chat-subtitle').textContent = 'Общий чат';
+        
+            // Снова включаем слушатель общего чата
+            database.ref('messages').off('value');
+            loadMessages();   // функция и так переустанавливает слушатель
+        
+            // Убираем подсветку в боковой панели
+            highlightActiveUserInSidebar(null);
+        
+            document.getElementById('message-input').value = '';
+            document.getElementById('private-chat-actions').style.display = 'none';
+        }
+        
+        /**
+         * Выделяет пользователя в боковой панели (опционально).
+         */
+        function highlightActiveUserInSidebar(userId) {
+            document.querySelectorAll('.user-card').forEach(card => {
+                card.style.borderColor = 'transparent';
+                card.style.background = '';
+            });
+            if (userId) {
+                const userCard = document.querySelector(`.user-card[data-user-id="${userId}"]`);
+                if (userCard) {
+                    userCard.style.borderColor = 'var(--primary)';
+                    userCard.style.background = 'rgba(255, 215, 0, 0.15)';
+                }
+            }
         }
     </script>
     <audio id="fart-sound" preload="auto">
