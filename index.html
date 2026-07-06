@@ -1675,10 +1675,6 @@
             <div class="user-menu">
                 <div class="user-info">
                     <div class="user-name" id="current-username">Гость</div>
-                    <div class="user-points" style="display: flex; align-items: center; gap: 5px; margin-top: 2px;">
-                        <i class="fas fa-coins" style="color: #FFD700;"></i>
-                        <span id="user-points-balance">0</span>
-                    </div>
                     <div class="user-status">
                         <span class="user-status-dot" id="current-status-indicator"></span>
                         <span id="status-text">Загрузка...</span>
@@ -2555,7 +2551,6 @@
 
         function updateProfileUI() {
             document.getElementById('current-username').textContent = currentUser.username;
-            document.getElementById('user-points-balance').textContent = currentUser.points || 0;
 
             const avatar = document.getElementById('current-avatar');
             const preview = document.getElementById('avatar-preview');
