@@ -2900,9 +2900,13 @@
             
             if (currentAttachment) {
                 preview.classList.add('visible');
-                
-                let iconClass = getFileIcon(currentAttachment.name);
-                icon.innerHTML = `<i class="${iconClass}"></i>`;
+                // Показываем миниатюру для изображений
+                if (currentAttachment.type === 'image' || currentAttachment.type === 'gif') {
+                    icon.innerHTML = `<img src="${currentAttachment.data}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 5px;">`;
+                } else {
+                    let iconClass = getFileIcon(currentAttachment.name);
+                    icon.innerHTML = `<i class="${iconClass}"></i>`;
+                }
                 filename.textContent = currentAttachment.name;
                 filesize.textContent = formatFileSize(currentAttachment.size);
             } else {
@@ -4184,6 +4188,48 @@
                         updateTabTitle();
                     }, 100);
                 });
+            });
+
+            document.getElementById('message-input').addEventListener('paste', function(e) {
+                const items = e.clipboardData.items;
+                let imageFile = null;
+                for (let i = 0; i < items.length; i++) {
+                    if (items[i].type.startsWith('image/')) {
+                        imageFile = items[i].getAsFile();
+                        break;
+                    }
+                }
+                if (imageFile) {
+                    e.preventDefault(); // Не вставлять текст
+                    if (imageFile.size > 50 * 1024 * 1024) {
+                        showAlert('Файл слишком большой! Максимум 50MB', 'error');
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = function(loadEvent) {
+                        const dataUrl = loadEvent.target.result;
+                        let type = 'image';
+                        if (imageFile.type === 'image/gif') {
+                            type = 'gif';
+                        }
+                        currentAttachment = {
+                            type: type,
+                            data: dataUrl,
+                            name: imageFile.name || 'image.png',
+                            size: imageFile.size,
+                            fileType: imageFile.type,
+                            fileObject: imageFile,
+                            external: false
+                        };
+                        updateAttachmentPreview();
+                        showAlert('Изображение прикреплено', 'success');
+                        closeAttachmentModal(); // если модалка была открыта
+                    };
+                    reader.onerror = function() {
+                        showAlert('Ошибка чтения изображения', 'error');
+                    };
+                    reader.readAsDataURL(imageFile);
+                }
             });
         }
 
